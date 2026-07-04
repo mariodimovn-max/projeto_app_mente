@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Wireframe — Synthesis</title>
+    <link rel="stylesheet" href="../design-system/variables.css">
+    <style>
+      body{background:radial-gradient(circle at bottom left, rgba(124,99,255,0.14), transparent 20%), linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.15)), var(--color-bg);font-family:var(--font-sans);padding:24px;color:var(--color-text);position:relative;min-height:100vh}
+      body::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(0deg, transparent 0 28px, rgba(255,255,255,0.03) 28px 29px), repeating-linear-gradient(90deg, transparent 0 28px, rgba(255,255,255,0.03) 28px 29px);opacity:0.08;pointer-events:none;}
+      .wrap{position:relative;z-index:1;max-width:720px;margin:0 auto}
+      .card{background:rgba(21,27,37,0.96);padding:24px;border-radius:22px;box-shadow:0 16px 48px rgba(0,0,0,0.35);border:1px solid var(--color-border)}
+      .chips{display:flex;gap:8px;margin-top:12px}
+      .chip{background:rgba(255,255,255,0.06);padding:8px 12px;border-radius:999px;font-size:13px;color:var(--color-text)}
+      .insights{margin-top:16px}
+      .insights li{margin-bottom:8px;color:var(--color-text)}
+      .actions{display:flex;gap:12px;margin-top:16px}
+      .btn{padding:10px 14px;border-radius:12px;border:none;cursor:pointer}
+      .btn-primary{background:linear-gradient(135deg, var(--color-accent-1), var(--color-accent-2));color:var(--color-surface)}
+      .btn-secondary{background:rgba(255,255,255,0.06);color:var(--color-text);border:1px solid rgba(255,255,255,0.12)}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="card">
+        <h2>Resumo da sessão</h2>
+        <div class="chips">
+          <div class="chip">Sono</div>
+          <div class="chip">Rotina</div>
+          <div class="chip">Ansiedade</div>
+        </div>
+        <ul class="insights">
+          <li>Pequenas vitórias reduziram ansiedade nos últimos dias.</li>
+          <li>Consistência na rotina noturna melhora a qualidade do sono.</li>
+        </ul>
+        <div class="actions">
+          <button class="btn btn-primary">Salvar insight</button>
+          <button class="btn">Compartilhar (opções)</button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

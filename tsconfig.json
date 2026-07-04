@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "resolveJsonModule": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "skipLibCheck": true,
+    "outDir": "dist"
+  },
+  "include": ["scripts/**/*"],
+  // NOTE: "apps" is excluded as an initial root, but scripts/agent-test.ts imports
+  // apps/web/src/lib/agent/* by relative path, so those files ARE transitively
+  // type-checked here anyway, under THESE compiler options (not apps/web/tsconfig.json's).
+  // Keep lib/agent files free of DOM types, JSX, and the "@/*" path alias, or this
+  // config will need its own "paths"/"lib" additions to keep passing.
+  "exclude": ["node_modules", "dist", "apps"]
+}

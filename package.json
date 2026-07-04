@@ -1,0 +1,22 @@
+{
+  "name": "diario-digital",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Diário digital para bem-estar mental — espelho reflexivo com IA",
+  "author": "Mario Dimov",
+  "scripts": {
+    "agent:test": "tsx scripts/agent-test.ts",
+    "dev": "npm run dev --prefix apps/web",
+    "build": "npm run build --prefix apps/web",
+    "typecheck": "tsc --noEmit -p tsconfig.json && npm run typecheck --prefix apps/web",
+    "test": "npm test --prefix apps/web"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.110.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.7.0"
+  }
+}

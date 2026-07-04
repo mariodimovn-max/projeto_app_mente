@@ -1,0 +1,14 @@
+.synthesis-card {
+  background: rgba(255,255,255,0.05);
+  border-radius: 20px;
+  padding: 22px;
+  box-shadow: 0 18px 44px rgba(0,0,0,0.30);
+  max-width: 460px;
+  border: 1px solid var(--color-border);
+}
+.synthesis-card h3 { margin: 0 0 10px 0; font-size: var(--fs-lg); color: var(--color-text); }
+.synthesis-card ul { margin: 10px 0 16px 18px; color: var(--color-text); }
+.synthesis-card .actions { display:flex; gap:12px }
+.btn { padding:10px 14px; border-radius:14px; border:none; cursor:pointer; font-weight:600 }
+.btn-primary { background: linear-gradient(135deg, var(--color-accent-1), var(--color-accent-2)); color: var(--color-surface) }
+.btn-ghost { background: rgba(255,255,255,0.05); color: var(--color-text); border: 1px solid rgba(255,255,255,0.12) }
