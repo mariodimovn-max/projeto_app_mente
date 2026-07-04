@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Design System Examples</title>
+    <link rel="stylesheet" href="../variables.css">
+    <style>
+      body{font-family:var(--font-sans);background:radial-gradient(circle at top left, rgba(79,209,202,0.12), transparent 20%), linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.18)), var(--color-bg);padding:36px;color:var(--color-text);min-height:100vh;position:relative;}
+      body::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(0deg, transparent 0 32px, rgba(255,255,255,0.03) 32px 33px), repeating-linear-gradient(90deg, transparent 0 32px, rgba(255,255,255,0.03) 32px 33px);opacity:0.08;pointer-events:none;}
+      h1,h3{color:var(--color-text)}
+      .grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;max-width:1100px;margin:0 auto;position:relative;z-index:1}
+      .panel{background:rgba(21,27,37,0.96);padding:22px;border-radius:20px;border:1px solid var(--color-border);box-shadow:0 18px 40px rgba(0,0,0,0.28)}
+      pre{color:var(--color-text);background:rgba(255,255,255,0.06);padding:14px;border-radius:14px;overflow-x:auto}
+    </style>
+  </head>
+  <body>
+    <h1>Design System — Examples</h1>
+    <div class="grid">
+      <div class="panel">
+        <h3>Mic Button</h3>
+        <iframe src="../components/mic-button.html" style="width:100%;height:180px;border:0"></iframe>
+      </div>
+      <div class="panel">
+        <h3>Transcript Block</h3>
+        <iframe src="../components/transcript-block.html" style="width:100%;height:160px;border:0"></iframe>
+      </div>
+      <div class="panel">
+        <h3>Synthesis Card</h3>
+        <iframe src="../components/synthesis-card.html" style="width:100%;height:220px;border:0"></iframe>
+      </div>
+      <div class="panel">
+        <h3>Tokens (CSS)</h3>
+        <pre style="white-space:pre-wrap">@import "../variables.css";</pre>
+      </div>
+    </div>
+  </body>
+</html>

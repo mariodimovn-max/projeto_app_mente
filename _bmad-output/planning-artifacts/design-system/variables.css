@@ -1,0 +1,34 @@
+:root {
+  /* Colors */
+  --color-bg: #0C1118;
+  --color-surface: #151B25;
+  --color-surface-alt: #1F2836;
+  --color-border: rgba(255,255,255,0.08);
+  --color-text: #E7F1FF;
+  --color-muted: #9FB1C3;
+  --color-accent-1: #4FD1CA;
+  --color-accent-2: #6B95D6;
+  --color-cta: #7C63FF;
+  --color-error: #F1634D;
+  --color-success: #5EC3A5;
+
+  /* Typography */
+  --font-sans: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  --fs-xxl: 30px;
+  --fs-xl: 24px;
+  --fs-lg: 18px;
+  --fs-md: 16px;
+  --fs-sm: 14px;
+  --lh-body: 1.6;
+
+  /* Layout */
+  --content-max-width: 760px;
+  --space-xx: 8px;
+  --space-x: 12px;
+  --space: 22px;
+  --space-lg: 32px;
+}
+
+body { background: var(--color-bg); font-family: var(--font-sans); color: var(--color-text); margin: 0; padding: 36px; }
+.container { max-width: var(--content-max-width); margin: 0 auto; }

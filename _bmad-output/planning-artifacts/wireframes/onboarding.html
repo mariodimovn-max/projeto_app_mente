@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Wireframe — Onboarding</title>
+    <link rel="stylesheet" href="../design-system/variables.css">
+    <style>
+      body{background:radial-gradient(circle at top left, rgba(79,209,202,0.14), transparent 24%), linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.2)), var(--color-bg);font-family:var(--font-sans);padding:36px;color:var(--color-text);position:relative;min-height:100vh;}
+      body::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(0deg, transparent 0 24px, rgba(255,255,255,0.04) 24px 25px), repeating-linear-gradient(90deg, transparent 0 24px, rgba(255,255,255,0.04) 24px 25px);opacity:0.08;pointer-events:none;}
+      .card{position:relative;z-index:1;max-width:520px;margin:0 auto;background:rgba(21,27,37,0.96);padding:32px;border-radius:24px;box-shadow:0 18px 50px rgba(0,0,0,0.45);border:1px solid var(--color-border)}
+      h1{font-size:var(--fs-xl);margin:0 0 12px;color:var(--color-text);letter-spacing:0.02em}
+      p{font-size:var(--fs-md);color:var(--color-muted);line-height:var(--lh-body)}
+      .steps{display:flex;gap:12px;margin:24px 0}
+      .steps div{background:rgba(255,255,255,0.04);padding:12px 16px;border-radius:16px;color:var(--color-text);border:1px solid rgba(255,255,255,0.08);backdrop-filter:blur(4px)}
+      .btn{padding:12px 16px;border-radius:14px;border:none;cursor:pointer;font-weight:600}
+      .btn-primary{background:linear-gradient(135deg, var(--color-accent-1), var(--color-accent-2));color:var(--color-surface)}
+      .btn-secondary{background:rgba(255,255,255,0.06);color:var(--color-text);border:1px solid rgba(255,255,255,0.12)}
+      .privacy{font-size:13px;color:var(--color-muted);margin-top:16px}
+    </style>
+  </head>
+  <body>
+    <div class="card" role="main">
+      <h1>Converse. Reflect. Notice.</h1>
+      <p>Este protótipo ajuda você a explorar pensamentos e gerar pequenos insights. Não é terapia.</p>
+      <div class="steps">
+        <div><strong>1</strong> Propósito</div>
+        <div><strong>2</strong> Privacidade</div>
+        <div><strong>3</strong> Começar</div>
+      </div>
+      <p><strong>Privacidade:</strong> Transcrições armazenadas localmente e criptografadas. Somente você pode acessá-las.</p>
+      <div style="display:flex;gap:12px;margin-top:18px">
+        <button class="btn btn-primary" onclick="location.href='recording.html'">Começar sessão</button>
+        <button class="btn" onclick="alert('Como usamos seus dados: apenas transcrições, sem compartilhamento.')">Como usamos seus dados</button>
+      </div>
+      <div class="privacy">Se estiver em risco imediato, ligue para os serviços de emergência locais.</div>
+    </div>
+  </body>
+</html>

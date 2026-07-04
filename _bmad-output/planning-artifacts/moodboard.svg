@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <style>
+    .title { font: 700 28px 'Inter', Arial, sans-serif; fill: #E7F1FF }
+    .h2 { font: 600 18px 'Inter', Arial, sans-serif; fill: #E7F1FF }
+    .body { font: 400 16px 'Inter', Arial, sans-serif; fill: #E7F1FF }
+    .mono { font: 400 13px 'Roboto Mono', monospace; fill: #E7F1FF }
+  </style>
+  <rect width="1200" height="800" fill="#0C1118" />
+
+  <!-- Header -->
+  <text x="40" y="56" class="title">Moodboard — MVP visual</text>
+  <text x="40" y="86" class="body">Paleta, tipografia e exemplos rápidos para orientar o design system</text>
+
+  <!-- Palette swatches -->
+  <g transform="translate(40,120)">
+    <rect width="140" height="80" fill="#151B25" stroke="#5EC3A5" rx="12"/>
+    <text x="8" y="50" class="mono">#151B25</text>
+    <g transform="translate(160,0)">
+      <rect width="140" height="80" fill="#1F2836" stroke="#5EC3A5" rx="12"/>
+      <text x="8" y="50" class="mono">#1F2836</text>
+    </g>
+    <g transform="translate(320,0)">
+      <rect width="140" height="80" fill="#4FD1CA" rx="12"/>
+      <text x="8" y="50" class="mono" fill="#0C1118">#4FD1CA</text>
+    </g>
+    <g transform="translate(480,0)">
+      <rect width="140" height="80" fill="#6B95D6" rx="12"/>
+      <text x="8" y="50" class="mono" fill="#0C1118">#6B95D6</text>
+    </g>
+    <g transform="translate(640,0)">
+      <rect width="140" height="80" fill="#7C63FF" rx="12"/>
+      <text x="8" y="50" class="mono" fill="#FFFFFF">#7C63FF</text>
+    </g>
+    <g transform="translate(800,0)">
+      <rect width="140" height="80" fill="#F1634D" rx="12"/>
+      <text x="8" y="50" class="mono" fill="#FFFFFF">#F1634D</text>
+    </g>
+    <g transform="translate(960,0)">
+      <rect width="140" height="80" fill="#5EC3A5" rx="12"/>
+      <text x="8" y="50" class="mono" fill="#0C1118">#5EC3A5</text>
+    </g>
+  </g>
+
+  <!-- Typography sample -->
+  <g transform="translate(40,220)">
+    <text class="h2">Typography</text>
+    <text x="0" y="36" class="title">Inter — Heading 28</text>
+    <text x="0" y="70" class="h2">Inter — H2 18 / H3 16</text>
+    <text x="0" y="100" class="body">Inter — Body 16px — Lorem ipsum dolor sit amet, consectetur adipiscing elit. Line-height confortável para leitura mobile.</text>
+  </g>
+
+  <!-- Mic button + waveform -->
+  <g transform="translate(760,220)">
+    <text class="h2">Mic & Waveform</text>
+    <circle cx="100" cy="80" r="40" fill="url(#micGradient)"/>
+    <text x="84" y="88" class="mono" fill="#0C1118">●</text>
+    <rect x="30" y="130" width="140" height="24" rx="4" fill="#151B25" stroke="#5EC3A5"/>
+    <g fill="#6B95D6">
+      <rect x="40" y="136" width="6" height="12"/>
+      <rect x="52" y="134" width="6" height="16"/>
+      <rect x="64" y="132" width="6" height="20"/>
+      <rect x="76" y="135" width="6" height="17"/>
+      <rect x="88" y="138" width="6" height="14"/>
+      <rect x="100" y="131" width="6" height="21"/>
+      <rect x="112" y="136" width="6" height="12"/>
+      <rect x="124" y="134" width="6" height="16"/>
+    </g>
+    <text x="30" y="176" class="mono">Recording — waveform visual (placeholder)</text>
+  </g>
+
+  <!-- Synthesis card -->
+  <g transform="translate(40,360)">
+    <rect width="420" height="140" rx="18" fill="#151B25" stroke="#5EC3A5"/>
+    <text x="20" y="36" class="h2">Synthesis — 2 key insights</text>
+    <text x="20" y="68" class="body">• Insight 1: Foco em pequenas vitórias</text>
+    <text x="20" y="92" class="body">• Insight 2: Padrão de sono influenciado por rotina noturna</text>
+    <rect x="260" y="96" width="140" height="36" rx="10" fill="#7C63FF"/>
+    <text x="290" y="118" class="body" fill="#FFFFFF">Salvar insight</text>
+  </g>
+
+  <!-- Footer notes -->
+  <text x="40" y="540" class="mono">Generated: moodboard seed — colors & components for Step 6</text>
+
+  <defs>
+    <linearGradient id="micGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4FD1CA"/>
+      <stop offset="100%" stop-color="#6B95D6"/>
+    </linearGradient>
+  </defs>
+</svg>

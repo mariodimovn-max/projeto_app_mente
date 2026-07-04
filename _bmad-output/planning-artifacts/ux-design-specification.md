@@ -1,10 +1,10 @@
 ---
-stepsCompleted: [1, 2, 3]
+stepsCompleted: [1, 2, 3, 4]
 inputDocuments: ["d:\\projeto_app_mente\\_bmad-output\\planning-artifacts\\prd.md"]
 projectName: "Aplicativo de Diário Digital para Bem-Estar Mental"
 designPhase: "MVP"
-documentVersion: "3.0"
-lastUpdated: "2026-06-07"
+documentVersion: "4.0"
+lastUpdated: "2026-06-27"
 strategicPriorities:
   northStarPersona: "Ana (Autoconhecimento + Propósito)"
   priorityTriangle: "Valores Estratégicos (Privacidade, Honestidade, Profundidade)"
@@ -356,15 +356,237 @@ Não é chat superficial. Não é questionário. É exploração estruturada mas
 
 ---
 
-## Próximas Fases
+## Desired Emotional Response
 
-1. ✅ **Step 1-3:** Discovery, Prioridades Estratégicas, Core Experience
-2. **Step 4:** Emotional Response (ton, feedback, sensações)
-3. **Step 5:** Design Inspiration (estudar apps similares)
-4. **Step 6:** Design System (cores, tipografia, componentes)
-5. **Step 7:** UX Patterns (histórico, resumos, indicadores)
-6. **Step 8:** Accessibility (WCAG 2.1 AA)
+### Primary Emotional Goal
+
+**"Descoberta Genuína"**
+
+O usuário deve sair de cada sessão com a sensação de ter descoberto algo real sobre si mesmo. Não é alívio momentâneo ou validação rasa. É o sentimento de "finalmente entendo algo que antes eu não conseguia articular".
+
+Essa sensação de descoberta é o que cria vontade de voltar—não por vício, mas por curiosidade contínua de entender mais profundamente a si mesmo.
+
+### Emotional Journey Mapping
+
+**Momento 1: Primeiro Contato (0-30 segundos)**
+- **Emoção Desejada:** Acolhimento na expectativa de jornada
+- **Tradução:** Usuário sente "este é um espaço seguro, e há algo a explorar aqui"
+- **Design Implication:** Visual deve comunicar segurança + possibilidade (não vazio, não intrusivo)
+
+**Momento 2: Abertura da Conversa (30 seg - 2 min)**
+- **Emoção Desejada:** Curiosidade + confiança emergente
+- **Tradução:** Agente faz pergunta que parece simples mas que convida para profundidade
+- **Design Implication:** Abertura adapta-se ao usuário (não template); sensação de "ele realmente quer entender"
+
+**Momento 3: Exploração (2-15 min)**
+- **Emoção Desejada:** Emoção + curiosidade
+- **Tradução:** Usuário está engajado, explorando, às vezes vulnerável, às vezes reflexivo
+- **Design Implication:** Interface desaparece; foco é conteúdo; agente valida e aprofunda
+
+**Momento 4: Descoberta (8-18 min, dependendo)**
+- **Emoção Desejada:** "Aha!" moment — clareza súbita + esclarecimento
+- **Tradução:** Agente nomeia padrão que usuário não conseguia ver
+- **Design Implication:** Momento é destacado (não visual explosivo, mas clareza narrativa)
+
+**Momento 5: Síntese (15-20 min)**
+- **Emoção Desejada:** Gratidão + esclarecimento + alívio
+- **Tradução:** Usuário sente que conversa foi significativa; há closure mas não conclusão (há mais para explorar)
+- **Design Implication:** Síntese é clara, acionável, abre para próxima exploração
+
+**Momento 6: Encerramento & Retorno**
+- **Emoção Desejada:** Desejo de voltar + reconhecimento
+- **Tradução:** Usuário sai pensando "tenho mais perguntas, quero voltar amanhã"
+- **Design Implication:** Reconhecimento é personalizado (não genérico); não pareça concluído
+
+### Micro-Emotions (Nuances)
+
+| Micro-Emoção | Por quê Importa | Design Implication |
+|---|---|---|
+| **Segurança** | Usuário só se abre se confia que é privado | Privacidade comunicada visualmente + no copy |
+| **Entendimento** | Usuário quer sentir que agente *realmente* entende | Respostas específicas (não templates) |
+| **Validação** | Sentir que suas emoções/experiências são "normais" | Agente normaliza sem diminuir |
+| **Autonomia** | Não ser "dito" o que fazer | Agente oferece direção, não prescrição |
+| **Esperança** | Sentir que mudança é possível | Reconhecimento de progresso pequeno |
+| **Alívio** | Tensão de não entender-se é reduzida | Síntese libera a mente (clareza = alívio) |
+
+**Emoções a EVITAR a Todo Custo:**
+- ❌ **Julgamento:** Usuário nunca deve sentir criticado
+- ❌ **Superficialidade:** Resposta vazia = morte do app
+- ❌ **Invasão:** Nunca parecer que dados são roubados/usados
+- ❌ **Dependência Terapêutica:** Clareza que não substitui profissional
+- ❌ **Incompetência:** Erros técnicos quebram confiança rapidamente
+- ❌ **Isolamento:** Agente deve comunicar "você não está sozinho nisso"
+
+### Design Implications
+
+**1. Ton de Voz**
+- **Abordagem:** Profissional mas Caloroso (confiável + acolhedor)
+- **Manifestação:**
+   - Linguagem clara, sem jargão
+   - Referências pessoais ("Você mencionou...")
+   - Vulnerabilidade apropriada (agente admite quando não tem resposta)
+   - Respeito absoluto (nunca sarcasmo, sempre dignidade)
+
+**Exemplo BOM:**
+"Você disse que se sente preso. Quando você fala sobre isso, há uma tensão entre querer mudar mas ter medo. Essa tensão é real. Vale a pena explorar o que especificamente assusta?"
+
+**Exemplo RUIM:**
+"Deve ser frustrante se sentir preso! Mas não se preocupe, você consegue! 😊"
+
+**2. Feedback Moments**
+- **Abordagem:** Variável conforme situação (não template)
+- **Adaptações:**
+   - Primeira descoberta: Enfatiza o "aha"
+   - Confirmação de padrão: Aprofunda reflexão
+   - Momento difícil: Valida dor, abre para exploração
+   - Progresso: Reconhece sem minimizar esforço
+  
+**Exemplo:**
+- Se usuário descobre algo novo: "Isso que você acabou de dizer, você tinha considerado isso dessa forma antes?"
+- Se usuário confirma padrão: "Então toda vez que X acontece, você tem essa reação. Vale a pena investigar por que X te dispara assim?"
+- Se usuário está vulnerável: "Isso é corajoso trazer. Há algo mais que você quer explorar sobre isso?"
+
+**3. Visual Design**
+- **Paleta:** Acolhedor + Inspirador (não ultra minimalista, tem presença)
+- **Cores sugeridas:** Tons naturais, aquecidos (não clinicamente branco)
+- **Espaçamento:** Generoso (breathing room, não aperto)
+- **Tipografia:** Legível, acessível, mas elegante (comunica qualidade)
+- **Elementos:** Sutil = conforto (não distrair, apenas apoiar)
+
+**4. Loading/Thinking Moments**
+- **Abordagem:** Indicador reconfortante (animação suave, sensação de presença)
+- **Manifestação:**
+   - Enquanto agente pensa: Indicador visual sutil (pulsação suave? movimento orgânico?)
+   - Opcionalmente: "Estou pensando sobre o que você trouxe..."
+   - Comunicar presença (não vazio)
+   - Duração real (não fake-delay)
+
+**5. Error Handling**
+- **Abordagem:** Honesto mas Reconfortante
+- **Manifestação:**
+   - Se transcrição falha: "Não consegui entender bem. Pode tentar novamente?"
+   - Se conexão cai: "Perdemos conexão, mas estou aqui. Retoma quando quiser"
+   - Se agente falha: "Isso não faz sentido do que entendi. Pode explicar de novo?"
+   - Nunca blame user, nunca técnico demais, sempre reconfortante
+
+### Emotional Design Principles
+
+1. **Autenticidade Antes de Perfeição**
+   - Melhor resposta honesta mas imperfeita que resposta polida mas genérica
+   - Agente admite limite ("Não tenho certeza, mas pode ser...") vs pretende onisciência
+
+2. **Variação Conforme Contexto**
+   - Não há "feedback template" que funciona para todos os momentos
+   - Abertura tímido ≠ Abertura desinibido
+   - Terceira sessão ≠ Primeira sessão
+
+3. **Reconhecimento Sem Celebração**
+   - Reconhece descoberta genuína sem parecer "parabéns por chorar"
+   - Celebra insight, não quantidade
+
+4. **Esperança Realista**
+   - Comunica que entendimento leva a mudança possível (não garantida)
+   - Valoriza jornada, não destino
+
+5. **Privacidade = Segurança Emocional**
+   - Cada aspecto visual/funcional comunica "seus dados são sagrados"
+   - Não tem sensação de "vigilância", tem sensação de "proteção"
+
+### Critical Emotional Success Moments
+
+**Momento #1: Primeira Abertura Adapta-se**
+- **Sucesso:** Usuário sente "ele entendeu meu tipo"
+- **Fracasso:** Usuário sente "é um template genérico"
+
+**Momento #2: Primeiro Padrão Identificado**
+- **Sucesso:** Usuário tem "aha!" + "como não percebi isso antes?"
+- **Fracasso:** Usuário pensa "isso é óbvio, não me ajuda"
+
+**Momento #3: Síntese Honra a Conversa**
+- **Sucesso:** Usuário sente "ele realmente me entendeu"
+- **Fracasso:** Usuário sente "é só um resumo de palavras-chave"
+
+**Momento #4: Vontade de Voltar**
+- **Sucesso:** Usuário dorme pensando "amanhã quero explorar mais"
+- **Fracasso:** Usuário pensa "já explorei, fim"
 
 ---
 
 *UX Design constructed using BMAD collaborative methodology. Strategic priorities defined. Core experience validated with audio/text input.*
+
+## Step 5 — Design Inspiration
+
+### Objetivo
+
+Reunir referências de produtos reais que resolvem problemas semelhantes e extrair padrões concretos que podemos prototipar rapidamente no MVP. Foco: experiência de conversação, entrada de áudio, síntese de sessão, onboarding claro e sinais de privacidade.
+
+### Apps & Produtos para Estudo (prioridade)
+
+- **Calm / Headspace** — Onboarding orientado por propósito, paleta calmante, micro-animações de transição, foco em ritual diário.
+- **Wysa / Replika** — Conversação empática, tom de voz personalizado, manuseio de tópicos sensíveis, modelos de fallback para crise.
+- **Reflectly / Jour / Daylio** — Diário orientado por prompts, visuais de progresso, resumos periódicos fáceis de consumir.
+- **Notion / Roam (UX patterns)** — Histórico e navegação por notas, busca rápida, linkagem de contextos (bom exemplo para memórias de conversa).
+- **Otter.ai / Descript** — UX de transcrição de áudio, visualização de waveform, edição de transcrição (para referência técnica).
+- **Bear / Ulysses (microcopy and breathing room)** — Tipografia e espaçamento que favorecem leitura reflexiva.
+
+### Padrões de UX a Reutilizar / Prototipar
+
+- **Onboarding claro e breve**: tela única com 3 pontos: propósito do app, privacidade e não-terapia; botão "Começar" direto.
+- **Chat/Conversa centrada no conteúdo**: bolhas grandes, margem generosa, timestamp discreto, opção persistente de transcrição/áudio.
+- **Mic + Waveform**: botão de gravação sempre presente; mostrar waveform sutil durante gravação para confirmar que áudio foi capturado.
+- **Transcrição instantânea**: inline editável (permitir correção rápida antes de enviar ao agente).
+- **Synthesis card**: resultado da sessão apresentado como um cartão destacável (título curto, 2-3 bullets de insight, link "Explorar mais").
+- **Resumo semanal/mensal**: cartão temporal com temas principais e sentimento dominante (visual simples: chips + linha do tempo).
+- **Privacidade UI**: selo visível de criptografia, CTA "Como seus dados são usados" no rodapé do chat, fluxo simples para deletar conta/dados.
+- **Loading humane**: animação orgânica + copy reconfortante "Pensando sobre o que você disse..."
+- **Error handling gentle**: mensagens curtas, reconfortantes e opção fácil para regravar/reenviar.
+
+### Visual / Interaction Inspiration
+
+- Paleta: tons naturais aquecidos (bege, oliva suave, azul-petróleo suave) — evite brancos estéreis.
+- Tipografia: fonte com x-height confortável (legibilidade em mobile à noite).
+- Componentes: chat single-column, fixed mic FAB, bottom sheet para resumo, card-based timeline.
+- Motion: micro-interactions suaves (200-350ms) e transições com easing orgânico.
+
+### Research Tasks (prático)
+
+1. Capturar screenshots / gravações dos flows: onboarding, gravação de áudio, chat, síntese de sessão (5 produtos listados acima).
+2. Extrair microcopy (20-30 frases) para inspiração — onboarding, confirmações, disclaimers de privacidade, síntese.
+3. Criar um moodboard visual (paleta + tipografia + exemplos de UI) — 1 página simples para guiar a implementação.
+
+### Resultado Esperado para o MVP
+
+- Um conjunto de padrões concretos e replicáveis que permitam criar wireframes de baixa fidelidade em 1-2 dias.
+- Microcopy inicial pronta para testes com 5-10 beta users.
+- Moodboard que alimenta a Step 6 (Design System).
+
+---
+
+*Próximo: Step 6 — construir o Design System baseado nessas inspirações.*
+
+### Collected Microcopy & Patterns (extraction)
+
+Exemplos curtos de microcopy e padrões observados nas referências pesquisadas (úteis para onboarding, confirmações, disclaimers e estados de gravação/transcrição):
+
+- Headspace: "Unpack what’s on your mind with Ebb, our empathetic AI companion." / "Always-there support" / "By signing up, you’re agreeing to receive marketing emails" (privacy CTA).
+- Calm: "We're here to help you feel better." / "Calm your mind. Change your life." / "Start your free trial of Calm Premium."
+- Descript: "Text-based editing" / "You’ll get an instant transcript" / "Edit your video by editing the text." (transcription + edit UX pattern).
+- Otter.ai: "See the words, as they’re spoken." / "Get instant summaries you can trust." / "Your AI notetaker is now also your Conversational Knowledge Engine." (live transcript + summaries pattern).
+- Daylio: "Keep a diary and capture your day without writing down a single word!" / "MAX PRIVACY" / "Lock your diary and make it private." (privacy-first journaling microcopy).
+- Ulysses / Bear: Minimal, focus-first microcopy: "distraction-free", "built-in proofreader", emphasis on reading comfort and typography.
+
+Microcopy patterns to reuse
+
+- Onboarding: 3-point single-screen flow: Purpose / Privacy / What to expect — each with a 6–12 word line and a soft CTA.
+- Recording: clear affordance + live feedback: "Recording..." + subtle waveform + small cancel/redo action.
+- Transcription: editable inline transcript with a small hint: "Tap any word to edit" and a lightweight "Save transcript" CTA.
+- Synthesis: card headline + 2–3 bullets + action "Explore more" or "Save insight".
+- Privacy reassurance: short badge + link: "Transcriptions stored locally and encrypted — Learn more".
+
+UX element notes
+
+- Waveform + mic FAB: Descript and Otter show that visible audio feedback increases trust during capture.
+- Inline-edit transcripts: reduces friction for users who want to correct recognition errors before analysis.
+- Gentle crisis language: apps like Wysa/Replika (AI companions) use fallback copy and immediate human resources links — include a brief warning + "If you are in danger" CTA in onboarding and footer.
+
+Status: research excerpts captured; next: compile screenshots and build a one-page moodboard for Step 6.

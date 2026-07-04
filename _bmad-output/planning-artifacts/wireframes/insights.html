@@ -1,0 +1,96 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Wireframe — Insights</title>
+    <link rel="stylesheet" href="../design-system/variables.css">
+    <style>
+      body{background:radial-gradient(circle at top right, rgba(107,149,214,0.15), transparent 24%), linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.15)), var(--color-bg);color:var(--color-text);font-family:var(--font-sans);padding:24px;margin:0;position:relative;min-height:100vh}
+      body::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(0deg, transparent 0 30px, rgba(255,255,255,0.03) 30px 31px), repeating-linear-gradient(90deg, transparent 0 30px, rgba(255,255,255,0.03) 30px 31px);opacity:0.08;pointer-events:none;}
+      .page{position:relative;z-index:1;max-width:840px;margin:0 auto}
+      .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+      .header h1{margin:0;font-size:var(--fs-xl);letter-spacing:0.02em}
+      .header p{margin:4px 0 0;color:var(--color-muted)}
+      .card{background:rgba(21,27,37,0.96);border:1px solid var(--color-border);border-radius:18px;padding:24px;box-shadow:0 16px 40px rgba(0,0,0,0.32);margin-bottom:24px}
+      .chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+      .chip{background:rgba(255,255,255,0.06);color:var(--color-text);padding:8px 12px;border-radius:999px;font-size:13px}
+      .section-title{font-size:var(--fs-lg);margin:0 0 12px 0}
+      .insight-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:20px;margin-bottom:14px;box-shadow:0 10px 24px rgba(0,0,0,0.14)}
+      .insight-card h2{margin:0 0 10px 0;font-size:var(--fs-md);color:var(--color-text)}
+      .insight-card p{margin:0;color:var(--color-muted);line-height:var(--lh-body)}
+      .insight-card strong{color:var(--color-text)}
+      .actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:18px}
+      .btn{padding:10px 14px;border-radius:12px;border:none;cursor:pointer;font-size:var(--fs-sm)}
+      .btn-primary{background:linear-gradient(135deg, var(--color-accent-1), var(--color-accent-2));color:var(--color-surface)}
+      .btn-secondary{background:rgba(255,255,255,0.08);color:var(--color-text);border:1px solid rgba(255,255,255,0.1)}
+      .timeline{margin-top:24px}
+      .timeline-item{display:flex;align-items:flex-start;gap:14px;padding:14px 0;border-top:1px solid rgba(255,255,255,0.06)}
+      .timeline-item:first-child{border-top:none}
+      .timeline-marker{width:12px;height:12px;border-radius:50%;background:var(--color-accent-1);margin-top:6px}
+      .timeline-content{color:var(--color-muted)}
+      .timeline-content strong{color:var(--color-text)}
+      .note{margin-top:28px;font-size:13px;color:var(--color-muted);line-height:1.5}
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="header">
+        <div>
+          <h1>Insights</h1>
+          <p>Resumo dos temas mais significativos e padrões detectados em suas últimas sessões.</p>
+        </div>
+        <button class="btn btn-secondary">Histórico</button>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
+          <div>
+            <p class="section-title">Síntese semanal</p>
+            <p style="margin:0;color:var(--color-muted)">3 sessões, 4 temas principais, 2 padrões emergentes.</p>
+          </div>
+          <button class="btn btn-primary">Salvar insights</button>
+        </div>
+        <div class="chips">
+          <div class="chip">Sono</div>
+          <div class="chip">Rotina</div>
+          <div class="chip">Propósito</div>
+          <div class="chip">Autocrítica</div>
+        </div>
+      </div>
+
+      <div class="section-title">Insights recentes</div>
+
+      <div class="insight-card">
+        <h2>Você tende a desacelerar quando fala em futuro.</h2>
+        <p><strong>Observação:</strong> Nas últimas sessões, seu discurso ficou mais lento ao mencionar <strong>planos</strong> e <strong>medos</strong>. Isso sugere que a incerteza emocional está consumindo energia.</p>
+      </div>
+
+      <div class="insight-card">
+        <h2>A rotina noturna tem relação com seu humor.</h2>
+        <p><strong>Observação:</strong> Seus relatos de ansiedade costumam acontecer após noites sem descanso claro. Vale explorar pequenas mudanças antes de dormir.</p>
+      </div>
+
+      <div class="insight-card">
+        <h2>Você valoriza clareza, mas evita verdades duras.</h2>
+        <p><strong>Observação:</strong> Há um padrão de preferência por respostas suaves, mesmo quando o tema central é desconfortável. Permitir mais autoquestionamento pode abrir novas descobertas.</p>
+      </div>
+
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-marker"></div>
+          <div class="timeline-content"><strong>Hoje, 22:10</strong> — Revisão do padrão de propósito. Síntese disponível.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-marker"></div>
+          <div class="timeline-content"><strong>Ontem, 21:05</strong> — Conversa sobre sono e hábito noturno.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-marker"></div>
+          <div class="timeline-content"><strong>2 dias atrás, 20:30</strong> — Reflexão sobre comparação social e autocrítica.</div>
+        </div>
+      </div>
+
+      <div class="note">Dica: toque em qualquer insight para abri-lo e revisar sua sessão original. As notas são privadas e só você pode acessá-las.</div>
+    </div>
+  </body>
+</html>
