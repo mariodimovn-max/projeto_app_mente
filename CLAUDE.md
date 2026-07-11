@@ -140,7 +140,8 @@ Aplicativo de diário digital que funciona como **espelho reflexivo** — não t
 - [x] Arquitetura técnica — completa e validada (`_bmad-output/planning-artifacts/architecture.md`)
 - [x] Épicos e histórias — 5 épicos, 30 histórias, validados (`_bmad-output/planning-artifacts/epics.md`)
 - [x] Setup do repositório — Story 1.1 concluída: `apps/web` inicializado com Next.js 16, scaffold antigo (`apps/mobile`/`packages/*`) removido, lógica do agente portada para `apps/web/src/lib/agent/`
-- [ ] Implementação — próxima história: Epic 1 / Story 1.2 (fundação visual e acessibilidade)
+- [x] Fundação visual e acessibilidade — Story 1.2 concluída (em review): tokens do design system carregados globalmente via `apps/web/src/styles/variables.css`, dark mode fixo, contraste validado automaticamente (`apps/web/src/lib/a11y/contrast.ts`)
+- [ ] Implementação — próxima história: Epic 1 / Story 1.3 (onboarding e aviso de não-terapia)
 
 ---
 

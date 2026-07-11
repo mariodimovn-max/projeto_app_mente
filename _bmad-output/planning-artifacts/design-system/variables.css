@@ -1,4 +1,9 @@
+/* Fonte de valores dos tokens: apps/web/src/styles/variables.css (usado pelo app real).
+   Este arquivo existe apenas para os wireframes estáticos em ../wireframes/*.html.
+   Ao alterar um valor de token em um dos dois arquivos, replicar no outro. */
 :root {
+  color-scheme: dark;
+
   /* Colors */
   --color-bg: #0C1118;
   --color-surface: #151B25;
@@ -12,14 +17,18 @@
   --color-error: #F1634D;
   --color-success: #5EC3A5;
 
-  /* Typography */
+  /* Typography
+     Tamanhos em rem (base 16px). Diferente da cópia do app, --font-sans aqui NÃO
+     referencia var(--font-inter): estes wireframes estáticos não carregam next/font,
+     então a variável nunca resolveria (e um var() não resolvido sem fallback interno
+     invalidaria a propriedade font-family inteira). */
   --font-sans: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
   --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
-  --fs-xxl: 30px;
-  --fs-xl: 24px;
-  --fs-lg: 18px;
-  --fs-md: 16px;
-  --fs-sm: 14px;
+  --fs-xxl: 1.875rem; /* 30px */
+  --fs-xl: 1.5rem;    /* 24px */
+  --fs-lg: 1.125rem;  /* 18px */
+  --fs-md: 1rem;      /* 16px */
+  --fs-sm: 0.875rem;  /* 14px */
   --lh-body: 1.6;
 
   /* Layout */
@@ -31,4 +40,4 @@
 }
 
 body { background: var(--color-bg); font-family: var(--font-sans); color: var(--color-text); margin: 0; padding: 36px; }
-.container { max-width: var(--content-max-width); margin: 0 auto; }
+.container { max-width: var(--content-max-width); margin: 0 auto; width: 100%; }
