@@ -1,6 +1,6 @@
 # Story 1.3: Onboarding e Aviso de Não-Terapia
 
-Status: planned
+Status: implemented
 
 ## Story
 
@@ -18,5 +18,5 @@ so that eu entenda o que esperar antes de começar a usar.
 
 ## Tasks / Subtasks
 
-- [ ] Criar a tela única de onboarding com os 3 pontos.
-- [ ] Garantir copy clara e CTA de entrada para autenticação.
+- [x] Criar a tela única de onboarding com os 3 pontos.
+- [x] Garantir copy clara e CTA de entrada para autenticação.
