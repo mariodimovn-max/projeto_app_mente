@@ -141,7 +141,9 @@ Aplicativo de diário digital que funciona como **espelho reflexivo** — não t
 - [x] Épicos e histórias — 5 épicos, 30 histórias, validados (`_bmad-output/planning-artifacts/epics.md`)
 - [x] Setup do repositório — Story 1.1 concluída: `apps/web` inicializado com Next.js 16, scaffold antigo (`apps/mobile`/`packages/*`) removido, lógica do agente portada para `apps/web/src/lib/agent/`
 - [x] Fundação visual e acessibilidade — Story 1.2 concluída (em review): tokens do design system carregados globalmente via `apps/web/src/styles/variables.css`, dark mode fixo, contraste validado automaticamente (`apps/web/src/lib/a11y/contrast.ts`)
-- [ ] Implementação — próxima história: Epic 1 / Story 1.3 (onboarding e aviso de não-terapia)
+- [x] Implementação — concluída: Epic 1 / Story 1.3 (onboarding e aviso de não-terapia)
+- [x] Implementação — em review: Epic 1 / Story 1.4 (aceitar convite e criar conta): clients Supabase (`apps/web/src/lib/supabase/`), fluxo `/auth/confirm` + `/auth/definir-senha` via `supabase.auth.verifyOtp`/`updateUser`, aba pública "Criar conta" removida de `/auth`. Dependências `@supabase/ssr`/`@supabase/supabase-js` adicionadas; `.env.example` documenta as variáveis necessárias — nenhum projeto Supabase real provisionado ainda neste ambiente. Nota: Next.js 16 renomeou `middleware.ts` para `proxy.ts` — relevante para a Story 1.5 (login), que ainda depende dele para refresh de sessão
+- [ ] Implementação — próxima história: Epic 1 / Story 1.5 (login com sessão persistente)
 
 ---
 
