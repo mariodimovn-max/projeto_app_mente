@@ -1,25 +1,39 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { login } from "@/lib/actions/login";
-import styles from "./page.module.css";
+import { requestPasswordReset } from "@/lib/actions/requestPasswordReset";
+import styles from "../page.module.css";
 
-export function LoginForm() {
+const SUCCESS_MESSAGE =
+  "Se existir uma conta com esse e-mail, enviamos um link para redefinir sua senha. Verifique sua caixa de entrada.";
+
+export function EsqueciSenhaForm() {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
     setSubmitting(true);
-    const result = await login(email, password);
+    const result = await requestPasswordReset(email);
     setSubmitting(false);
 
     if (result?.error) {
       setError(result.error);
+      return;
     }
+
+    setSubmitted(true);
+  }
+
+  if (submitted) {
+    return (
+      <p className={styles.subtitle} role="status">
+        {SUCCESS_MESSAGE}
+      </p>
+    );
   }
 
   return (
@@ -37,19 +51,6 @@ export function LoginForm() {
         />
       </label>
 
-      <label className={styles.field}>
-        <span>Senha</span>
-        <input
-          type="password"
-          name="password"
-          placeholder="••••••••"
-          autoComplete="current-password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          required
-        />
-      </label>
-
       {error && (
         <p className={styles.errorMessage} role="alert">
           {error}
@@ -57,7 +58,7 @@ export function LoginForm() {
       )}
 
       <button className={styles.primaryButton} type="submit" disabled={submitting}>
-        {submitting ? "Entrando..." : "Entrar"}
+        {submitting ? "Enviando..." : "Enviar link de redefinição"}
       </button>
     </form>
   );

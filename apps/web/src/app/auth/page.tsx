@@ -28,7 +28,18 @@ export default async function AuthPage({
           </p>
         )}
 
+        {erro === "link-invalido" && (
+          <p className={styles.errorMessage} role="alert">
+            Não foi possível validar seu link de redefinição de senha. Ele
+            pode ter expirado — solicite um novo abaixo.
+          </p>
+        )}
+
         <LoginForm />
+
+        <Link className={styles.secondaryLink} href="/auth/esqueci-senha">
+          Esqueci minha senha
+        </Link>
 
         <Link className={styles.secondaryLink} href="/">
           Voltar ao onboarding

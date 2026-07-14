@@ -1,6 +1,6 @@
 # Story 1.5: Login com Sessão Persistente
 
-Status: planned
+Status: in review
 
 ## Story
 
@@ -17,5 +17,5 @@ so that eu não precise reautenticar a cada visita ao app.
 
 ## Tasks / Subtasks
 
-- [ ] Criar a tela de login e o fluxo de autenticação.
-- [ ] Configurar sessão persistente e renovação de cookie.
+- [x] Criar a tela de login e o fluxo de autenticação.
+- [x] Configurar sessão persistente e renovação de cookie.
