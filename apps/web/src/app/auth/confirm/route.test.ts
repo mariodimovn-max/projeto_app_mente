@@ -45,7 +45,7 @@ describe("GET /auth/confirm", () => {
     expect(response.headers.get("location")).toBe("https://app.exemplo.com/chat");
   });
 
-  it("redireciona para /auth com erro quando o token é inválido", async () => {
+  it("redireciona para /auth com erro quando o token do convite é inválido", async () => {
     verifyOtpMock.mockResolvedValue({ error: new Error("invalid") });
     const { GET } = await import("./route");
 
@@ -70,10 +70,10 @@ describe("GET /auth/confirm", () => {
     );
   });
 
-  it("rejeita type diferente de invite mesmo com token válido", async () => {
+  it("rejeita um type não suportado mesmo com token válido", async () => {
     const { GET } = await import("./route");
     const request = new NextRequest(
-      "https://app.exemplo.com/auth/confirm?token_hash=abc123&type=recovery"
+      "https://app.exemplo.com/auth/confirm?token_hash=abc123&type=email"
     );
     const response = await GET(request);
 
@@ -124,6 +124,62 @@ describe("GET /auth/confirm", () => {
 
     expect(response.headers.get("location")).toBe(
       "https://app.exemplo.com/auth/definir-senha"
+    );
+  });
+
+  it("redireciona para /auth/redefinir-senha após verificar o link de recuperação com sucesso", async () => {
+    verifyOtpMock.mockResolvedValue({ error: null });
+    const { GET } = await import("./route");
+
+    const request = new NextRequest(
+      "https://app.exemplo.com/auth/confirm?token_hash=xyz789&type=recovery"
+    );
+    const response = await GET(request);
+
+    expect(verifyOtpMock).toHaveBeenCalledWith({
+      type: "recovery",
+      token_hash: "xyz789",
+    });
+    expect(response.headers.get("location")).toBe(
+      "https://app.exemplo.com/auth/redefinir-senha"
+    );
+  });
+
+  it("respeita o parâmetro next informado no link de recuperação", async () => {
+    verifyOtpMock.mockResolvedValue({ error: null });
+    const { GET } = await import("./route");
+
+    const request = new NextRequest(
+      "https://app.exemplo.com/auth/confirm?token_hash=xyz789&type=recovery&next=/chat"
+    );
+    const response = await GET(request);
+
+    expect(response.headers.get("location")).toBe("https://app.exemplo.com/chat");
+  });
+
+  it("redireciona para /auth com erro de link inválido quando o token de recuperação é inválido", async () => {
+    verifyOtpMock.mockResolvedValue({ error: new Error("invalid") });
+    const { GET } = await import("./route");
+
+    const request = new NextRequest(
+      "https://app.exemplo.com/auth/confirm?token_hash=bad&type=recovery"
+    );
+    const response = await GET(request);
+
+    expect(response.headers.get("location")).toBe(
+      "https://app.exemplo.com/auth?erro=link-invalido"
+    );
+  });
+
+  it("redireciona para /auth com erro de link inválido (não convite-inválido) quando falta o token_hash de um link de recuperação", async () => {
+    const { GET } = await import("./route");
+
+    const request = new NextRequest("https://app.exemplo.com/auth/confirm?type=recovery");
+    const response = await GET(request);
+
+    expect(verifyOtpMock).not.toHaveBeenCalled();
+    expect(response.headers.get("location")).toBe(
+      "https://app.exemplo.com/auth?erro=link-invalido"
     );
   });
 });

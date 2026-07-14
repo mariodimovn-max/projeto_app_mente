@@ -41,4 +41,16 @@ describe("setPassword", () => {
     });
     expect(redirectMock).not.toHaveBeenCalled();
   });
+
+  it("usa a mensagem de erro customizada informada pelo chamador, em vez do texto padrão de ativação", async () => {
+    updateUserMock.mockResolvedValue({ error: new Error("fail") });
+    const { setPassword } = await import("./setPassword");
+
+    const result = await setPassword("senha1234", "Não foi possível salvar sua nova senha agora. Tente novamente.");
+
+    expect(result).toEqual({
+      error: "Não foi possível salvar sua nova senha agora. Tente novamente.",
+    });
+    expect(redirectMock).not.toHaveBeenCalled();
+  });
 });

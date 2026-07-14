@@ -18,10 +18,9 @@ export async function createClient() {
               cookieStore.set(name, value, options)
             );
           } catch (error) {
-            // Sem proxy.ts de refresh de sessão ainda (Story 1.5) — se isto for
-            // chamado a partir de um Server Component, cookies não podem ser
-            // gravados e o erro é esperado. Logamos para não mascarar outras
-            // falhas reais (ex.: opções de cookie inválidas).
+            // Server Components não podem gravar cookies (a renovação de sessão
+            // acontece em proxy.ts) — o erro é esperado nesse caso. Logamos para
+            // não mascarar outras falhas reais (ex.: opções de cookie inválidas).
             console.error("Falha ao gravar cookies de sessão do Supabase:", error);
           }
         },

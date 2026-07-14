@@ -142,8 +142,10 @@ Aplicativo de diário digital que funciona como **espelho reflexivo** — não t
 - [x] Setup do repositório — Story 1.1 concluída: `apps/web` inicializado com Next.js 16, scaffold antigo (`apps/mobile`/`packages/*`) removido, lógica do agente portada para `apps/web/src/lib/agent/`
 - [x] Fundação visual e acessibilidade — Story 1.2 concluída (em review): tokens do design system carregados globalmente via `apps/web/src/styles/variables.css`, dark mode fixo, contraste validado automaticamente (`apps/web/src/lib/a11y/contrast.ts`)
 - [x] Implementação — concluída: Epic 1 / Story 1.3 (onboarding e aviso de não-terapia)
-- [x] Implementação — em review: Epic 1 / Story 1.4 (aceitar convite e criar conta): clients Supabase (`apps/web/src/lib/supabase/`), fluxo `/auth/confirm` + `/auth/definir-senha` via `supabase.auth.verifyOtp`/`updateUser`, aba pública "Criar conta" removida de `/auth`. Dependências `@supabase/ssr`/`@supabase/supabase-js` adicionadas; `.env.example` documenta as variáveis necessárias — nenhum projeto Supabase real provisionado ainda neste ambiente. Nota: Next.js 16 renomeou `middleware.ts` para `proxy.ts` — relevante para a Story 1.5 (login), que ainda depende dele para refresh de sessão
-- [ ] Implementação — próxima história: Epic 1 / Story 1.5 (login com sessão persistente)
+- [x] Implementação — em review: Epic 1 / Story 1.4 (aceitar convite e criar conta): clients Supabase (`apps/web/src/lib/supabase/`), fluxo `/auth/confirm` + `/auth/definir-senha` via `supabase.auth.verifyOtp`/`updateUser`, aba pública "Criar conta" removida de `/auth`. Dependências `@supabase/ssr`/`@supabase/supabase-js` adicionadas; `.env.example` documenta as variáveis necessárias — nenhum projeto Supabase real provisionado ainda neste ambiente.
+- [x] Implementação — em review: Epic 1 / Story 1.5 (login com sessão persistente): `LoginForm` habilitado chamando a Server Action `login` (`apps/web/src/lib/actions/login.ts`, `supabase.auth.signInWithPassword`) — redireciona para `/` no sucesso; em erro, nunca revela se o e-mail existe (mensagem genérica de credenciais inválidas, ou mensagem de rate limit gentil quando `error.status === 429`, apoiada no rate limiting nativo do Supabase Auth de 5 tentativas/5min). `apps/web/src/proxy.ts` criado (convenção `proxy.ts` do Next.js 16, substituindo `middleware.ts`) implementando o padrão oficial `@supabase/ssr` de renovação do cookie de sessão a cada request; cookie de refresh do Supabase dura 400 dias por padrão, superando o requisito de 24h.
+- [x] Implementação — em review: Epic 1 / Story 1.6 (recuperação de senha): `/auth/esqueci-senha` (nova Server Action `requestPasswordReset`, `apps/web/src/lib/actions/requestPasswordReset.ts`, chamando `supabase.auth.resetPasswordForEmail` — nunca revela se o e-mail existe, só distingue rate limit) e `/auth/redefinir-senha` (reaproveita a Server Action `setPassword` da Story 1.4, agora com parâmetro opcional `errorMessage` para copy específica do fluxo). `apps/web/src/app/auth/confirm/route.ts` passou a aceitar `type=recovery` além de `type=invite`, com destino e página de erro (`/auth?erro=link-invalido`) próprios. Passou por code review (8 agentes + verificação): corrigidos o gate de sessão de `/auth/redefinir-senha` (agora exige `amr` com método `"recovery"` via `supabase.auth.getClaims()`, não apenas qualquer sessão autenticada), a mensagem de erro do fallback de `confirm/route.ts` (não mostra mais texto de convite para links de recuperação malformados) e a copy de erro de `setPassword` no fluxo de redefinição. 90 testes passando. O template "Reset Password" no dashboard do Supabase ainda precisa ser configurado manualmente (mesmo padrão do convite) — não foi possível editar `.env.example` nesta sessão por restrição de permissões do ambiente.
+- [ ] Implementação — próxima história: Epic 1 / Story 1.7 (logout com confirmação)
 
 ---
 
@@ -154,7 +156,7 @@ _bmad-output/
 └── planning-artifacts/
     ├── prd.md                  ✅ completo
     ├── ux-*.md                 🔄 em andamento
-    ├── architecture.md         ⏳ pendente
+    ├── architecture.md         ✅ completo
     └── stories/                ⏳ pendente
 ```
 
