@@ -1,6 +1,13 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+// Header interno usado para repassar aos Server Components o resultado do
+// getUser() já feito aqui — evita que cada página precise chamar getUser()
+// de novo e pague uma segunda ida à rede ao Supabase Auth na mesma
+// requisição. Não é um mecanismo de autorização: só evita I/O redundante,
+// a decisão de acesso continua 100% via RLS no Postgres.
+export const SESSION_USER_HEADER = "x-app-session-user";
+
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
 
@@ -24,8 +31,16 @@ export async function proxy(request: NextRequest) {
   );
 
   // getUser() dispara a renovação do token de sessão a cada request — não
-  // remover mesmo sem usar o `user` retornado (padrão oficial @supabase/ssr).
-  await supabase.auth.getUser();
+  // remover mesmo quando só usamos o `user` para o header abaixo (padrão
+  // oficial @supabase/ssr).
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const cookiesToPreserve = response.cookies.getAll();
+  request.headers.set(SESSION_USER_HEADER, user ? "1" : "0");
+  response = NextResponse.next({ request });
+  cookiesToPreserve.forEach((cookie) => response.cookies.set(cookie));
 
   return response;
 }

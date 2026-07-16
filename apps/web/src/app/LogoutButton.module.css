@@ -1,0 +1,70 @@
+.trigger {
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 0.55rem 1rem;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space);
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 10;
+}
+
+.dialog {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-x);
+  width: 100%;
+  max-width: 420px;
+  padding: var(--space);
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  background: var(--color-surface);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+}
+
+.dialogTitle {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.dialogText {
+  color: var(--color-muted);
+  line-height: var(--lh-body);
+}
+
+.dialogActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-x);
+}
+
+.cancelButton {
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 0.75rem 1.1rem;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.confirmButton {
+  composes: primaryButton from "../styles/shared.module.css";
+}
+
+.errorMessage {
+  composes: errorMessage from "../styles/shared.module.css";
+}

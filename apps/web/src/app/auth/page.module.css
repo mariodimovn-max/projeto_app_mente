@@ -75,12 +75,7 @@
 }
 
 .errorMessage {
-  border: 1px solid var(--color-error);
-  border-radius: 14px;
-  padding: 0.75rem 1rem;
-  color: var(--color-error);
-  background: rgba(241, 99, 77, 0.08);
-  font-size: var(--fs-sm);
+  composes: errorMessage from "../../styles/shared.module.css";
 }
 
 @media (max-width: 640px) {
