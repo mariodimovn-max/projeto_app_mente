@@ -1,0 +1,32 @@
+.bubble {
+  max-width: 80%;
+  padding: 0.9rem 1rem;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.user {
+  align-self: flex-end;
+  background: rgba(79, 209, 202, 0.18);
+  color: var(--color-text);
+}
+
+.agent {
+  align-self: flex-start;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--color-text);
+}
+
+.content {
+  font-size: var(--fs-md);
+  line-height: var(--lh-body);
+  white-space: pre-wrap;
+}
+
+.timestamp {
+  font-size: var(--fs-sm);
+  color: var(--color-muted);
+  align-self: flex-end;
+}

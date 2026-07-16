@@ -66,12 +66,13 @@ describe("Home onboarding page", () => {
     expect(screen.getByTestId("logout-button")).toBeInTheDocument();
   });
 
-  it("substitui o CTA de login por uma mensagem de sessão ativa quando o usuário está autenticado", async () => {
+  it("substitui o CTA de login por um link para o chat quando o usuário está autenticado", async () => {
     headerStore.set("x-app-session-user", "1");
     const element = await HomePage();
     render(element);
 
     expect(screen.queryByRole("link", { name: /Começar sessão/i })).not.toBeInTheDocument();
-    expect(screen.getByText(/Você já está conectado/i)).toBeInTheDocument();
+    const cta = screen.getByRole("link", { name: /Ir para o chat/i });
+    expect(cta.getAttribute("href")).toBe("/chat");
   });
 });

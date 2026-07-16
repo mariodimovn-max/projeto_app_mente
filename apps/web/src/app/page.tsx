@@ -79,7 +79,9 @@ export default async function Home() {
 
           <div className={styles.actions}>
             {isAuthenticated ? (
-              <p className={styles.notice}>Você já está conectado.</p>
+              <Link className={styles.primaryButton} href="/chat">
+                Ir para o chat
+              </Link>
             ) : (
               <Link className={styles.primaryButton} href="/auth">
                 Começar sessão
