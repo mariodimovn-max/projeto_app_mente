@@ -1,0 +1,7 @@
+.main {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  padding: var(--space-lg) var(--space);
+  min-height: 100vh;
+}
