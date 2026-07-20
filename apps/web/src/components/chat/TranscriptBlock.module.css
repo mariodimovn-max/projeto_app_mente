@@ -1,0 +1,73 @@
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.status {
+  font: 600 0.75rem var(--font-sans);
+  color: var(--color-accent-1);
+}
+
+.textarea {
+  min-height: 96px;
+  resize: vertical;
+  border-radius: 18px;
+  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  color: var(--color-text);
+  padding: 14px 16px;
+  font-family: var(--font-sans);
+  font-size: var(--fs-md);
+  line-height: var(--lh-body);
+}
+
+.textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(127, 208, 200, 0.35);
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.hint {
+  font: 400 0.75rem/1.4 var(--font-sans);
+  color: var(--color-muted);
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.discardButton {
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 8px 14px;
+  font: 600 0.75rem var(--font-sans);
+  cursor: pointer;
+  background: transparent;
+  color: var(--color-text);
+}
+
+.saveButton {
+  border: none;
+  border-radius: 12px;
+  padding: 8px 14px;
+  font: 600 0.75rem var(--font-sans);
+  cursor: pointer;
+  background: linear-gradient(180deg, var(--color-accent-1), var(--color-accent-2));
+  color: var(--color-voice-icon, #06201e);
+}
+
+.saveButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

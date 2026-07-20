@@ -112,11 +112,17 @@
   composes: errorMessage from "../../styles/shared.module.css";
 }
 
+.transcriptionStatus {
+  font: 400 0.78125rem/1.4 var(--font-sans);
+  color: var(--color-accent-1);
+  padding: 0 0.5rem;
+}
+
 .voiceDock {
   display: flex;
   align-items: center;
   gap: 20px;
-  height: 56px;
+  min-height: 56px;
   animation: fade 0.35s ease both;
 }
 
@@ -131,9 +137,19 @@
   align-items: center;
   justify-content: center;
   box-shadow: 0 0 0 7px rgba(157, 184, 168, 0.12);
+  cursor: pointer;
+  transition: box-shadow 0.25s, filter 0.25s;
+}
+
+.micButton:disabled {
   opacity: 0.55;
   filter: grayscale(0.35);
   cursor: not-allowed;
+}
+
+.micButtonActive {
+  box-shadow: 0 0 0 7px rgba(127, 208, 200, 0.22);
+  animation: micPulse 1.6s ease-in-out infinite;
 }
 
 .micIcon {
@@ -152,6 +168,10 @@
   opacity: 0.35;
 }
 
+.waveformActive {
+  opacity: 1;
+}
+
 .waveBar {
   width: 4px;
   border-radius: 3px;
@@ -163,8 +183,93 @@
   background: var(--color-voice-2);
 }
 
+.waveformActive .waveBar {
+  animation: waveBounce 0.9s ease-in-out infinite;
+}
+
+.waveformActive .waveBar:nth-child(2n) {
+  animation-delay: 0.15s;
+}
+
+.waveformActive .waveBar:nth-child(3n) {
+  animation-delay: 0.3s;
+}
+
+.waveformActive .waveBar:nth-child(4n) {
+  animation-delay: 0.45s;
+}
+
 .voiceHint {
   font: 400 0.78125rem/1.4 var(--font-sans);
   color: var(--color-muted);
   max-width: 220px;
+}
+
+.recordingStatus {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.recordingBadge {
+  align-self: flex-start;
+  font: 600 0.6875rem var(--font-mono);
+  letter-spacing: 0.06em;
+  color: var(--color-voice-icon, #06201e);
+  background: var(--color-voice-1);
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+
+.voiceError {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font: 400 0.8125rem/1.4 var(--font-sans);
+  color: var(--color-text);
+}
+
+.voiceErrorActions {
+  display: flex;
+  gap: 10px;
+}
+
+.voiceErrorButton {
+  border: none;
+  border-radius: 12px;
+  padding: 8px 14px;
+  font: 600 0.75rem var(--font-sans);
+  cursor: pointer;
+  background: linear-gradient(180deg, var(--color-accent-1), var(--color-accent-2));
+  color: var(--color-voice-icon, #06201e);
+}
+
+.voiceErrorButtonSecondary {
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 8px 14px;
+  font: 600 0.75rem var(--font-sans);
+  cursor: pointer;
+  background: transparent;
+  color: var(--color-text);
+}
+
+@keyframes micPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 7px rgba(127, 208, 200, 0.22);
+  }
+  50% {
+    box-shadow: 0 0 0 12px rgba(127, 208, 200, 0.12);
+  }
+}
+
+@keyframes waveBounce {
+  0%,
+  100% {
+    height: 30%;
+  }
+  50% {
+    height: 90%;
+  }
 }
