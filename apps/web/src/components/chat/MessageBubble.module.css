@@ -1,32 +1,51 @@
-.bubble {
-  max-width: 80%;
-  padding: 0.9rem 1rem;
-  border-radius: 16px;
+.agentTurn {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-width: 640px;
+  animation: rise 0.6s ease both;
+}
+
+.agentLabel {
+  font: 400 0.6875rem var(--font-mono);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(168, 224, 217, 0.55);
+}
+
+.agentContent {
+  font: 300 1.1875rem/1.5 var(--font-serif);
+  color: var(--color-text);
+  white-space: pre-wrap;
+}
+
+.userTurn {
+  align-self: flex-end;
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
+  max-width: 78%;
+  animation: rise 0.6s ease both;
 }
 
-.user {
-  align-self: flex-end;
-  background: rgba(79, 209, 202, 0.18);
+.userContent {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px 20px 6px 20px;
+  padding: 0.8rem 1rem;
+  font: 400 0.90625rem/1.5 var(--font-sans);
   color: var(--color-text);
-}
-
-.agent {
-  align-self: flex-start;
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--color-text);
-}
-
-.content {
-  font-size: var(--fs-md);
-  line-height: var(--lh-body);
+  backdrop-filter: blur(6px);
   white-space: pre-wrap;
 }
 
 .timestamp {
-  font-size: var(--fs-sm);
-  color: var(--color-muted);
   align-self: flex-end;
+  font: 400 0.6875rem var(--font-mono);
+  color: var(--color-muted);
+  opacity: 0.6;
+}
+
+.agentTurn .timestamp {
+  align-self: flex-start;
 }

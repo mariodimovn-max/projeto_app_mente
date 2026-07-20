@@ -42,7 +42,11 @@ vi.mock("@/lib/agent/memory", () => ({
   buildConversationMessages: buildConversationMessagesMock,
 }));
 
-function createFakeMessageStream(chunks: string[], shouldFail = false) {
+function createFakeMessageStream(
+  chunks: string[],
+  shouldFail = false,
+  stopReason: string | null = "end_turn"
+) {
   const listeners: Record<string, Array<(delta: string) => void>> = {};
   return {
     on(event: string, cb: (delta: string) => void) {
@@ -57,12 +61,14 @@ function createFakeMessageStream(chunks: string[], shouldFail = false) {
       for (const chunk of chunks) {
         listeners.text?.forEach((cb) => cb(chunk));
       }
-      return { content: [] };
+      return { content: [], stop_reason: stopReason };
     },
   };
 }
 
-const streamMock = vi.fn(() => createFakeMessageStream(["Olá", ", tudo bem?"]));
+const streamMock = vi.fn<(params: Record<string, unknown>) => ReturnType<typeof createFakeMessageStream>>(
+  () => createFakeMessageStream(["Olá", ", tudo bem?"])
+);
 const getAnthropicClientMock = vi.fn(() => ({ messages: { stream: streamMock } }));
 
 vi.mock("@/lib/agent/client.server", () => ({
@@ -183,5 +189,66 @@ describe("POST /api/chat", () => {
     const response = await POST(postRequest({ message: "Uma mensagem válida de teste." }));
 
     await expect(readFullBody(response)).rejects.toThrow();
+  });
+
+  it("usa o tom neutro e o orçamento padrão de tokens para uma mensagem sem sinais emocionais", async () => {
+    const { POST } = await import("./route");
+
+    await POST(postRequest({ message: "Uma mensagem válida de teste." }));
+
+    const callArgs = streamMock.mock.calls[0]![0];
+    expect(callArgs.system).toContain("Tom equilibrado");
+    expect(callArgs.max_tokens).toBe(1024);
+  });
+
+  it("detecta melancolia intensa e ajusta tom acolhedor e orçamento de tokens mais curto", async () => {
+    const { POST } = await import("./route");
+
+    await POST(
+      postRequest({
+        message:
+          "Estou muito triste, me sinto vazio, sem energia, sinto que não vale a pena, é um fracasso total.",
+      })
+    );
+
+    const callArgs = streamMock.mock.calls[0]![0];
+    expect(callArgs.system).toContain("Tom reconfortante e acolhedor");
+    expect(callArgs.system).toContain("breve");
+    expect(callArgs.max_tokens).toBe(400);
+  });
+
+  it("registra um aviso quando a resposta é cortada pelo limite de tokens, mas ainda assim a persiste", async () => {
+    streamMock.mockReturnValueOnce(
+      createFakeMessageStream(["Resposta cortada"], false, "max_tokens")
+    );
+    const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const { POST } = await import("./route");
+
+    const response = await POST(postRequest({ message: "Uma mensagem válida de teste." }));
+    await readFullBody(response);
+
+    expect(consoleWarnSpy).toHaveBeenCalledWith(
+      expect.stringContaining("truncad"),
+      expect.objectContaining({ sessionId: "session-1" })
+    );
+    expect(messagesInsertMock).toHaveBeenCalledWith({
+      session_id: "session-1",
+      role: "assistant",
+      content: "Resposta cortada",
+    });
+
+    consoleWarnSpy.mockRestore();
+  });
+
+  it("não registra aviso de truncamento quando a resposta termina normalmente", async () => {
+    const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const { POST } = await import("./route");
+
+    const response = await POST(postRequest({ message: "Uma mensagem válida de teste." }));
+    await readFullBody(response);
+
+    expect(consoleWarnSpy).not.toHaveBeenCalled();
+
+    consoleWarnSpy.mockRestore();
   });
 });

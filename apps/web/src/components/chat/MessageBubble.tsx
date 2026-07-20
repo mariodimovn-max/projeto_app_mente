@@ -7,13 +7,26 @@ function formatTimestamp(iso: string) {
 
 export function MessageBubble({ message }: { message: ChatMessage }) {
   const isUser = message.role === "user";
+  const timestamp = (
+    <time className={styles.timestamp} dateTime={message.createdAt}>
+      {formatTimestamp(message.createdAt)}
+    </time>
+  );
+
+  if (isUser) {
+    return (
+      <div className={styles.userTurn}>
+        <p className={styles.userContent}>{message.content}</p>
+        {timestamp}
+      </div>
+    );
+  }
 
   return (
-    <div className={`${styles.bubble} ${isUser ? styles.user : styles.agent}`}>
-      <p className={styles.content}>{message.content}</p>
-      <time className={styles.timestamp} dateTime={message.createdAt}>
-        {formatTimestamp(message.createdAt)}
-      </time>
+    <div className={styles.agentTurn}>
+      <p className={styles.agentLabel}>a aura</p>
+      <p className={styles.agentContent}>{message.content}</p>
+      {timestamp}
     </div>
   );
 }

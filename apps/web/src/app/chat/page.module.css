@@ -1,7 +1,12 @@
 .main {
   display: flex;
   flex: 1;
-  justify-content: center;
-  padding: var(--space-lg) var(--space);
-  min-height: 100vh;
+  min-height: 100dvh;
+  background: radial-gradient(130% 55% at 50% 8%, #123138 0%, #0b171b 40%, #080f12 100%);
+}
+
+@media (min-width: 960px) {
+  .main {
+    background: radial-gradient(90% 120% at 22% 30%, #12333a 0%, #0a161a 60%, #080f12 100%);
+  }
 }

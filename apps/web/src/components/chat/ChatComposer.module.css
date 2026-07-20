@@ -1,58 +1,170 @@
+.dock {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.segmented {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 4px;
+  gap: 2px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+}
+
+.segButton {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: none;
+  background: transparent;
+  border-radius: 11px;
+  padding: 9px 15px;
+  font: 500 0.8125rem var(--font-sans);
+  color: rgba(233, 241, 238, 0.55);
+  cursor: pointer;
+  transition: all 0.25s;
+}
+
+.segButtonActive {
+  background: linear-gradient(180deg, rgba(127, 208, 200, 0.22), rgba(127, 208, 200, 0.1));
+  color: #c9f0ea;
+  box-shadow: inset 0 0 0 1px rgba(127, 208, 200, 0.3);
+}
+
 .form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-x);
+  gap: 0.5rem;
+  animation: fade 0.35s ease both;
 }
 
-.field {
+.bar {
   display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.label {
-  font-size: var(--fs-sm);
-  color: var(--color-muted);
+  align-items: flex-end;
+  gap: 0.75rem;
+  min-height: 56px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--color-border);
+  backdrop-filter: blur(10px);
+  padding: 0.5rem 0.5rem 0.5rem 1.25rem;
 }
 
 .textarea {
-  resize: vertical;
-  min-height: 4.5rem;
-  border-radius: 16px;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
+  flex: 1;
+  resize: none;
+  border: none;
+  background: transparent;
   color: var(--color-text);
-  padding: 0.75rem 1rem;
-  font-family: inherit;
+  padding: 0.6rem 0;
+  font-family: var(--font-sans);
   font-size: var(--fs-md);
   line-height: var(--lh-body);
+  max-height: 8rem;
+}
+
+.textarea:focus {
+  outline: none;
+}
+
+.textarea::placeholder {
+  color: rgba(233, 241, 238, 0.35);
 }
 
 .textarea:disabled {
   opacity: 0.6;
 }
 
-.footer {
+.sendButton {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: linear-gradient(180deg, var(--color-accent-1), var(--color-accent-2));
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-x);
-}
-
-.counter {
-  font-size: var(--fs-sm);
-  color: var(--color-muted);
-}
-
-.sendButton {
-  composes: primaryButton from "../../styles/shared.module.css";
+  justify-content: center;
+  cursor: pointer;
 }
 
 .sendButton:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 0.5rem;
+}
+
+.counter {
+  font: 400 0.6875rem var(--font-mono);
+  letter-spacing: 0.04em;
+  color: var(--color-muted);
 }
 
 .errorMessage {
   composes: errorMessage from "../../styles/shared.module.css";
+}
+
+.voiceDock {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  height: 56px;
+  animation: fade 0.35s ease both;
+}
+
+.micButton {
+  flex: none;
+  width: 56px;
+  height: 56px;
+  border: none;
+  border-radius: 50%;
+  background: linear-gradient(180deg, var(--color-voice-gradient-start), var(--color-voice-gradient-end));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 0 7px rgba(157, 184, 168, 0.12);
+  opacity: 0.55;
+  filter: grayscale(0.35);
+  cursor: not-allowed;
+}
+
+.micIcon {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  background: var(--color-voice-icon);
+}
+
+.waveform {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 40px;
+  flex: 1;
+  opacity: 0.35;
+}
+
+.waveBar {
+  width: 4px;
+  border-radius: 3px;
+  background: var(--color-voice-1);
+  height: 45%;
+}
+
+.waveBar:nth-child(3n) {
+  background: var(--color-voice-2);
+}
+
+.voiceHint {
+  font: 400 0.78125rem/1.4 var(--font-sans);
+  color: var(--color-muted);
+  max-width: 220px;
 }

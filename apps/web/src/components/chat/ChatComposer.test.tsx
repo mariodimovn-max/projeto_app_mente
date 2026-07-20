@@ -49,4 +49,22 @@ describe("ChatComposer", () => {
     expect(screen.getByLabelText(/Sua mensagem/i)).toBeDisabled();
     expect(screen.getByRole("button", { name: /Enviar/i })).toBeDisabled();
   });
+
+  it("inicia no modo Escrever com o campo de texto visível", () => {
+    render(<ChatComposer disabled={false} onSend={vi.fn()} />);
+
+    expect(screen.getByRole("button", { name: /Escrever/i })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: /Falar/i })).toHaveAttribute("aria-pressed", "false");
+    expect(screen.getByLabelText(/Sua mensagem/i)).toBeInTheDocument();
+  });
+
+  it("alterna para o modo Falar e não permite enviar por voz (recurso ainda não implementado)", () => {
+    render(<ChatComposer disabled={false} onSend={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Falar/i }));
+
+    expect(screen.queryByLabelText(/Sua mensagem/i)).not.toBeInTheDocument();
+    expect(screen.getByTitle(/chega em breve/i)).toBeDisabled();
+    expect(screen.getByText(/em breve/i)).toBeInTheDocument();
+  });
 });

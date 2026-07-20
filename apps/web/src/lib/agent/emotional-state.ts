@@ -1,4 +1,5 @@
 export type EmotionalState = "melancholy" | "inflated" | "confused" | "neutral";
+export type EmotionalIntensity = "low" | "high";
 
 const SIGNALS: Record<Exclude<EmotionalState, "neutral">, string[]> = {
   melancholy: [
@@ -49,6 +50,32 @@ function countSignals(lower: string, signals: string[]): number {
 }
 
 export function detectEmotionalState(message: string): EmotionalState {
+  return analyzeEmotionalState(message).state;
+}
+
+// Three or more distinct signal matches for the detected state read as an intense
+// expression of it (vs. a single passing remark), warranting a shorter, more contained response.
+const INTENSITY_THRESHOLD = 3;
+
+export function detectEmotionalIntensity(
+  message: string,
+  state: EmotionalState,
+): EmotionalIntensity {
+  if (state === "neutral") return "low";
+
+  const count = countSignals(message.toLowerCase(), SIGNALS[state]);
+  return count >= INTENSITY_THRESHOLD ? "high" : "low";
+}
+
+export interface EmotionalAnalysis {
+  state: EmotionalState;
+  intensity: EmotionalIntensity;
+}
+
+// Scores the message once and derives both state and intensity from that single pass,
+// instead of the two independent regex scans that calling detectEmotionalState followed
+// by detectEmotionalIntensity would otherwise perform on the same message.
+export function analyzeEmotionalState(message: string): EmotionalAnalysis {
   const lower = message.toLowerCase();
 
   const scores: Record<Exclude<EmotionalState, "neutral">, number> = {
@@ -58,10 +85,10 @@ export function detectEmotionalState(message: string): EmotionalState {
   };
 
   const max = Math.max(scores.melancholy, scores.inflated, scores.confused);
-  if (max === 0) return "neutral";
+  if (max === 0) return { state: "neutral", intensity: "low" };
 
-  const winner = (Object.keys(scores) as Array<keyof typeof scores>).find(
-    (state) => scores[state] === max,
-  );
-  return winner ?? "neutral";
+  const winner =
+    (Object.keys(scores) as Array<keyof typeof scores>).find((state) => scores[state] === max) ??
+    "neutral";
+  return { state: winner, intensity: max >= INTENSITY_THRESHOLD ? "high" : "low" };
 }

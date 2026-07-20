@@ -1,8 +1,11 @@
 "use client";
 
-import { useReducer, useRef } from "react";
+import { useReducer, useRef, useState } from "react";
 import { ChatComposer } from "./ChatComposer";
+import { DepthMeter } from "./DepthMeter";
 import { MessageBubble } from "./MessageBubble";
+import { Aura } from "@/components/aura/Aura";
+import { depthFraction, depthLevelLabel, depthReadingLabel, nextDepth } from "@/lib/chat/depth";
 import type { ChatMessage, ChatStatus } from "@/types/chat";
 import styles from "./ChatWindow.module.css";
 
@@ -79,6 +82,7 @@ function reducer(state: ChatState, action: ChatAction): ChatState {
 export function ChatWindow() {
   const [state, dispatch] = useReducer(reducer, initialState);
   const sessionIdRef = useRef<string | null>(null);
+  const [depth, setDepth] = useState(0);
 
   async function sendMessage(text: string) {
     const userMessageId = crypto.randomUUID();
@@ -121,6 +125,7 @@ export function ChatWindow() {
       }
 
       dispatch({ type: "stream_done" });
+      setDepth((current) => nextDepth(current));
     } catch {
       dispatch({
         type: "error",
@@ -138,23 +143,53 @@ export function ChatWindow() {
   const isBusy = state.status === "loading" || state.status === "streaming";
 
   return (
-    <div className={styles.window}>
-      <div className={styles.history} aria-live="polite">
-        {state.messages.map((message) => (
-          <MessageBubble key={message.id} message={message} />
-        ))}
-      </div>
-
-      {state.status === "error" && (
-        <div className={styles.errorBanner} role="alert">
-          <p>{state.errorMessage}</p>
-          <button type="button" className={styles.retryButton} onClick={handleRetry}>
-            Tentar novamente
-          </button>
+    <div className={styles.shell}>
+      <header className={styles.mobileHeader}>
+        <div className={styles.mobileHeaderTop}>
+          <div className={styles.mobileHeaderPresence}>
+            <Aura size={30} />
+            <span>a aura</span>
+          </div>
+          <div className={styles.mobileDepthBadge}>
+            <span className={styles.mobileDepthDot} aria-hidden="true" />
+            {depthReadingLabel(depth)} · {depthLevelLabel(depth)}
+          </div>
         </div>
-      )}
+        <div className={styles.mobileDepthBar}>
+          <div
+            className={styles.mobileDepthBarFill}
+            style={{ width: `${depthFraction(depth) * 100}%` }}
+          />
+        </div>
+      </header>
 
-      <ChatComposer disabled={isBusy} onSend={(text) => void sendMessage(text)} />
+      <aside className={styles.sidebar}>
+        <DepthMeter depth={depth} />
+      </aside>
+
+      <div className={styles.main}>
+        <div className={styles.history} aria-live="polite">
+          {state.messages.length === 0 && (
+            <p className={styles.emptyState}>Escreva quando quiser começar.</p>
+          )}
+          {state.messages.map((message) => (
+            <MessageBubble key={message.id} message={message} />
+          ))}
+        </div>
+
+        {state.status === "error" && (
+          <div className={styles.errorBanner} role="alert">
+            <p>{state.errorMessage}</p>
+            <button type="button" className={styles.retryButton} onClick={handleRetry}>
+              Tentar novamente
+            </button>
+          </div>
+        )}
+
+        <div className={styles.composerArea}>
+          <ChatComposer disabled={isBusy} onSend={(text) => void sendMessage(text)} />
+        </div>
+      </div>
     </div>
   );
 }

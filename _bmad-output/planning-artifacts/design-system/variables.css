@@ -1,29 +1,35 @@
 /* Fonte de valores dos tokens: apps/web/src/styles/variables.css (usado pelo app real).
    Este arquivo existe apenas para os wireframes estáticos em ../wireframes/*.html.
-   Ao alterar um valor de token em um dos dois arquivos, replicar no outro. */
+   Ao alterar um valor de token em um dos dois arquivos, replicar no outro.
+
+   Paleta "Aura" (Direção 1a do handoff de design onboarding+chat) — ver nota
+   equivalente em apps/web/src/styles/variables.css para o rationale completo. */
 :root {
   color-scheme: dark;
 
   /* Colors */
-  --color-bg: #0C1118;
-  --color-surface: #151B25;
-  --color-surface-alt: #1F2836;
-  --color-border: rgba(255,255,255,0.08);
-  --color-text: #E7F1FF;
-  --color-muted: #9FB1C3;
-  --color-accent-1: #4FD1CA;
-  --color-accent-2: #6B95D6;
-  --color-cta: #7C63FF;
+  --color-bg: #080f12;
+  --color-surface: #0e262c;
+  --color-surface-alt: #123840;
+  --color-border: rgba(255,255,255,0.09);
+  --color-text: #eef4f2;
+  --color-muted: #b7c7c1;
+  --color-accent-1: #7fd0c8;
+  --color-accent-2: #4ba39c;
+  --color-cta: #7fd0c8;
   --color-error: #F1634D;
   --color-success: #5EC3A5;
 
   /* Typography
-     Tamanhos em rem (base 16px). Diferente da cópia do app, --font-sans aqui NÃO
-     referencia var(--font-inter): estes wireframes estáticos não carregam next/font,
-     então a variável nunca resolveria (e um var() não resolvido sem fallback interno
-     invalidaria a propriedade font-family inteira). */
-  --font-sans: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+     Tamanhos em rem (base 16px). Diferente da cópia do app, --font-sans/--font-serif
+     aqui NÃO referenciam var(--font-instrument-sans)/var(--font-newsreader): estes
+     wireframes estáticos não carregam next/font nem Google Fonts, então a variável
+     nunca resolveria (e um var() não resolvido sem fallback interno invalidaria a
+     propriedade font-family inteira). Caem no fallback de sistema (system-ui/serif)
+     — suficiente para um wireframe estático de referência visual. */
+  --font-sans: "Instrument Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  --font-serif: Newsreader, Georgia, serif;
+  --font-mono: "Space Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
   --fs-xxl: 1.875rem; /* 30px */
   --fs-xl: 1.5rem;    /* 24px */
   --fs-lg: 1.125rem;  /* 18px */

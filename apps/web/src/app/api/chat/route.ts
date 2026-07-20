@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import type { MessageParam } from "@anthropic-ai/sdk/resources/messages";
 import { createClient } from "@/lib/supabase/server";
 import { getAnthropicClient } from "@/lib/agent/client.server";
+import { analyzeEmotionalState } from "@/lib/agent/emotional-state";
 import { buildConversationMessages } from "@/lib/agent/memory";
-import { buildSystemPrompt } from "@/lib/agent/prompts";
+import { buildSystemPrompt, resolveMaxTokens } from "@/lib/agent/prompts";
 import { chatRequestSchema } from "@/lib/validation/message";
 
 export const runtime = "nodejs";
@@ -85,7 +86,9 @@ export async function POST(request: Request) {
   }
 
   const conversation: MessageParam[] = await buildConversationMessages(supabase, sessionId);
-  const systemPrompt = buildSystemPrompt("neutral");
+  const { state: emotionalState, intensity: emotionalIntensity } = analyzeEmotionalState(message);
+  const systemPrompt = buildSystemPrompt(emotionalState, emotionalIntensity);
+  const maxTokens = resolveMaxTokens(emotionalState, emotionalIntensity);
   const anthropic = getAnthropicClient();
 
   const encoder = new TextEncoder();
@@ -95,7 +98,7 @@ export async function POST(request: Request) {
       try {
         const messageStream = anthropic.messages.stream({
           model: "claude-sonnet-5",
-          max_tokens: 1024,
+          max_tokens: maxTokens,
           thinking: { type: "disabled" },
           system: systemPrompt,
           messages: conversation,
@@ -106,7 +109,19 @@ export async function POST(request: Request) {
           controller.enqueue(encoder.encode(delta));
         });
 
-        await messageStream.finalMessage();
+        const finalMessage = await messageStream.finalMessage();
+
+        if (finalMessage.stop_reason === "max_tokens") {
+          // The response was cut off by maxTokens before the model finished — surfaced here
+          // (not silently swallowed) so a solo dev can notice if the token budgets in
+          // resolveMaxTokens are too tight for real conversations, especially for melancholy.
+          console.warn("Resposta do agente truncada pelo limite de tokens", {
+            sessionId,
+            emotionalState,
+            emotionalIntensity,
+            maxTokens,
+          });
+        }
 
         if (fullText.trim().length > 0) {
           const { error: assistantMessageError } = await supabase

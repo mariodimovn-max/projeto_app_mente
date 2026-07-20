@@ -1,22 +1,93 @@
-.window {
+.shell {
   display: flex;
   flex-direction: column;
-  gap: var(--space);
+  min-height: 100dvh;
+  width: 100%;
+}
+
+.mobileHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: var(--space-x) var(--space) calc(var(--space-x) / 2);
+}
+
+.mobileHeaderTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-x);
+}
+
+.mobileHeaderPresence {
+  display: flex;
+  align-items: center;
+  gap: var(--space-x);
+  font-size: var(--fs-sm);
+  color: var(--color-muted);
+}
+
+.mobileDepthBadge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font: 400 0.6875rem var(--font-mono);
+  color: rgba(168, 224, 217, 0.7);
+  white-space: nowrap;
+}
+
+.mobileDepthDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-accent-1);
+  box-shadow: 0 0 8px var(--color-accent-1);
+  flex: none;
+}
+
+.mobileDepthBar {
+  height: 4px;
+  border-radius: 3px;
+  background: rgba(127, 208, 200, 0.14);
+  overflow: hidden;
+}
+
+.mobileDepthBarFill {
+  height: 100%;
+  background: linear-gradient(90deg, #7fd0c8, #3f8f94);
+  border-radius: 3px;
+  transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.sidebar {
+  display: none;
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 0 var(--space) var(--space);
+}
+
+.history {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  overflow-y: auto;
+  padding: var(--space-x) 0 var(--space);
   width: 100%;
   max-width: var(--content-max-width);
   margin: 0 auto;
 }
 
-.history {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-x);
-  min-height: 320px;
-  padding: var(--space);
-  border: 1px solid var(--color-border);
-  border-radius: 22px;
-  background: rgba(21, 27, 37, 0.6);
-  overflow-y: auto;
+.emptyState {
+  color: var(--color-muted);
+  font-size: var(--fs-sm);
+  text-align: center;
+  margin-top: var(--space-lg);
 }
 
 .errorBanner {
@@ -24,6 +95,9 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-x);
+  width: 100%;
+  max-width: var(--content-max-width);
+  margin: 0 auto var(--space-x);
   border: 1px solid var(--color-error);
   border-radius: 14px;
   padding: 0.75rem 1rem;
@@ -41,4 +115,35 @@
   font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
+}
+
+.composerArea {
+  width: 100%;
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+}
+
+@media (min-width: 960px) {
+  .shell {
+    flex-direction: row;
+  }
+
+  .mobileHeader {
+    display: none;
+  }
+
+  .sidebar {
+    display: flex;
+    width: 270px;
+    flex: none;
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .main {
+    padding: var(--space-lg) calc(var(--space-lg) * 1.25);
+  }
+
+  .history {
+    padding: 0 0 var(--space);
+  }
 }

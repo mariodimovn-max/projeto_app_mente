@@ -1,31 +1,47 @@
 /* Fonte de valores dos tokens para o app real. Há uma cópia estática mantida em
    _bmad-output/planning-artifacts/design-system/variables.css para os wireframes
-   HTML — ao alterar um valor de token aqui, replicar lá também. */
+   HTML — ao alterar um valor de token aqui, replicar lá também.
+
+   Paleta "Aura" (Direção 1a do handoff de design onboarding+chat): noturna,
+   petróleo/teal, presença viva. color-bg/surface/text/muted precisam continuar
+   em hex sólido (não rgba) — apps/web/src/lib/a11y/contrast.test.ts lê esses
+   tokens direto deste arquivo e calcula contraste WCAG AA sobre eles. */
 :root {
   color-scheme: dark;
 
   /* Colors */
-  --color-bg: #0C1118;
-  --color-surface: #151B25;
-  --color-surface-alt: #1F2836;
-  --color-border: rgba(255,255,255,0.08);
-  --color-text: #E7F1FF;
-  --color-muted: #9FB1C3;
-  --color-accent-1: #4FD1CA;
-  --color-accent-2: #6B95D6;
-  --color-cta: #7C63FF;
+  --color-bg: #080f12;
+  --color-surface: #0e262c;
+  --color-surface-alt: #123840;
+  --color-border: rgba(255,255,255,0.09);
+  --color-text: #eef4f2;
+  --color-muted: #b7c7c1;
+  --color-accent-1: #7fd0c8;
+  --color-accent-2: #4ba39c;
+  --color-cta: #7fd0c8;
   --color-error: #F1634D;
   --color-success: #5EC3A5;
+
+  /* Sálvia — reservado para o modo de voz (toggle Escrever/Falar). A gravação
+     em si (Story 2.3) ainda não existe; enquanto isso o botão-mic usa estes
+     tokens com opacidade reduzida para não sugerir uma captura ativa. */
+  --color-voice-1: #9db8a8;
+  --color-voice-2: #8fbdb4;
+  --color-voice-gradient-start: #b9d4c5;
+  --color-voice-gradient-end: #7fb0a2;
+  --color-voice-icon: #0e1f1a;
 
   /* Typography
      Tamanhos em rem (base 16px) para respeitar o tamanho de fonte configurado
      pelo usuário no navegador (WCAG 2.1 SC 1.4.4 — Resize Text).
-     --font-inter tem um fallback dentro do próprio var() (", Inter") — sem isso,
-     se --font-inter não resolver em algum contexto (ex.: um futuro global-error.tsx,
-     que o Next.js exige com <html> próprio fora do RootLayout), a propriedade
-     font-family inteira seria invalidada pelo CSS (IACVT), não apenas esse item. */
-  --font-sans: var(--font-inter, Inter), system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+     Os fallbacks de fonte (", Instrument Sans" etc.) resolvem dentro do próprio
+     var() — sem isso, se a variável do next/font não resolver em algum contexto
+     (ex.: um futuro global-error.tsx, que o Next.js exige com <html> próprio fora
+     do RootLayout), a propriedade font-family inteira seria invalidada pelo CSS
+     (IACVT), não apenas esse item. */
+  --font-sans: var(--font-instrument-sans, "Instrument Sans"), system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  --font-serif: var(--font-newsreader, Newsreader), Georgia, serif;
+  --font-mono: var(--font-space-mono, "Space Mono"), ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
   --fs-xxl: 1.875rem; /* 30px */
   --fs-xl: 1.5rem;    /* 24px */
   --fs-lg: 1.125rem;  /* 18px */
