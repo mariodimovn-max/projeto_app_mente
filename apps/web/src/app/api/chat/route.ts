@@ -2,10 +2,11 @@ import { NextResponse } from "next/server";
 import type { MessageParam } from "@anthropic-ai/sdk/resources/messages";
 import { createClient } from "@/lib/supabase/server";
 import { getAnthropicClient } from "@/lib/agent/client.server";
+import { CRISIS_RESPONSE_MESSAGE, detectCrisisSignal } from "@/lib/agent/crisis";
 import { analyzeEmotionalState } from "@/lib/agent/emotional-state";
 import { buildConversationMessages } from "@/lib/agent/memory";
 import { buildSystemPrompt, resolveMaxTokens } from "@/lib/agent/prompts";
-import { chatRequestSchema } from "@/lib/validation/message";
+import { chatRequestSchema, MAX_MESSAGE_LENGTH } from "@/lib/validation/message";
 
 export const runtime = "nodejs";
 
@@ -55,21 +56,47 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json().catch(() => null);
-  const parsed = chatRequestSchema.safeParse(body);
 
-  if (!parsed.success) {
-    return NextResponse.json(
-      {
-        error: {
-          code: "invalid_message",
-          message: parsed.error.issues[0]?.message ?? "Mensagem inválida.",
-        },
-      },
-      { status: 400 }
+  // Crisis signals are checked on the raw body first, ahead of the normal length
+  // validation below — otherwise a terse crisis-only message (e.g. "overdose", under the
+  // general 10-character minimum) would be rejected with a generic validation error
+  // before ever reaching detectCrisisSignal. This check is also positioned ahead of any
+  // future gating (e.g. Story 2.6's daily message limit), so a crisis reply can never be
+  // blocked — that limit must consult this flag and bypass.
+  const rawMessage =
+    typeof (body as { message?: unknown } | null)?.message === "string"
+      ? (body as { message: string }).message.trim()
+      : "";
+  const isCrisis =
+    rawMessage.length > 0 && rawMessage.length <= MAX_MESSAGE_LENGTH && detectCrisisSignal(rawMessage);
+
+  let message: string;
+  let existingSessionId: string | undefined;
+
+  if (isCrisis) {
+    message = rawMessage;
+    const sessionIdResult = chatRequestSchema.shape.sessionId.safeParse(
+      (body as { sessionId?: unknown } | null)?.sessionId
     );
-  }
+    existingSessionId = sessionIdResult.success ? sessionIdResult.data : undefined;
+  } else {
+    const parsed = chatRequestSchema.safeParse(body);
 
-  const { message, sessionId: existingSessionId } = parsed.data;
+    if (!parsed.success) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "invalid_message",
+            message: parsed.error.issues[0]?.message ?? "Mensagem inválida.",
+          },
+        },
+        { status: 400 }
+      );
+    }
+
+    message = parsed.data.message;
+    existingSessionId = parsed.data.sessionId;
+  }
 
   const sessionId = await ensureSessionId(supabase, user.id, existingSessionId);
   if (!sessionId) {
@@ -83,6 +110,34 @@ export async function POST(request: Request) {
   if (userMessageError) {
     console.error("Erro ao salvar mensagem do usuário:", userMessageError);
     return NextResponse.json(GENERIC_ERROR, { status: 500 });
+  }
+
+  if (isCrisis) {
+    // Persist before delivering: the safety text must reach the user even if this insert
+    // fails, so a persistence hiccup is logged (not surfaced as a stream error) instead of
+    // showing a "tentar novamente" banner underneath an already-delivered crisis message —
+    // which would also resubmit the same message and duplicate the user-message row.
+    try {
+      const { error: assistantMessageError } = await supabase
+        .from("messages")
+        .insert({ session_id: sessionId, role: "assistant", content: CRISIS_RESPONSE_MESSAGE });
+
+      if (assistantMessageError) {
+        console.error("Erro ao salvar resposta de crise:", assistantMessageError);
+      }
+    } catch (error) {
+      console.error("Erro ao salvar resposta de crise:", error);
+    }
+
+    return new Response(CRISIS_RESPONSE_MESSAGE, {
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "X-Session-Id": sessionId,
+        // Lets the client skip the "depth" progression it applies to real reflective
+        // exchanges — a safety redirect isn't reflective depth.
+        "X-Crisis-Response": "true",
+      },
+    });
   }
 
   const conversation: MessageParam[] = await buildConversationMessages(supabase, sessionId);

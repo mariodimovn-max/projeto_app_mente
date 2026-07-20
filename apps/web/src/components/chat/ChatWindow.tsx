@@ -112,6 +112,7 @@ export function ChatWindow() {
       if (newSessionId) {
         sessionIdRef.current = newSessionId;
       }
+      const isCrisisResponse = response.headers.get("X-Crisis-Response") === "true";
 
       dispatch({ type: "stream_start", assistantMessageId: crypto.randomUUID() });
 
@@ -125,7 +126,10 @@ export function ChatWindow() {
       }
 
       dispatch({ type: "stream_done" });
-      setDepth((current) => nextDepth(current));
+      // A crisis redirect isn't reflective depth — only advance the meter for real exchanges.
+      if (!isCrisisResponse) {
+        setDepth((current) => nextDepth(current));
+      }
     } catch {
       dispatch({
         type: "error",

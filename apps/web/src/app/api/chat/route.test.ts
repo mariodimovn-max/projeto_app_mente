@@ -251,4 +251,110 @@ describe("POST /api/chat", () => {
 
     consoleWarnSpy.mockRestore();
   });
+
+  it("prioriza a resposta de crise e não chama a Anthropic API quando há sinais de crise severa", async () => {
+    const { POST } = await import("./route");
+    const { CRISIS_RESPONSE_MESSAGE } = await import("@/lib/agent/crisis");
+
+    const response = await POST(
+      postRequest({ message: "Não aguento mais, eu quero morrer e não sei mais o que fazer." })
+    );
+    const text = await readFullBody(response);
+
+    expect(text).toBe(CRISIS_RESPONSE_MESSAGE);
+    expect(streamMock).not.toHaveBeenCalled();
+    expect(messagesInsertMock).toHaveBeenCalledWith({
+      session_id: "session-1",
+      role: "assistant",
+      content: CRISIS_RESPONSE_MESSAGE,
+    });
+    expect(response.headers.get("X-Session-Id")).toBe("session-1");
+    expect(response.headers.get("X-Crisis-Response")).toBe("true");
+  });
+
+  it("ainda salva a mensagem de crise do usuário antes de responder", async () => {
+    const { POST } = await import("./route");
+
+    await POST(postRequest({ message: "Eu parei de tomar a medicação e estou muito mal." }));
+
+    expect(messagesInsertMock).toHaveBeenCalledWith({
+      session_id: "session-1",
+      role: "user",
+      content: "Eu parei de tomar a medicação e estou muito mal.",
+    });
+  });
+
+  it("entrega a resposta de crise mesmo reutilizando uma sessão existente", async () => {
+    const { POST } = await import("./route");
+    const { CRISIS_RESPONSE_MESSAGE } = await import("@/lib/agent/crisis");
+
+    const response = await POST(
+      postRequest({
+        message: "Vou me matar, não aguento mais.",
+        sessionId: "550e8400-e29b-41d4-a716-446655440000",
+      })
+    );
+    const text = await readFullBody(response);
+
+    expect(text).toBe(CRISIS_RESPONSE_MESSAGE);
+    expect(sessionsInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("não inclui o header X-Crisis-Response em respostas normais", async () => {
+    const { POST } = await import("./route");
+
+    const response = await POST(postRequest({ message: "Uma mensagem válida de teste." }));
+
+    expect(response.headers.get("X-Crisis-Response")).toBeNull();
+  });
+
+  it("não desvia para o fluxo de crise quando o sinal aparece negado na mensagem", async () => {
+    const { POST } = await import("./route");
+
+    const response = await POST(
+      postRequest({ message: "Eu não penso em suicídio, só queria conversar sobre esse assunto." })
+    );
+    await readFullBody(response);
+
+    expect(streamMock).toHaveBeenCalled();
+  });
+
+  it("entrega a resposta de crise mesmo quando a mensagem sozinha é mais curta que o mínimo geral de 10 caracteres", async () => {
+    const { POST } = await import("./route");
+    const { CRISIS_RESPONSE_MESSAGE } = await import("@/lib/agent/crisis");
+
+    const response = await POST(postRequest({ message: "overdose" }));
+    const text = await readFullBody(response);
+
+    expect(response.status).toBe(200);
+    expect(text).toBe(CRISIS_RESPONSE_MESSAGE);
+    expect(messagesInsertMock).toHaveBeenCalledWith({
+      session_id: "session-1",
+      role: "user",
+      content: "overdose",
+    });
+  });
+
+  it("ainda entrega a resposta de crise mesmo quando a persistência da resposta do assistente falha", async () => {
+    messagesInsertMock
+      .mockResolvedValueOnce({ error: null })
+      .mockResolvedValueOnce({ error: { message: "falha ao salvar" } });
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const { POST } = await import("./route");
+    const { CRISIS_RESPONSE_MESSAGE } = await import("@/lib/agent/crisis");
+
+    const response = await POST(
+      postRequest({ message: "Eu quero morrer, não aguento mais nada disso." })
+    );
+    const text = await readFullBody(response);
+
+    expect(response.status).toBe(200);
+    expect(text).toBe(CRISIS_RESPONSE_MESSAGE);
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      "Erro ao salvar resposta de crise:",
+      expect.anything()
+    );
+
+    consoleErrorSpy.mockRestore();
+  });
 });
