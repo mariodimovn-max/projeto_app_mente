@@ -1,21 +1,22 @@
 import Anthropic from "@anthropic-ai/sdk";
 import * as readline from "readline";
-import { detectEmotionalState } from "../apps/web/src/lib/agent/emotional-state";
-import { TONE_MAP, buildSystemPrompt } from "../apps/web/src/lib/agent/prompts";
+import { analyzeEmotionalState } from "../apps/web/src/lib/agent/emotional-state";
+import { TONE_MAP, buildSystemPrompt, resolveMaxTokens } from "../apps/web/src/lib/agent/prompts";
 
 const client = new Anthropic();
 
 async function chat(userMessage: string): Promise<void> {
-  const state = detectEmotionalState(userMessage);
+  const { state, intensity } = analyzeEmotionalState(userMessage);
   const toneConfig = TONE_MAP[state];
 
-  console.log(`\n[Estado detectado: ${toneConfig.description}]\n`);
+  console.log(`\n[Estado detectado: ${toneConfig.description} | Intensidade: ${intensity}]\n`);
 
-  const systemPrompt = buildSystemPrompt(state);
+  const systemPrompt = buildSystemPrompt(state, intensity);
+  const maxTokens = resolveMaxTokens(state, intensity);
 
   const stream = client.messages.stream({
     model: "claude-opus-4-8",
-    max_tokens: 1024,
+    max_tokens: maxTokens,
     thinking: { type: "adaptive" },
     system: systemPrompt,
     messages: [{ role: "user", content: userMessage }],

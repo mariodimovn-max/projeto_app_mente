@@ -2,6 +2,7 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { SESSION_USER_HEADER } from "@/proxy";
 import { LogoutButton } from "./LogoutButton";
+import { Aura } from "@/components/aura/Aura";
 import styles from "./page.module.css";
 
 const pillars = [
@@ -35,21 +36,67 @@ export default async function Home() {
     <>
       {isAuthenticated && (
         <header className={styles.appHeader}>
+          <div className={styles.appHeaderPresence}>
+            <Aura size={26} />
+            <span>seu espaço</span>
+          </div>
           <LogoutButton />
         </header>
       )}
       <main className={styles.main}>
-        <section className={`${styles.hero} container`} aria-labelledby="onboarding-title">
-          <p className={styles.eyebrow}>Onboarding</p>
-          <h1 id="onboarding-title" className={styles.title}>
-            Converse. Reflect. Notice.
-          </h1>
-          <p className={styles.subtitle}>
-            Este app foi pensado como um espelho reflexivo para ajudar você a
-            perceber padrões e se acolher com mais clareza. Não é terapia
-            profissional, mas pode ser um espaço de escuta honesta.
-          </p>
+        <section className={styles.hero} aria-labelledby="onboarding-title">
+          <div className={styles.heroAuraMobile}>
+            <Aura size={158} />
+          </div>
 
+          <div className={styles.heroText}>
+            <p className={styles.eyebrow}>seu espaço</p>
+            <h1 id="onboarding-title" className={styles.title}>
+              Conheça você
+              <br />
+              <span className={styles.titleEmphasis}>melhor.</span>
+            </h1>
+            <p className={styles.subtitle}>
+              Um espaço para conversar consigo mesmo e enxergar seus próprios
+              padrões. Cada conversa é um mergulho — quanto mais fundo você
+              desce, mais você se conhece.
+            </p>
+
+            <div className={styles.ctaRow}>
+              {isAuthenticated ? (
+                <Link className={styles.primaryButton} href="/chat">
+                  Ir para o chat
+                </Link>
+              ) : (
+                <Link className={styles.primaryButton} href="/auth">
+                  Começar a jornada
+                </Link>
+              )}
+
+              <details className={styles.details}>
+                <summary className={styles.ghostButton}>Como usamos seus dados</summary>
+                <p className={styles.detailText}>
+                  Usamos o conteúdo que você compartilha para melhorar a experiência
+                  do app, oferecer insights mais úteis e preservar seu histórico em
+                  uma sessão segura. Não compartilhamos suas informações com terceiros
+                  para fins comerciais.
+                </p>
+              </details>
+            </div>
+
+            <p className={styles.privacyLine}>
+              <span className={styles.privacyDot} aria-hidden="true" />
+              Privado e criptografado · não é terapia profissional
+            </p>
+          </div>
+
+          <div className={styles.heroAuraDesktop}>
+            <Aura size={230} />
+            <p className={styles.auraCaption}>A AURA · SUA PRESENÇA</p>
+          </div>
+        </section>
+
+        <section className={`${styles.content} container`}>
           <div className={styles.steps} aria-label="pilares do onboarding">
             {pillars.map((pillar) => (
               <article key={pillar.title} className={styles.step}>
@@ -59,39 +106,10 @@ export default async function Home() {
             ))}
           </div>
 
-          <div className={styles.panel}>
-            <h2 className={styles.panelTitle}>Privacidade</h2>
-            <p className={styles.panelText}>
-              Transcrições e notas são tratadas com cuidado e você pode acessar
-              explicações simples sobre como elas são usadas antes de avançar.
-            </p>
-
-            <details className={styles.details}>
-              <summary className={styles.summary}>Como usamos seus dados</summary>
-              <p className={styles.detailText}>
-                Usamos o conteúdo que você compartilha para melhorar a experiência
-                do app, oferecer insights mais úteis e preservar seu histórico em
-                uma sessão segura. Não compartilhamos suas informações com terceiros
-                para fins comerciais.
-              </p>
-            </details>
-          </div>
-
-          <div className={styles.actions}>
-            {isAuthenticated ? (
-              <Link className={styles.primaryButton} href="/chat">
-                Ir para o chat
-              </Link>
-            ) : (
-              <Link className={styles.primaryButton} href="/auth">
-                Começar sessão
-              </Link>
-            )}
-            <p className={styles.notice}>
-              Se estiver em risco imediato, ligue para os serviços de emergência
-              locais.
-            </p>
-          </div>
+          <p className={styles.notice}>
+            Se estiver em risco imediato, ligue para os serviços de emergência
+            locais.
+          </p>
         </section>
       </main>
     </>

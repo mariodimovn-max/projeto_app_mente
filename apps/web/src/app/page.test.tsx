@@ -39,7 +39,7 @@ describe("Home onboarding page", () => {
     expect(screen.getAllByText(/Privacidade/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Começar/i).length).toBeGreaterThan(0);
 
-    const cta = screen.getByRole("link", { name: /Começar sessão/i });
+    const cta = screen.getByRole("link", { name: /Começar a jornada/i });
     expect(cta.getAttribute("href")).toBe("/auth");
   });
 
@@ -71,7 +71,7 @@ describe("Home onboarding page", () => {
     const element = await HomePage();
     render(element);
 
-    expect(screen.queryByRole("link", { name: /Começar sessão/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /Começar a jornada/i })).not.toBeInTheDocument();
     const cta = screen.getByRole("link", { name: /Ir para o chat/i });
     expect(cta.getAttribute("href")).toBe("/chat");
   });
