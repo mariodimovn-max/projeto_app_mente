@@ -89,6 +89,37 @@ describe("ChatWindow", () => {
     });
   });
 
+  it("não avança o medidor de profundidade quando a resposta é do fluxo de crise", async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      createStreamResponse(["Resposta de crise com recursos de ajuda."], {
+        "X-Session-Id": "session-1",
+        "X-Crisis-Response": "true",
+      }) as unknown as Response
+    );
+
+    render(<ChatWindow />);
+    sendMessage("Uma mensagem de crise de teste.");
+
+    await waitFor(() =>
+      expect(screen.getByText("Resposta de crise com recursos de ajuda.")).toBeInTheDocument()
+    );
+
+    expect(screen.getByText("−0m")).toBeInTheDocument();
+  });
+
+  it("avança o medidor de profundidade após uma resposta normal", async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      createStreamResponse(["Resposta normal."], { "X-Session-Id": "session-1" }) as unknown as Response
+    );
+
+    render(<ChatWindow />);
+    sendMessage("Uma mensagem válida de teste.");
+
+    await waitFor(() => expect(screen.getByText("Resposta normal.")).toBeInTheDocument());
+
+    expect(screen.getByText("−2m")).toBeInTheDocument();
+  });
+
   it("mostra um banner de erro com retry explícito quando o envio falha, sem reenviar automaticamente", async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
       createErrorResponse("Não consegui enviar sua mensagem. Pode tentar novamente?") as unknown as Response
