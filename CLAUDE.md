@@ -140,8 +140,8 @@ Aplicativo de diário digital que funciona como **espelho reflexivo** — não t
 - [x] Arquitetura técnica — completa e validada (`_bmad-output/planning-artifacts/architecture.md`)
 - [x] Épicos e histórias — 5 épicos, 30 histórias, validados (`_bmad-output/planning-artifacts/epics.md`)
 - [x] Epic 1 — Autenticação: Stories 1.1 a 1.7 concluídas (setup do repo, fundação visual/acessibilidade, onboarding, convite/criação de conta, login, recuperação de senha, logout)
-- [x] Epic 2 — Conversação: Stories 2.1 a 2.5 concluídas (chat com streaming, adaptação de tom por estado emocional, gravação e transcrição de voz, edição de transcrição antes de enviar, fluxo de crise com resposta fixa a sinais de risco severo); inclui dois redesigns visuais aplicados sobre a base do chat/onboarding ("Aura" e depois o modelo único com medidor de profundidade)
-- [ ] Próxima história: Epic 2 / Story 2.6 (limite diário de mensagens)
+- [x] Epic 2 — Conversação: Stories 2.1 a 2.6 concluídas (chat com streaming, adaptação de tom por estado emocional, gravação e transcrição de voz, edição de transcrição antes de enviar, fluxo de crise com resposta fixa a sinais de risco severo, limite diário de mensagens); inclui dois redesigns visuais aplicados sobre a base do chat/onboarding ("Aura" e depois o modelo único com medidor de profundidade)
+- [ ] Próxima história: Epic 3 (verificar `epics.md` para o próximo épico do roadmap)
 
 > Detalhes de implementação de cada história (arquivos alterados, decisões tomadas, achados de code review) ficam no histórico do git, não aqui.
 

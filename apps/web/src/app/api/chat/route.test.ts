@@ -42,6 +42,12 @@ vi.mock("@/lib/agent/memory", () => ({
   buildConversationMessages: buildConversationMessagesMock,
 }));
 
+const hasReachedDailyMessageLimitMock = vi.fn(async () => false);
+
+vi.mock("@/lib/rate-limit", () => ({
+  hasReachedDailyMessageLimit: hasReachedDailyMessageLimitMock,
+}));
+
 function createFakeMessageStream(
   chunks: string[],
   shouldFail = false,
@@ -102,6 +108,8 @@ describe("POST /api/chat", () => {
     messagesInsertMock.mockReset();
     buildConversationMessagesMock.mockClear();
     streamMock.mockClear();
+    hasReachedDailyMessageLimitMock.mockReset();
+    hasReachedDailyMessageLimitMock.mockResolvedValue(false);
     getUserMock.mockResolvedValue({ data: { user: { id: "user-1" } } });
     sessionsInsertMock.mockResolvedValue({ data: { id: "session-1" }, error: null });
     messagesInsertMock.mockResolvedValue({ error: null });
@@ -356,5 +364,39 @@ describe("POST /api/chat", () => {
     );
 
     consoleErrorSpy.mockRestore();
+  });
+
+  it("bloqueia com 429 e mensagem gentil quando o limite diário de mensagens foi atingido", async () => {
+    hasReachedDailyMessageLimitMock.mockResolvedValue(true);
+    const { POST } = await import("./route");
+
+    const response = await POST(postRequest({ message: "Uma mensagem válida de teste." }));
+    const json = await response.json();
+
+    expect(response.status).toBe(429);
+    expect(json.error.code).toBe("daily_limit_reached");
+    expect(json.error.message).toContain("limite");
+    expect(sessionsInsertMock).not.toHaveBeenCalled();
+    expect(messagesInsertMock).not.toHaveBeenCalled();
+    expect(streamMock).not.toHaveBeenCalled();
+  });
+
+  it("não bloqueia a resposta de crise mesmo com o limite diário de mensagens atingido", async () => {
+    hasReachedDailyMessageLimitMock.mockResolvedValue(true);
+    const { POST } = await import("./route");
+    const { CRISIS_RESPONSE_MESSAGE } = await import("@/lib/agent/crisis");
+
+    const response = await POST(
+      postRequest({ message: "Eu quero morrer, não aguento mais nada disso." })
+    );
+    const text = await readFullBody(response);
+
+    expect(response.status).toBe(200);
+    expect(text).toBe(CRISIS_RESPONSE_MESSAGE);
+    expect(messagesInsertMock).toHaveBeenCalledWith({
+      session_id: "session-1",
+      role: "user",
+      content: "Eu quero morrer, não aguento mais nada disso.",
+    });
   });
 });

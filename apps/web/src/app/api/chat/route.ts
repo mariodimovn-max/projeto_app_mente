@@ -6,6 +6,7 @@ import { CRISIS_RESPONSE_MESSAGE, detectCrisisSignal } from "@/lib/agent/crisis"
 import { analyzeEmotionalState } from "@/lib/agent/emotional-state";
 import { buildConversationMessages } from "@/lib/agent/memory";
 import { buildSystemPrompt, resolveMaxTokens } from "@/lib/agent/prompts";
+import { hasReachedDailyMessageLimit } from "@/lib/rate-limit";
 import { chatRequestSchema, MAX_MESSAGE_LENGTH } from "@/lib/validation/message";
 
 export const runtime = "nodejs";
@@ -14,6 +15,14 @@ const GENERIC_ERROR = {
   error: {
     code: "chat_failed",
     message: "Não consegui processar sua mensagem agora. Pode tentar novamente?",
+  },
+};
+
+const DAILY_LIMIT_ERROR = {
+  error: {
+    code: "daily_limit_reached",
+    message:
+      "Você chegou ao limite de mensagens de hoje. Isso ajuda a manter o espaço saudável para todos — volte amanhã para continuar a conversa.",
   },
 };
 
@@ -96,6 +105,13 @@ export async function POST(request: Request) {
 
     message = parsed.data.message;
     existingSessionId = parsed.data.sessionId;
+  }
+
+  // Crisis replies must never be blocked (Story 2.5 requirement), so the daily cost-control
+  // limit only applies to the normal reflective flow — checked here, after crisis detection
+  // but before any persistence, so a blocked message is neither saved nor sent to the API.
+  if (!isCrisis && (await hasReachedDailyMessageLimit(supabase, user.id))) {
+    return NextResponse.json(DAILY_LIMIT_ERROR, { status: 429 });
   }
 
   const sessionId = await ensureSessionId(supabase, user.id, existingSessionId);
