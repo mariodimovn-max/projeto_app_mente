@@ -1,6 +1,7 @@
 import { Aura } from "@/components/aura/Aura";
 import { depthLevelLabel, depthReadingLabel } from "@/lib/chat/depth";
 import type { SessionSynthesis } from "@/types/synthesis";
+import { SynthesisReactionDock } from "./SynthesisReactionDock";
 import styles from "./SynthesisCard.module.css";
 
 interface SynthesisCardProps {
@@ -99,6 +100,8 @@ export function SynthesisCard({ synthesis }: SynthesisCardProps) {
             Ver a conversa
           </button>
         </div>
+
+        <SynthesisReactionDock synthesisId={synthesis.id} />
       </div>
     </div>
   );
