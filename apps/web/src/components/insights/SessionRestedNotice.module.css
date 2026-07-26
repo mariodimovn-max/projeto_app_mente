@@ -1,0 +1,57 @@
+.notice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--space-lg) var(--space);
+  background: radial-gradient(120% 78% at 50% 40%, #123840, #0c1c22 44%, #080f12);
+  border: 1px solid var(--color-border);
+  border-radius: 22px;
+  max-width: var(--content-max-width);
+  width: 100%;
+  margin: 0 auto;
+}
+
+.auraWrap {
+  margin-bottom: var(--space);
+}
+
+.eyebrow {
+  font: 400 0.6875rem var(--font-mono);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(168, 224, 217, 0.55);
+  margin: 0 0 var(--space-x);
+}
+
+.message {
+  font: 300 var(--fs-xl) / 1.35 var(--font-serif);
+  color: var(--color-text);
+  margin: 0;
+  max-width: 420px;
+}
+
+.subMessage {
+  font: 400 var(--fs-sm) / 1.6 var(--font-sans);
+  color: var(--color-muted);
+  margin: var(--space-x) 0 0;
+  max-width: 320px;
+}
+
+.revealButton {
+  margin-top: var(--space);
+  height: 50px;
+  padding: 0 1.5rem;
+  border: none;
+  border-radius: 15px;
+  background: linear-gradient(180deg, var(--color-accent-1), var(--color-accent-2));
+  color: var(--color-surface);
+  font: 600 var(--fs-md) var(--font-sans);
+  cursor: pointer;
+}
+
+.caption {
+  margin: var(--space-x) 0 0;
+  font-size: var(--fs-sm);
+  color: rgba(233, 241, 238, 0.4);
+}

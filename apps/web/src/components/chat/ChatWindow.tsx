@@ -1,13 +1,22 @@
 "use client";
 
-import { useReducer, useRef, useState } from "react";
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { ChatComposer } from "./ChatComposer";
 import { DepthMeter } from "./DepthMeter";
 import { MessageBubble } from "./MessageBubble";
+import { ThinkingIndicator } from "./ThinkingIndicator";
 import { Aura } from "@/components/aura/Aura";
+import { SessionRestedNotice } from "@/components/insights/SessionRestedNotice";
+import { SynthesisCard } from "@/components/insights/SynthesisCard";
+import { endSession } from "@/lib/actions/endSession";
 import { depthFraction, depthLevelLabel, depthReadingLabel, nextDepth } from "@/lib/chat/depth";
 import type { ChatMessage, ChatStatus } from "@/types/chat";
+import type { SessionSynthesis } from "@/types/synthesis";
 import styles from "./ChatWindow.module.css";
+
+// 60 minutos de inatividade (Story 3.1, AC1/AC4) — exportado para ser usado nos testes
+// com fake timers, em vez de duplicar o valor.
+export const INACTIVITY_TIMEOUT_MS = 60 * 60 * 1000;
 
 interface ChatState {
   status: ChatStatus;
@@ -83,9 +92,19 @@ export function ChatWindow() {
   const [state, dispatch] = useReducer(reducer, initialState);
   const sessionIdRef = useRef<string | null>(null);
   const [depth, setDepth] = useState(0);
+  const [synthesis, setSynthesis] = useState<SessionSynthesis | null>(null);
+  // Encerramento manual revela a síntese na hora; encerramento automático por inatividade
+  // mostra antes o convite suave de SessionRestedNotice (AC4 — layout "Aura - Síntese").
+  const [synthesisRevealed, setSynthesisRevealed] = useState(false);
+  const [endSessionError, setEndSessionError] = useState<string | null>(null);
+  const [isEndingSession, setIsEndingSession] = useState(false);
+  const isEndingRef = useRef(false);
 
   async function sendMessage(text: string) {
     const userMessageId = crypto.randomUUID();
+    // Nova atividade de chat invalida um erro de encerramento anterior — sem isso, o banner
+    // de "Não consegui gerar a síntese..." ficaria preso na tela mesmo com a conversa seguindo.
+    setEndSessionError(null);
     dispatch({ type: "send_start", text, userMessageId });
 
     try {
@@ -146,6 +165,81 @@ export function ChatWindow() {
 
   const isBusy = state.status === "loading" || state.status === "streaming";
 
+  const handleEndSession = useCallback(
+    async (trigger: "manual" | "auto") => {
+      const sessionId = sessionIdRef.current;
+      // isBusy evita encerrar com uma troca ainda em andamento (mensagem enviada mas sem
+      // resposta persistida); isEndingRef evita chamadas concorrentes (clique + timer, ou
+      // duplo clique) — ambos entrariam em conflito com a checagem de posse/leitura do banco
+      // feita dentro da própria Server Action.
+      if (!sessionId || isBusy || isEndingRef.current) {
+        return;
+      }
+
+      isEndingRef.current = true;
+      setIsEndingSession(true);
+      setEndSessionError(null);
+
+      try {
+        const result = await endSession(sessionId, depth);
+
+        if ("error" in result) {
+          setEndSessionError(result.error);
+          return;
+        }
+
+        setSynthesis(result.synthesis);
+        // Manual: o usuário já pediu para encerrar, mostra a síntese na hora. Automático: a
+        // sessão foi encerrada em background sem ação do usuário (AC4) — mostra primeiro o
+        // convite suave de SessionRestedNotice, só revelando a síntese quando ele quiser.
+        setSynthesisRevealed(trigger === "manual");
+      } catch {
+        // A Server Action já trata seus próprios erros internos e retorna { error }; isto
+        // só é alcançado se a chamada em si rejeitar (ex.: RPC de rede caindo) — sem isto, o
+        // botão ficaria travado em "Gerando síntese..." para sempre, sem chance de tentar de novo.
+        setEndSessionError(
+          "Não consegui gerar a síntese desta sessão agora. Tente novamente."
+        );
+      } finally {
+        isEndingRef.current = false;
+        setIsEndingSession(false);
+      }
+    },
+    [isBusy, depth]
+  );
+
+  const lastMessage = state.messages[state.messages.length - 1];
+  // O agente já enviou cabeçalhos e começou a "streamar", mas o modelo pode levar um
+  // tempo real para gerar o primeiro token — o indicador cobre esse intervalo também,
+  // não só a fase de "loading" antes do stream começar.
+  const isAwaitingFirstToken =
+    lastMessage?.role === "assistant" && lastMessage.content === "" && state.status === "streaming";
+  const isThinking = state.status === "loading" || isAwaitingFirstToken;
+  // Uma bolha do assistente sem conteúdo nunca comunica nada por si só — escondida em
+  // qualquer status (não só enquanto aguarda o primeiro token), para não deixá-la visível
+  // para sempre se o stream cair ou terminar sem nenhum chunk.
+  const visibleMessages = state.messages.filter((message) => message.role !== "assistant" || message.content !== "");
+  // AC1: encerrar exige "pelo menos uma troca de mensagens" — uma resposta do
+  // agente com conteúdo real confirma que a troca aconteceu.
+  const hasCompletedExchange = state.messages.some(
+    (message) => message.role === "assistant" && message.content !== ""
+  );
+
+  // AC4: encerramento automático por inatividade, em background. O temporizador
+  // reinicia a cada nova mensagem (histórico muda) e é cancelado assim que uma
+  // síntese já existe, para não disparar de novo depois de a sessão já ter encerrado.
+  useEffect(() => {
+    if (!hasCompletedExchange || synthesis) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      void handleEndSession("auto");
+    }, INACTIVITY_TIMEOUT_MS);
+
+    return () => clearTimeout(timer);
+  }, [state.messages, hasCompletedExchange, synthesis, handleEndSession]);
+
   return (
     <div className={styles.shell}>
       <header className={styles.mobileHeader}>
@@ -176,12 +270,13 @@ export function ChatWindow() {
           {state.messages.length === 0 && (
             <p className={styles.emptyState}>Escreva quando quiser começar.</p>
           )}
-          {state.messages.map((message) => (
+          {visibleMessages.map((message) => (
             <MessageBubble key={message.id} message={message} />
           ))}
+          {isThinking && <ThinkingIndicator />}
         </div>
 
-        {state.status === "error" && (
+        {state.status === "error" && !synthesis && (
           <div className={styles.errorBanner} role="alert">
             <p>{state.errorMessage}</p>
             <button type="button" className={styles.retryButton} onClick={handleRetry}>
@@ -190,9 +285,38 @@ export function ChatWindow() {
           </div>
         )}
 
-        <div className={styles.composerArea}>
-          <ChatComposer disabled={isBusy} onSend={(text) => void sendMessage(text)} />
-        </div>
+        {synthesis && synthesisRevealed ? (
+          <div className={styles.composerArea}>
+            <SynthesisCard synthesis={synthesis} />
+          </div>
+        ) : synthesis ? (
+          <div className={styles.composerArea}>
+            <SessionRestedNotice onReveal={() => setSynthesisRevealed(true)} />
+          </div>
+        ) : (
+          <>
+            {endSessionError && (
+              <div className={styles.errorBanner} role="alert">
+                <p>{endSessionError}</p>
+              </div>
+            )}
+
+            <div className={styles.composerArea}>
+              <ChatComposer disabled={isBusy} onSend={(text) => void sendMessage(text)} />
+              {hasCompletedExchange && (
+                <button
+                  type="button"
+                  className={styles.endSessionButton}
+                  onClick={() => void handleEndSession("manual")}
+                  disabled={isEndingSession || isBusy}
+                  aria-busy={isEndingSession}
+                >
+                  {isEndingSession ? "Gerando síntese..." : "Encerrar sessão"}
+                </button>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
