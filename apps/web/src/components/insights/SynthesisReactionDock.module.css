@@ -1,0 +1,190 @@
+.dock {
+  padding-top: var(--space);
+  margin-top: var(--space);
+  border-top: 1px solid var(--color-border);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-x);
+  margin-bottom: var(--space-x);
+}
+
+.prompt {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: rgba(233, 241, 238, 0.75);
+}
+
+.statusText {
+  font: 400 0.6875rem var(--font-mono);
+  letter-spacing: 0.04em;
+  color: rgba(233, 241, 238, 0.34);
+  white-space: nowrap;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-x);
+  flex-wrap: wrap;
+}
+
+.emojiRow {
+  display: flex;
+  gap: var(--space-xx);
+}
+
+.emojiButton {
+  width: 52px;
+  height: 52px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--color-border);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+
+.emojiCaption {
+  font: 400 0.5625rem var(--font-sans);
+  color: rgba(233, 241, 238, 0.5);
+  white-space: nowrap;
+}
+
+.emojiButton:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.emojiButtonActive {
+  background: rgba(127, 208, 200, 0.16);
+  border-color: rgba(127, 208, 200, 0.45);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px -8px rgba(111, 200, 193, 0.5);
+}
+
+.divider {
+  width: 1px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.inputWrap {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-xx);
+  height: 42px;
+  padding: 0 4px 0 var(--space-x);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--color-border);
+  transition: border-color 0.3s;
+}
+
+.inputWrapFocused {
+  border-color: rgba(127, 208, 200, 0.4);
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--color-text);
+  font: 400 var(--fs-sm) var(--font-sans);
+}
+
+.counter {
+  font: 400 0.625rem var(--font-mono);
+  color: rgba(233, 241, 238, 0.3);
+}
+
+.sendButton {
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border: none;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(233, 241, 238, 0.3);
+  cursor: default;
+  transition: all 0.25s;
+}
+
+.sendButton:not(:disabled) {
+  background: rgba(127, 208, 200, 0.9);
+  color: #06201e;
+  cursor: pointer;
+}
+
+.error {
+  margin: var(--space-x) 0 0;
+  font-size: var(--fs-sm);
+  color: var(--color-error);
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-x);
+  margin-top: var(--space-x);
+}
+
+.footerSpacer {
+  flex: 1;
+}
+
+.savedPill {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xx);
+  padding: 6px 12px;
+  border-radius: 11px;
+  background: rgba(127, 208, 200, 0.12);
+  border: 1px solid rgba(127, 208, 200, 0.22);
+  font: 500 0.75rem var(--font-sans);
+  color: #c9f0ea;
+}
+
+.undoButton {
+  background: none;
+  border: none;
+  color: rgba(233, 241, 238, 0.5);
+  font: 400 0.75rem var(--font-sans);
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.skipButton {
+  background: none;
+  border: none;
+  color: rgba(233, 241, 238, 0.42);
+  font: 400 var(--fs-sm) var(--font-sans);
+  cursor: pointer;
+  padding: 4px;
+}
+
+.dismissedNote {
+  margin-top: var(--space);
+  padding-top: var(--space);
+  border-top: 1px solid var(--color-border);
+  font-size: var(--fs-sm);
+  color: var(--color-muted);
+}

@@ -60,6 +60,13 @@ describe("SynthesisCard", () => {
     expect(screen.getByRole("button", { name: "Ver a conversa" })).toBeDisabled();
   });
 
+  it("renderiza o dock de reação à síntese (Story 3.2)", () => {
+    render(<SynthesisCard synthesis={synthesis} />);
+
+    expect(screen.getByText("Como isso ressoou em você?")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Me pegou fundo" })).toBeInTheDocument();
+  });
+
   it("usa uma key estável mesmo com temas e padrões duplicados, sem quebrar a renderização", () => {
     render(
       <SynthesisCard
