@@ -38,8 +38,11 @@ const buildConversationMessagesMock = vi.fn(async () => [
   { role: "user" as const, content: "Uma mensagem válida de teste." },
 ]);
 
+const buildMemoryContextMock = vi.fn(async () => null as string | null);
+
 vi.mock("@/lib/agent/memory", () => ({
   buildConversationMessages: buildConversationMessagesMock,
+  buildMemoryContext: buildMemoryContextMock,
 }));
 
 const hasReachedDailyMessageLimitMock = vi.fn(async () => false);
@@ -107,6 +110,8 @@ describe("POST /api/chat", () => {
     sessionsInsertMock.mockReset();
     messagesInsertMock.mockReset();
     buildConversationMessagesMock.mockClear();
+    buildMemoryContextMock.mockReset();
+    buildMemoryContextMock.mockResolvedValue(null);
     streamMock.mockClear();
     hasReachedDailyMessageLimitMock.mockReset();
     hasReachedDailyMessageLimitMock.mockResolvedValue(false);
@@ -379,6 +384,54 @@ describe("POST /api/chat", () => {
     expect(sessionsInsertMock).not.toHaveBeenCalled();
     expect(messagesInsertMock).not.toHaveBeenCalled();
     expect(streamMock).not.toHaveBeenCalled();
+  });
+
+  it("inclui a memória em camadas no prompt do sistema quando o usuário tem sessões anteriores", async () => {
+    buildMemoryContextMock.mockResolvedValue(
+      "MEMÓRIA DE SESSÕES ANTERIORES\n\nSínteses das últimas sessões..."
+    );
+    const { POST } = await import("./route");
+
+    await POST(postRequest({ message: "Uma mensagem válida de teste." }));
+
+    expect(buildMemoryContextMock).toHaveBeenCalledWith(expect.anything(), "user-1", "session-1");
+    const callArgs = streamMock.mock.calls[0]![0];
+    expect(callArgs.system).toContain("MEMÓRIA DE SESSÕES ANTERIORES");
+  });
+
+  it("não inclui bloco de memória quando o usuário está na primeira sessão", async () => {
+    buildMemoryContextMock.mockResolvedValue(null);
+    const { POST } = await import("./route");
+
+    await POST(postRequest({ message: "Uma mensagem válida de teste." }));
+
+    const callArgs = streamMock.mock.calls[0]![0];
+    expect(callArgs.system).not.toContain("MEMÓRIA");
+  });
+
+  it("segue a conversa normalmente mesmo quando a montagem da memória em camadas falha", async () => {
+    buildMemoryContextMock.mockRejectedValue(new Error("falha ao ler memória"));
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const { POST } = await import("./route");
+
+    const response = await POST(postRequest({ message: "Uma mensagem válida de teste." }));
+    const text = await readFullBody(response);
+
+    expect(text).toBe("Olá, tudo bem?");
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      "Erro ao montar memória em camadas do agente:",
+      expect.anything()
+    );
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  it("não busca memória em camadas no fluxo de resposta de crise", async () => {
+    const { POST } = await import("./route");
+
+    await POST(postRequest({ message: "Eu quero morrer, não aguento mais nada disso." }));
+
+    expect(buildMemoryContextMock).not.toHaveBeenCalled();
   });
 
   it("não bloqueia a resposta de crise mesmo com o limite diário de mensagens atingido", async () => {

@@ -44,6 +44,24 @@ describe("buildSystemPrompt", () => {
     expect(inflatedAddendum).toBe(confusedAddendum);
     expect(inflatedAddendum).toBe(neutralAddendum);
   });
+
+  it("não inclui bloco de memória quando memoryContext é null (usuário sem sessões anteriores)", () => {
+    const result = buildSystemPrompt("neutral", "low", null);
+    expect(result).not.toContain("MEMÓRIA");
+  });
+
+  it("anexa o bloco de memória em camadas ao final do prompt quando fornecido", () => {
+    const memoryContext = "MEMÓRIA DE SESSÕES ANTERIORES\n\nSínteses das últimas sessões...";
+    const result = buildSystemPrompt("neutral", "low", memoryContext);
+    expect(result.endsWith(memoryContext)).toBe(true);
+  });
+
+  it("inclui o bloco de memória mesmo com intensidade alta, após o ajuste de intensidade", () => {
+    const memoryContext = "MEMÓRIA DE SESSÕES ANTERIORES\n\n...";
+    const result = buildSystemPrompt("melancholy", "high", memoryContext);
+    expect(result).toContain("breve");
+    expect(result.endsWith(memoryContext)).toBe(true);
+  });
 });
 
 describe("resolveMaxTokens", () => {

@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getAnthropicClient } from "@/lib/agent/client.server";
 import { CRISIS_RESPONSE_MESSAGE, detectCrisisSignal } from "@/lib/agent/crisis";
 import { analyzeEmotionalState } from "@/lib/agent/emotional-state";
-import { buildConversationMessages } from "@/lib/agent/memory";
+import { buildConversationMessages, buildMemoryContext } from "@/lib/agent/memory";
 import { buildSystemPrompt, resolveMaxTokens } from "@/lib/agent/prompts";
 import { hasReachedDailyMessageLimit } from "@/lib/rate-limit";
 import { chatRequestSchema, MAX_MESSAGE_LENGTH } from "@/lib/validation/message";
@@ -156,9 +156,19 @@ export async function POST(request: Request) {
     });
   }
 
-  const conversation: MessageParam[] = await buildConversationMessages(supabase, sessionId);
+  // Sessão atual e memória em camadas (Story 3.4, AC1) são leituras independentes —
+  // buscadas em paralelo em vez de em série para não somar latência à resposta do agente.
+  // A memória é best-effort: se a leitura falhar, a conversa segue sem essa camada em vez
+  // de derrubar a resposta inteira por causa de um contexto adicional.
+  const [conversation, memoryContext]: [MessageParam[], string | null] = await Promise.all([
+    buildConversationMessages(supabase, sessionId),
+    buildMemoryContext(supabase, user.id, sessionId).catch((error) => {
+      console.error("Erro ao montar memória em camadas do agente:", error);
+      return null;
+    }),
+  ]);
   const { state: emotionalState, intensity: emotionalIntensity } = analyzeEmotionalState(message);
-  const systemPrompt = buildSystemPrompt(emotionalState, emotionalIntensity);
+  const systemPrompt = buildSystemPrompt(emotionalState, emotionalIntensity, memoryContext);
   const maxTokens = resolveMaxTokens(emotionalState, emotionalIntensity);
   const anthropic = getAnthropicClient();
 

@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getAnthropicClient } from "@/lib/agent/client.server";
 import { buildConversationMessages } from "@/lib/agent/memory";
 import { generateSessionSynthesis } from "@/lib/agent/synthesis";
+import { updateUserPatterns } from "@/lib/patterns/userPatterns";
 import type { SessionSynthesis } from "@/types/synthesis";
 
 const GENERIC_ERROR = "Não consegui gerar a síntese desta sessão agora. Tente novamente.";
@@ -48,7 +49,10 @@ function mapSynthesisRow(
 export async function endSession(
   sessionId: string,
   depth: number
-): Promise<{ synthesis: SessionSynthesis } | { error: string }> {
+): Promise<
+  | { synthesis: SessionSynthesis; showPatternPrivacyNotice: boolean }
+  | { error: string }
+> {
   const parsedSessionId = sessionIdSchema.safeParse(sessionId);
   const parsedDepth = depthSchema.safeParse(depth);
   if (!parsedSessionId.success || !parsedDepth.success) {
@@ -120,8 +124,12 @@ export async function endSession(
           .single();
 
         if (existing) {
+          // Não atualiza user_patterns aqui: a chamada vencedora (que de fato inseriu a
+          // síntese) já cuidou disso, e agregar de novo aqui contaria a mesma sessão duas
+          // vezes no acumulado.
           return {
             synthesis: mapSynthesisRow(existing as SynthesisRow, { durationMinutes, exchangeCount }),
+            showPatternPrivacyNotice: false,
           };
         }
       }
@@ -139,7 +147,31 @@ export async function endSession(
       return { error: GENERIC_ERROR };
     }
 
-    return { synthesis: mapSynthesisRow(row as SynthesisRow, { durationMinutes, exchangeCount }) };
+    // Story 3.3, AC1/AC2: atualiza o agregado incremental de padrões longitudinais junto
+    // ao encerramento da sessão. Melhor esforço — se a agregação falhar, a síntese já foi
+    // salva e continua útil ao usuário, então o erro é logado em vez de descartar o
+    // resultado da sessão inteira por causa de uma atualização secundária.
+    let showPatternPrivacyNotice = false;
+    try {
+      const { isFirstAnalysis } = await updateUserPatterns(supabase, user.id, {
+        themes: content.themes,
+        emotions: content.emotions,
+        triggers: content.triggers,
+      });
+      showPatternPrivacyNotice = isFirstAnalysis;
+    } catch (patternError) {
+      console.error(
+        "Erro ao atualizar o agregado de padrões do usuário:",
+        patternError instanceof Error
+          ? { message: patternError.message, stack: patternError.stack }
+          : patternError
+      );
+    }
+
+    return {
+      synthesis: mapSynthesisRow(row as SynthesisRow, { durationMinutes, exchangeCount }),
+      showPatternPrivacyNotice,
+    };
   } catch (error) {
     console.error(
       "Erro ao gerar síntese da sessão:",

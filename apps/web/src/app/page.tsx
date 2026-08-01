@@ -40,7 +40,12 @@ export default async function Home() {
             <Aura size={26} />
             <span>seu espaço</span>
           </div>
-          <LogoutButton />
+          <div className={styles.appHeaderActions}>
+            <Link href="/historico" className={styles.historyLink}>
+              Histórico
+            </Link>
+            <LogoutButton />
+          </div>
         </header>
       )}
       <main className={styles.main}>

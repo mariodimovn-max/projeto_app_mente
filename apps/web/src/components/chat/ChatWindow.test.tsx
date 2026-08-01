@@ -295,6 +295,7 @@ describe("ChatWindow", () => {
         exchangeCount: 1,
         createdAt: "2026-07-25T10:23:00Z",
       },
+      showPatternPrivacyNotice: false,
     });
 
     render(<ChatWindow />);
@@ -310,6 +311,41 @@ describe("ChatWindow", () => {
     expect(screen.queryByLabelText(/Sua mensagem/i)).not.toBeInTheDocument();
     // Encerramento manual revela a síntese direto — sem passar pelo convite de "sessão repousou".
     expect(screen.queryByText("A sessão repousou")).not.toBeInTheDocument();
+    // showPatternPrivacyNotice: false — não é a primeira análise de padrões deste usuário.
+    expect(screen.queryByText(/temas, emoções e gatilhos/i)).not.toBeInTheDocument();
+  });
+
+  it("mostra o aviso de privacidade de padrões quando a Server Action sinaliza a primeira análise (Story 3.3, AC3)", async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      createStreamResponse(["Certo, entendi."], { "X-Session-Id": "session-1" }) as unknown as Response
+    );
+    endSessionMock.mockResolvedValue({
+      synthesis: {
+        id: "synthesis-1",
+        title: "Hoje você tocou no medo de não dar conta.",
+        themes: ["Sono"],
+        explored: "Você explorou sua rotina de sono.",
+        patterns: ["Padrão de irregularidade notado."],
+        openQuestion: "O que uma boa noite de sono mudaria amanhã?",
+        depth: 2,
+        durationMinutes: 5,
+        exchangeCount: 1,
+        createdAt: "2026-07-25T10:23:00Z",
+      },
+      showPatternPrivacyNotice: true,
+    });
+
+    render(<ChatWindow />);
+    sendMessage("Uma mensagem válida de teste.");
+    await waitFor(() => expect(screen.getByText("Certo, entendi.")).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole("button", { name: /Encerrar sessão/i }));
+
+    expect(await screen.findByText(/temas, emoções e gatilhos/i)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Entendi" }));
+
+    expect(screen.queryByText(/temas, emoções e gatilhos/i)).not.toBeInTheDocument();
   });
 
   it("mostra um erro quando o encerramento falha, mantendo o composer disponível", async () => {
@@ -349,6 +385,7 @@ describe("ChatWindow", () => {
           exchangeCount: 1,
           createdAt: "2026-07-25T11:00:00Z",
         },
+        showPatternPrivacyNotice: true,
       });
 
       render(<ChatWindow />);
@@ -376,6 +413,10 @@ describe("ChatWindow", () => {
       // primeiro o convite suave, sem exigir ação, e só revela ao usuário pedir.
       expect(screen.getByText("A sessão repousou")).toBeInTheDocument();
       expect(screen.queryByRole("heading", { name: "Hoje algo ficou mais claro." })).not.toBeInTheDocument();
+      // Story 3.3, AC3: mesmo sem o usuário ter revelado a síntese ainda, a agregação de
+      // padrões já aconteceu em background — o aviso de privacidade não pode depender de o
+      // usuário clicar "Ver a síntese" para aparecer.
+      expect(screen.getByText(/temas, emoções e gatilhos/i)).toBeInTheDocument();
 
       fireEvent.click(screen.getByRole("button", { name: "Ver a síntese" }));
 

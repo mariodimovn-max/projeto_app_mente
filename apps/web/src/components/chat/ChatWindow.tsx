@@ -6,6 +6,7 @@ import { DepthMeter } from "./DepthMeter";
 import { MessageBubble } from "./MessageBubble";
 import { ThinkingIndicator } from "./ThinkingIndicator";
 import { Aura } from "@/components/aura/Aura";
+import { PatternPrivacyNotice } from "@/components/insights/PatternPrivacyNotice";
 import { SessionRestedNotice } from "@/components/insights/SessionRestedNotice";
 import { SynthesisCard } from "@/components/insights/SynthesisCard";
 import { endSession } from "@/lib/actions/endSession";
@@ -96,6 +97,10 @@ export function ChatWindow() {
   // Encerramento manual revela a síntese na hora; encerramento automático por inatividade
   // mostra antes o convite suave de SessionRestedNotice (AC4 — layout "Aura - Síntese").
   const [synthesisRevealed, setSynthesisRevealed] = useState(false);
+  // Story 3.3, AC3: a Server Action sinaliza quando esta é a primeira vez que o
+  // histórico do usuário é agregado para detecção de padrões — usado para exibir o
+  // aviso de privacidade uma única vez.
+  const [showPatternPrivacyNotice, setShowPatternPrivacyNotice] = useState(false);
   const [endSessionError, setEndSessionError] = useState<string | null>(null);
   const [isEndingSession, setIsEndingSession] = useState(false);
   const isEndingRef = useRef(false);
@@ -189,6 +194,7 @@ export function ChatWindow() {
         }
 
         setSynthesis(result.synthesis);
+        setShowPatternPrivacyNotice(result.showPatternPrivacyNotice);
         // Manual: o usuário já pediu para encerrar, mostra a síntese na hora. Automático: a
         // sessão foi encerrada em background sem ação do usuário (AC4) — mostra primeiro o
         // convite suave de SessionRestedNotice, só revelando a síntese quando ele quiser.
@@ -287,10 +293,16 @@ export function ChatWindow() {
 
         {synthesis && synthesisRevealed ? (
           <div className={styles.composerArea}>
+            {showPatternPrivacyNotice && <PatternPrivacyNotice />}
             <SynthesisCard synthesis={synthesis} />
           </div>
         ) : synthesis ? (
           <div className={styles.composerArea}>
+            {/* O encerramento automático (AC4) mantém a síntese escondida atrás do convite
+                suave até o usuário pedir para vê-la — se ele nunca clicar, a agregação de
+                padrões já aconteceu em background (Story 3.3), então o aviso de privacidade
+                precisa aparecer aqui também, não só depois da revelação. */}
+            {showPatternPrivacyNotice && <PatternPrivacyNotice />}
             <SessionRestedNotice onReveal={() => setSynthesisRevealed(true)} />
           </div>
         ) : (
