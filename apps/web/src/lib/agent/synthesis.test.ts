@@ -19,6 +19,8 @@ describe("generateSessionSynthesis", () => {
       explored: "A dificuldade para dormir e sua rotina noturna.",
       patterns: ["Pequenas vitórias recentes parecem reduzir a ansiedade."],
       openQuestion: "O que mudaria se você desse à sua rotina noturna a mesma atenção que dá ao dia?",
+      emotions: ["ansiedade"],
+      triggers: ["rotina noturna irregular"],
     };
     const anthropic = createAnthropicStub(content);
 
@@ -41,6 +43,8 @@ describe("generateSessionSynthesis", () => {
       explored: "...",
       patterns: ["..."],
       openQuestion: "...?",
+      emotions: ["..."],
+      triggers: [],
     });
 
     await generateSessionSynthesis(anthropic, conversation);

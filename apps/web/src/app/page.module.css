@@ -14,6 +14,17 @@
   color: var(--color-muted);
 }
 
+.appHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space);
+}
+
+.historyLink {
+  font: 500 0.8125rem var(--font-sans);
+  color: var(--color-muted);
+}
+
 .main {
   display: flex;
   flex-direction: column;

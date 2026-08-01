@@ -1,0 +1,33 @@
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space);
+  min-height: 100dvh;
+  padding: var(--space-lg) var(--space) calc(var(--space-lg) * 1.5);
+  background: radial-gradient(130% 55% at 50% 8%, #123138 0%, #0b171b 40%, #080f12 100%);
+}
+
+.backLink {
+  align-self: flex-start;
+  font: 500 var(--fs-sm) var(--font-sans);
+  color: var(--color-muted);
+}
+
+.messages {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-x);
+  width: 100%;
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+}
+
+.errorBanner {
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  padding: var(--space-x);
+  border-radius: 16px;
+  background: rgba(241, 99, 77, 0.12);
+  border: 1px solid rgba(241, 99, 77, 0.3);
+  color: var(--color-text);
+}

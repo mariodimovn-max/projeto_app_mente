@@ -64,11 +64,20 @@ const INTENSITY_ADDENDUM: Record<EmotionalState, string> = {
 export function buildSystemPrompt(
   state: EmotionalState,
   intensity: EmotionalIntensity = "low",
+  // Story 3.4 (AC1/AC2): bloco de memória em camadas (sínteses recentes + agregado de
+  // padrões), montado por lib/agent/memory.ts#buildMemoryContext. null quando o usuário
+  // ainda não tem sessões anteriores — nesse caso o prompt não menciona memória alguma.
+  memoryContext: string | null = null,
 ): string {
   const tone = TONE_MAP[state];
-  const base = `${BASE_SYSTEM_PROMPT}\n\nAJUSTE DE TOM PARA ESTA SESSÃO:\n${tone.systemAddendum}`;
-  if (intensity === "low") return base;
-  return `${base}\n\n${INTENSITY_ADDENDUM[state]}`;
+  let prompt = `${BASE_SYSTEM_PROMPT}\n\nAJUSTE DE TOM PARA ESTA SESSÃO:\n${tone.systemAddendum}`;
+  if (intensity !== "low") {
+    prompt = `${prompt}\n\n${INTENSITY_ADDENDUM[state]}`;
+  }
+  if (memoryContext) {
+    prompt = `${prompt}\n\n${memoryContext}`;
+  }
+  return prompt;
 }
 
 const STANDARD_MAX_TOKENS = 1024;

@@ -18,8 +18,14 @@ Leia a conversa e produza uma síntese estruturada com:
   identificados (cada uma como um item separado da lista, não um parágrafo único); se não houver
   um padrão claro, inclua pelo menos uma observação honesta sobre a sessão
 - openQuestion: uma pergunta aberta e genuína para reflexão futura, não retórica
+- emotions: 1 a 3 emoções centrais expressas na sessão, em palavras curtas (ex: "ansiedade", "alívio");
+  numa sessão sem carga emocional clara, descreva honestamente o tom predominante (ex: "neutralidade",
+  "calma") em vez de inventar uma emoção que não apareceu
+- triggers: 0 a 3 gatilhos identificados — situações, pessoas ou pensamentos específicos que
+  antecederam uma reação emocional na conversa; deixe a lista vazia se nenhum gatilho claro apareceu,
+  em vez de inventar um
 
-Responda em português. Baseie-se apenas no conteúdo real da conversa — nunca invente temas ou padrões que não apareceram.`;
+Responda em português. Baseie-se apenas no conteúdo real da conversa — nunca invente temas, padrões, emoções ou gatilhos que não apareceram.`;
 
 export async function generateSessionSynthesis(
   anthropic: Anthropic,

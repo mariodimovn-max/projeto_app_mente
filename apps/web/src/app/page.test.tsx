@@ -66,6 +66,22 @@ describe("Home onboarding page", () => {
     expect(screen.getByTestId("logout-button")).toBeInTheDocument();
   });
 
+  it("exibe um link para o Histórico quando o usuário está autenticado (Story 3.5)", async () => {
+    headerStore.set("x-app-session-user", "1");
+    const element = await HomePage();
+    render(element);
+
+    const link = screen.getByRole("link", { name: "Histórico" });
+    expect(link).toHaveAttribute("href", "/historico");
+  });
+
+  it("não exibe o link para o Histórico quando não há sessão ativa", async () => {
+    const element = await HomePage();
+    render(element);
+
+    expect(screen.queryByRole("link", { name: "Histórico" })).not.toBeInTheDocument();
+  });
+
   it("substitui o CTA de login por um link para o chat quando o usuário está autenticado", async () => {
     headerStore.set("x-app-session-user", "1");
     const element = await HomePage();
