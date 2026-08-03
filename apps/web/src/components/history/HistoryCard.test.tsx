@@ -153,6 +153,45 @@ describe("HistoryCard", () => {
     expect(screen.getByRole("button", { name: "Excluir" })).toBeInTheDocument();
   });
 
+  it("um toque simples (pointerdown/up sem deslocamento) não revela o painel nem captura o ponteiro", () => {
+    render(
+      <ul>
+        <HistoryCard session={SESSION} isLatest={false} onMarkedChange={vi.fn()} onDeleted={vi.fn()} />
+      </ul>
+    );
+
+    const toggle = screen.getByRole("button", { name: "Ações rápidas" });
+    const cardShell = toggle.parentElement as HTMLElement;
+    const setPointerCaptureMock = vi.fn();
+    cardShell.setPointerCapture = setPointerCaptureMock;
+
+    fireEvent.pointerDown(cardShell, { clientX: 100, pointerId: 1 });
+    fireEvent.pointerUp(cardShell, { clientX: 100, pointerId: 1 });
+
+    expect(setPointerCaptureMock).not.toHaveBeenCalled();
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("arrastar além do limiar de arraste ainda revela o painel de ações via swipe", () => {
+    render(
+      <ul>
+        <HistoryCard session={SESSION} isLatest={false} onMarkedChange={vi.fn()} onDeleted={vi.fn()} />
+      </ul>
+    );
+
+    const toggle = screen.getByRole("button", { name: "Ações rápidas" });
+    const cardShell = toggle.parentElement as HTMLElement;
+    const setPointerCaptureMock = vi.fn();
+    cardShell.setPointerCapture = setPointerCaptureMock;
+
+    fireEvent.pointerDown(cardShell, { clientX: 200, pointerId: 1 });
+    fireEvent.pointerMove(cardShell, { clientX: 40, pointerId: 1 });
+    fireEvent.pointerUp(cardShell, { clientX: 40, pointerId: 1 });
+
+    expect(setPointerCaptureMock).toHaveBeenCalledWith(1);
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+  });
+
   it("marca a sessão e avisa o pai quando 'Marcar' é clicado com sucesso", async () => {
     setSessionMarkedMock.mockResolvedValue({ success: true });
     const onMarkedChange = vi.fn();

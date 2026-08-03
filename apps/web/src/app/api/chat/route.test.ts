@@ -34,15 +34,28 @@ vi.mock("@/lib/supabase/server", () => ({
   createClient: createClientMock,
 }));
 
-const buildConversationMessagesMock = vi.fn(async () => [
-  { role: "user" as const, content: "Uma mensagem válida de teste." },
+type ConversationMessage = { role: "user" | "assistant"; content: string };
+
+const buildConversationMessagesMock = vi.fn<() => Promise<ConversationMessage[]>>(async () => [
+  { role: "user", content: "Uma mensagem válida de teste." },
 ]);
 
+type SessionOpeningContext = {
+  isFirstSession: boolean;
+  previousOpeningPhrase: string | null;
+  responsePattern: "curto" | "longo" | null;
+  topThemes: string[];
+};
+
 const buildMemoryContextMock = vi.fn(async () => null as string | null);
+const buildSessionOpeningContextMock = vi.fn<() => Promise<SessionOpeningContext | null>>(
+  async () => null
+);
 
 vi.mock("@/lib/agent/memory", () => ({
   buildConversationMessages: buildConversationMessagesMock,
   buildMemoryContext: buildMemoryContextMock,
+  buildSessionOpeningContext: buildSessionOpeningContextMock,
 }));
 
 const hasReachedDailyMessageLimitMock = vi.fn(async () => false);
@@ -110,8 +123,13 @@ describe("POST /api/chat", () => {
     sessionsInsertMock.mockReset();
     messagesInsertMock.mockReset();
     buildConversationMessagesMock.mockClear();
+    buildConversationMessagesMock.mockResolvedValue([
+      { role: "user", content: "Uma mensagem válida de teste." },
+    ]);
     buildMemoryContextMock.mockReset();
     buildMemoryContextMock.mockResolvedValue(null);
+    buildSessionOpeningContextMock.mockReset();
+    buildSessionOpeningContextMock.mockResolvedValue(null);
     streamMock.mockClear();
     hasReachedDailyMessageLimitMock.mockReset();
     hasReachedDailyMessageLimitMock.mockResolvedValue(false);
@@ -432,6 +450,99 @@ describe("POST /api/chat", () => {
     await POST(postRequest({ message: "Eu quero morrer, não aguento mais nada disso." }));
 
     expect(buildMemoryContextMock).not.toHaveBeenCalled();
+  });
+
+  it("busca o contexto de abertura da sessão quando é a primeira mensagem da sessão atual", async () => {
+    const { POST } = await import("./route");
+
+    await POST(postRequest({ message: "Uma mensagem válida de teste." }));
+
+    expect(buildSessionOpeningContextMock).toHaveBeenCalledWith(expect.anything(), "user-1", "session-1");
+  });
+
+  it("não busca o contexto de abertura quando o assistente já respondeu nesta sessão", async () => {
+    buildConversationMessagesMock.mockResolvedValue([
+      { role: "assistant", content: "Como você se sente hoje?" },
+      { role: "user", content: "Uma mensagem válida de teste." },
+    ]);
+    const { POST } = await import("./route");
+
+    await POST(postRequest({ message: "Uma mensagem válida de teste." }));
+
+    expect(buildSessionOpeningContextMock).not.toHaveBeenCalled();
+  });
+
+  it("ainda busca o contexto de abertura após um retry que deixou uma segunda mensagem do usuário sem resposta do assistente", async () => {
+    // Achado de review: um retry manual (ChatWindow.handleRetry) reenvia a mesma mensagem
+    // pendente para a mesma sessão quando o streaming falha antes de qualquer resposta do
+    // assistente ser persistida — a sessão passa a ter 2 mensagens de usuário e 0 do
+    // assistente, mas do ponto de vista do usuário ainda é a abertura da conversa.
+    buildConversationMessagesMock.mockResolvedValue([
+      { role: "user", content: "Uma mensagem válida de teste." },
+      { role: "user", content: "Uma mensagem válida de teste." },
+    ]);
+    const { POST } = await import("./route");
+
+    await POST(postRequest({ message: "Uma mensagem válida de teste." }));
+
+    expect(buildSessionOpeningContextMock).toHaveBeenCalledWith(expect.anything(), "user-1", "session-1");
+  });
+
+  it("instrui a pergunta-guia padrão no prompt quando o contexto de abertura indica a primeira sessão do usuário", async () => {
+    buildSessionOpeningContextMock.mockResolvedValue({
+      isFirstSession: true,
+      previousOpeningPhrase: null,
+      responsePattern: null,
+      topThemes: [],
+    });
+    const { POST } = await import("./route");
+
+    await POST(postRequest({ message: "Uma mensagem válida de teste." }));
+
+    const callArgs = streamMock.mock.calls[0]![0];
+    expect(callArgs.system).toContain("ABERTURA DESTA SESSÃO");
+    expect(callArgs.system).toContain("Como você se sente hoje?");
+  });
+
+  it("instrui a evitar repetir a frase de abertura da sessão anterior quando o contexto a fornece", async () => {
+    buildSessionOpeningContextMock.mockResolvedValue({
+      isFirstSession: false,
+      previousOpeningPhrase: "O que te trouxe aqui hoje?",
+      responsePattern: "curto",
+      topThemes: [],
+    });
+    const { POST } = await import("./route");
+
+    await POST(postRequest({ message: "Uma mensagem válida de teste." }));
+
+    const callArgs = streamMock.mock.calls[0]![0];
+    expect(callArgs.system).toContain("O que te trouxe aqui hoje?");
+    expect(callArgs.system).toContain("mais estímulo");
+  });
+
+  it("segue a conversa normalmente mesmo quando a montagem do contexto de abertura falha", async () => {
+    buildSessionOpeningContextMock.mockRejectedValue(new Error("falha ao ler contexto de abertura"));
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const { POST } = await import("./route");
+
+    const response = await POST(postRequest({ message: "Uma mensagem válida de teste." }));
+    const text = await readFullBody(response);
+
+    expect(text).toBe("Olá, tudo bem?");
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      "Erro ao montar contexto de abertura da sessão:",
+      expect.anything()
+    );
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  it("não busca o contexto de abertura no fluxo de resposta de crise", async () => {
+    const { POST } = await import("./route");
+
+    await POST(postRequest({ message: "Eu quero morrer, não aguento mais nada disso." }));
+
+    expect(buildSessionOpeningContextMock).not.toHaveBeenCalled();
   });
 
   it("não bloqueia a resposta de crise mesmo com o limite diário de mensagens atingido", async () => {

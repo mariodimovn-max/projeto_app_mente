@@ -12,6 +12,14 @@ import styles from "./HistoryCard.module.css";
 const ACTIONS_WIDTH = 216;
 const OPEN_THRESHOLD = ACTIONS_WIDTH / 2;
 
+// Achado de review: abaixo desse deslocamento, um pointerdown/pointerup é tratado como
+// toque simples, não arraste — só depois de ultrapassá-lo é que o gesto vira um swipe de
+// verdade (engatando setPointerCapture e o estado de arraste). Sem essa distinção, todo
+// toque — inclusive um clique simples no cartão ou no link "Revisar" — capturava o ponteiro
+// no pointerdown, e em vários navegadores isso redireciona o "click" resultante para esta
+// div em vez do link aninhado, impedindo a navegação para /historico/[id].
+const DRAG_THRESHOLD_PX = 8;
+
 const MARK_ERROR = "Não consegui atualizar essa sessão agora. Tente novamente.";
 const DELETE_ERROR = "Não consegui excluir essa sessão agora. Tente novamente.";
 
@@ -89,13 +97,14 @@ export function HistoryCard({ session, isLatest, onMarkedChange, onDeleted }: Hi
     if (dragStartX !== null) {
       return;
     }
-    event.currentTarget.setPointerCapture?.(event.pointerId);
+    // Não captura o ponteiro nem entra em modo de arraste ainda — só em handlePointerMove,
+    // e só se o deslocamento passar de DRAG_THRESHOLD_PX. Um toque simples nunca chega a
+    // capturar o ponteiro, deixando o clique seguir normalmente para o link do cartão.
     const baseline = open ? -ACTIONS_WIDTH : 0;
     setActivePointerId(event.pointerId);
     setDragStartX(event.clientX);
     setDragBaseline(baseline);
     setDragX(baseline);
-    setIsDragging(true);
   }
 
   function handlePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
@@ -103,6 +112,15 @@ export function HistoryCard({ session, isLatest, onMarkedChange, onDeleted }: Hi
       return;
     }
     const delta = event.clientX - dragStartX;
+
+    if (!isDragging) {
+      if (Math.abs(delta) < DRAG_THRESHOLD_PX) {
+        return;
+      }
+      event.currentTarget.setPointerCapture?.(event.pointerId);
+      setIsDragging(true);
+    }
+
     setDragX(clamp(dragBaseline + delta, -ACTIONS_WIDTH, 0));
   }
 
@@ -110,7 +128,11 @@ export function HistoryCard({ session, isLatest, onMarkedChange, onDeleted }: Hi
     if (dragStartX === null || event.pointerId !== activePointerId) {
       return;
     }
-    setPanelOpen(dragX <= -OPEN_THRESHOLD);
+    // Só reavalia abrir/fechar o painel quando o gesto de fato virou um arraste — um toque
+    // simples (isDragging ainda false) não deve mexer no estado aberto/fechado do painel.
+    if (isDragging) {
+      setPanelOpen(dragX <= -OPEN_THRESHOLD);
+    }
     setDragStartX(null);
     setActivePointerId(null);
     setIsDragging(false);

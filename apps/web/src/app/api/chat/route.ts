@@ -4,7 +4,11 @@ import { createClient } from "@/lib/supabase/server";
 import { getAnthropicClient } from "@/lib/agent/client.server";
 import { CRISIS_RESPONSE_MESSAGE, detectCrisisSignal } from "@/lib/agent/crisis";
 import { analyzeEmotionalState } from "@/lib/agent/emotional-state";
-import { buildConversationMessages, buildMemoryContext } from "@/lib/agent/memory";
+import {
+  buildConversationMessages,
+  buildMemoryContext,
+  buildSessionOpeningContext,
+} from "@/lib/agent/memory";
 import { buildSystemPrompt, resolveMaxTokens } from "@/lib/agent/prompts";
 import { hasReachedDailyMessageLimit } from "@/lib/rate-limit";
 import { chatRequestSchema, MAX_MESSAGE_LENGTH } from "@/lib/validation/message";
@@ -167,8 +171,29 @@ export async function POST(request: Request) {
       return null;
     }),
   ]);
+
+  // Story 3.6 (AC1/AC2/AC3): a abertura adaptativa só se aplica enquanto o assistente ainda
+  // não respondeu nada nesta sessão — buscada só nesse caso para não somar uma consulta extra
+  // a cada mensagem da conversa. Checar "nenhuma resposta do assistente ainda" em vez de
+  // `conversation.length === 1` (achado de review) importa porque um retry manual após uma
+  // falha no streaming reenvia a mesma mensagem pendente para a mesma sessão, inserindo uma
+  // segunda linha de mensagem do usuário sem que o assistente jamais tenha respondido — essa
+  // ainda é, do ponto de vista do usuário, a abertura da sessão.
+  const isSessionOpening = !conversation.some((entry) => entry.role === "assistant");
+  const openingContext = isSessionOpening
+    ? await buildSessionOpeningContext(supabase, user.id, sessionId).catch((error) => {
+        console.error("Erro ao montar contexto de abertura da sessão:", error);
+        return null;
+      })
+    : null;
+
   const { state: emotionalState, intensity: emotionalIntensity } = analyzeEmotionalState(message);
-  const systemPrompt = buildSystemPrompt(emotionalState, emotionalIntensity, memoryContext);
+  const systemPrompt = buildSystemPrompt(
+    emotionalState,
+    emotionalIntensity,
+    memoryContext,
+    openingContext
+  );
   const maxTokens = resolveMaxTokens(emotionalState, emotionalIntensity);
   const anthropic = getAnthropicClient();
 
