@@ -1,4 +1,5 @@
 import type { EmotionalIntensity, EmotionalState } from "./emotional-state";
+import type { SessionOpeningContext } from "./memory";
 
 interface ToneConfig {
   description: string;
@@ -61,6 +62,59 @@ const INTENSITY_ADDENDUM: Record<EmotionalState, string> = {
   neutral: DEEPEN_ENGAGEMENT_ADDENDUM,
 };
 
+// Story 3.6 (AC1): pergunta-guia estruturada padrão usada na primeira sessão do usuário —
+// nunca uma sessão subsequente, que abre de forma adaptativa (ver buildOpeningAddendum).
+export const STANDARD_OPENING_QUESTION = "Como você se sente hoje?";
+
+// Achado de review: sem limite, uma resposta anterior incomum longa (nada no código limita
+// o tamanho de uma resposta do assistente) seria reembutida por inteiro a cada nova sessão.
+const MAX_PREVIOUS_OPENING_PHRASE_LENGTH = 200;
+
+function truncatePreviousOpeningPhrase(phrase: string): string {
+  if (phrase.length <= MAX_PREVIOUS_OPENING_PHRASE_LENGTH) {
+    return phrase;
+  }
+  return `${phrase.slice(0, MAX_PREVIOUS_OPENING_PHRASE_LENGTH)}…`;
+}
+
+// Story 3.6 (AC1/AC2/AC3): instrução de abertura da sessão, anexada ao prompt apenas na
+// primeira mensagem de uma sessão (o restante da conversa não precisa dessa orientação).
+function buildOpeningAddendum(context: SessionOpeningContext): string {
+  if (context.isFirstSession) {
+    return `ABERTURA DESTA SESSÃO (primeira sessão do usuário): comece sua resposta com a pergunta-guia estruturada padrão, usando exatamente esta frase: "${STANDARD_OPENING_QUESTION}"`;
+  }
+
+  const stimulusLine =
+    context.responsePattern === "curto"
+      ? "Nas respostas mais recentes o usuário tende a escrever mensagens curtas — abra oferecendo mais estímulo: uma pergunta concreta ou um gancho específico que ajude a começar."
+      : context.responsePattern === "longo"
+        ? "Nas respostas mais recentes o usuário tende a escrever mensagens longas e elaboradas — abra com mais espaço: uma pergunta ampla e pouco diretiva, deixando-o guiar o que trazer."
+        : "Adapte a abertura ao perfil e aos padrões do usuário descritos acima.";
+
+  // Achado de review (AC2): sem isso, o único ponto de contato desta instrução com
+  // `user_patterns` era a linha de fallback acima — que na prática nunca dispara, já que
+  // toda sessão começa com pelo menos uma mensagem do usuário. Os temas recorrentes entram
+  // aqui incondicionalmente quando existem, para que AC2 ("considera o user_patterns e o
+  // padrão de resposta recente") valha nos casos comuns, não só na exceção.
+  const themesLine =
+    context.topThemes.length > 0
+      ? `Temas recorrentes no histórico do usuário: ${context.topThemes.join(", ")}. Deixe isso influenciar sutilmente a abertura quando fizer sentido — nunca cite a lista mecanicamente.`
+      : null;
+
+  const avoidRepeatLine = context.previousOpeningPhrase
+    ? `A sessão imediatamente anterior abriu com: "${truncatePreviousOpeningPhrase(context.previousOpeningPhrase)}". Nunca repita essa frase literalmente — varie a forma de abrir a conversa.`
+    : null;
+
+  return [
+    "ABERTURA DESTA SESSÃO (sessão subsequente): não é a primeira sessão do usuário — não use a pergunta-guia padrão de forma genérica ou repetitiva.",
+    stimulusLine,
+    themesLine,
+    avoidRepeatLine,
+  ]
+    .filter((line): line is string => line !== null)
+    .join("\n");
+}
+
 export function buildSystemPrompt(
   state: EmotionalState,
   intensity: EmotionalIntensity = "low",
@@ -68,6 +122,11 @@ export function buildSystemPrompt(
   // padrões), montado por lib/agent/memory.ts#buildMemoryContext. null quando o usuário
   // ainda não tem sessões anteriores — nesse caso o prompt não menciona memória alguma.
   memoryContext: string | null = null,
+  // Story 3.6 (AC1/AC2/AC3): contexto de abertura adaptativa, montado por
+  // lib/agent/memory.ts#buildSessionOpeningContext. Deve ser passado apenas quando esta é a
+  // primeira mensagem da sessão atual — o chamador decide isso (ver /api/chat), pois é quem
+  // conhece o histórico de mensagens já carregado da sessão em curso.
+  openingContext: SessionOpeningContext | null = null,
 ): string {
   const tone = TONE_MAP[state];
   let prompt = `${BASE_SYSTEM_PROMPT}\n\nAJUSTE DE TOM PARA ESTA SESSÃO:\n${tone.systemAddendum}`;
@@ -76,6 +135,9 @@ export function buildSystemPrompt(
   }
   if (memoryContext) {
     prompt = `${prompt}\n\n${memoryContext}`;
+  }
+  if (openingContext) {
+    prompt = `${prompt}\n\n${buildOpeningAddendum(openingContext)}`;
   }
   return prompt;
 }

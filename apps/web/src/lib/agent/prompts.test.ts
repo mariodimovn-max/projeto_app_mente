@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import type { EmotionalState } from "./emotional-state";
-import { BASE_SYSTEM_PROMPT, TONE_MAP, buildSystemPrompt, resolveMaxTokens } from "./prompts";
+import type { SessionOpeningContext } from "./memory";
+import {
+  BASE_SYSTEM_PROMPT,
+  STANDARD_OPENING_QUESTION,
+  TONE_MAP,
+  buildSystemPrompt,
+  resolveMaxTokens,
+} from "./prompts";
 
 const ALL_STATES: EmotionalState[] = ["melancholy", "inflated", "confused", "neutral"];
 
@@ -61,6 +68,142 @@ describe("buildSystemPrompt", () => {
     const result = buildSystemPrompt("melancholy", "high", memoryContext);
     expect(result).toContain("breve");
     expect(result.endsWith(memoryContext)).toBe(true);
+  });
+
+  describe("abertura adaptativa (Story 3.6)", () => {
+    it("não inclui instrução de abertura quando openingContext é null (padrão, mensagens fora da abertura da sessão)", () => {
+      const result = buildSystemPrompt("neutral", "low", null, null);
+      expect(result).not.toContain("ABERTURA DESTA SESSÃO");
+    });
+
+    it("instrui a usar a pergunta-guia estruturada padrão, verbatim, na primeira sessão do usuário", () => {
+      const context: SessionOpeningContext = {
+        isFirstSession: true,
+        previousOpeningPhrase: null,
+        responsePattern: null,
+        topThemes: [],
+      };
+      const result = buildSystemPrompt("neutral", "low", null, context);
+
+      expect(result).toContain("primeira sessão do usuário");
+      expect(result).toContain(`"${STANDARD_OPENING_QUESTION}"`);
+    });
+
+    it("instrui a oferecer mais estímulo quando o padrão de resposta recente é curto", () => {
+      const context: SessionOpeningContext = {
+        isFirstSession: false,
+        previousOpeningPhrase: null,
+        responsePattern: "curto",
+        topThemes: [],
+      };
+      const result = buildSystemPrompt("neutral", "low", null, context);
+
+      expect(result).toContain("mensagens curtas");
+      expect(result).toContain("mais estímulo");
+      expect(result).not.toContain(STANDARD_OPENING_QUESTION);
+    });
+
+    it("instrui a abrir mais espaço quando o padrão de resposta recente é longo", () => {
+      const context: SessionOpeningContext = {
+        isFirstSession: false,
+        previousOpeningPhrase: null,
+        responsePattern: "longo",
+        topThemes: [],
+      };
+      const result = buildSystemPrompt("neutral", "low", null, context);
+
+      expect(result).toContain("mensagens longas");
+      expect(result).toContain("mais espaço");
+    });
+
+    it("instrui a nunca repetir literalmente a frase de abertura da sessão imediatamente anterior", () => {
+      const context: SessionOpeningContext = {
+        isFirstSession: false,
+        previousOpeningPhrase: "O que te trouxe aqui hoje?",
+        responsePattern: "longo",
+        topThemes: [],
+      };
+      const result = buildSystemPrompt("neutral", "low", null, context);
+
+      expect(result).toContain('"O que te trouxe aqui hoje?"');
+      expect(result).toContain("Nunca repita essa frase literalmente");
+    });
+
+    it("omite a linha de anti-repetição quando não há frase de abertura anterior conhecida", () => {
+      const context: SessionOpeningContext = {
+        isFirstSession: false,
+        previousOpeningPhrase: null,
+        responsePattern: null,
+        topThemes: [],
+      };
+      const result = buildSystemPrompt("neutral", "low", null, context);
+
+      expect(result).not.toContain("Nunca repita essa frase literalmente");
+    });
+
+    it("anexa a instrução de abertura após o bloco de memória em camadas", () => {
+      const memoryContext = "MEMÓRIA DE SESSÕES ANTERIORES\n\n...";
+      const context: SessionOpeningContext = {
+        isFirstSession: true,
+        previousOpeningPhrase: null,
+        responsePattern: null,
+        topThemes: [],
+      };
+      const result = buildSystemPrompt("neutral", "low", memoryContext, context);
+
+      expect(result.indexOf(memoryContext)).toBeLessThan(result.indexOf("ABERTURA DESTA SESSÃO"));
+    });
+
+    it("inclui os temas recorrentes de user_patterns na abertura de uma sessão subsequente (AC2)", () => {
+      const context: SessionOpeningContext = {
+        isFirstSession: false,
+        previousOpeningPhrase: null,
+        responsePattern: "longo",
+        topThemes: ["sono", "trabalho"],
+      };
+      const result = buildSystemPrompt("neutral", "low", null, context);
+
+      expect(result).toContain("Temas recorrentes no histórico do usuário: sono, trabalho");
+    });
+
+    it("não inclui a linha de temas quando topThemes está vazio", () => {
+      const context: SessionOpeningContext = {
+        isFirstSession: false,
+        previousOpeningPhrase: null,
+        responsePattern: "longo",
+        topThemes: [],
+      };
+      const result = buildSystemPrompt("neutral", "low", null, context);
+
+      expect(result).not.toContain("Temas recorrentes");
+    });
+
+    it("trunca a frase de abertura anterior quando ela é muito longa", () => {
+      const longPhrase = "a".repeat(500);
+      const context: SessionOpeningContext = {
+        isFirstSession: false,
+        previousOpeningPhrase: longPhrase,
+        responsePattern: "longo",
+        topThemes: [],
+      };
+      const result = buildSystemPrompt("neutral", "low", null, context);
+
+      expect(result).not.toContain(longPhrase);
+      expect(result).toContain(`${"a".repeat(200)}…`);
+    });
+
+    it("não trunca uma frase de abertura anterior dentro do limite", () => {
+      const shortPhrase = "O que te trouxe aqui hoje?";
+      const context: SessionOpeningContext = {
+        isFirstSession: false,
+        previousOpeningPhrase: shortPhrase,
+        responsePattern: "longo",
+        topThemes: [],
+      };
+      const result = buildSystemPrompt("neutral", "low", null, context);
+
+      expect(result).toContain(`"${shortPhrase}"`);
+    });
   });
 });
 
