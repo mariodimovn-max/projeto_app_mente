@@ -28,6 +28,9 @@ vi.mock("@/components/history/HistoryList", () => ({
     <div data-testid="history-list">{initialSessions.length} sessões</div>
   ),
 }));
+vi.mock("@/components/nav/PrimaryNav", () => ({
+  PrimaryNav: () => <nav data-testid="primary-nav" />,
+}));
 
 import HistoryPage from "./page";
 
@@ -58,6 +61,7 @@ describe("HistoryPage", () => {
 
     expect(listSessionHistoryMock).toHaveBeenCalledWith(expect.anything(), "user-1");
     expect(screen.getByTestId("history-list")).toHaveTextContent("2 sessões");
+    expect(screen.getByTestId("primary-nav")).toBeInTheDocument();
   });
 
   it("mostra uma mensagem de erro amigável quando a busca do histórico falha", async () => {
