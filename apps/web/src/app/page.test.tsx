@@ -24,6 +24,10 @@ vi.mock("./LogoutButton", () => ({
   LogoutButton: () => <div data-testid="logout-button" />,
 }));
 
+vi.mock("@/components/nav/PrimaryNav", () => ({
+  PrimaryNav: () => <nav data-testid="primary-nav" />,
+}));
+
 import HomePage from "./page";
 
 describe("Home onboarding page", () => {
@@ -66,20 +70,19 @@ describe("Home onboarding page", () => {
     expect(screen.getByTestId("logout-button")).toBeInTheDocument();
   });
 
-  it("exibe um link para o Histórico quando o usuário está autenticado (Story 3.5)", async () => {
+  it("exibe a navegação principal quando o usuário está autenticado (Story 4.1)", async () => {
     headerStore.set("x-app-session-user", "1");
     const element = await HomePage();
     render(element);
 
-    const link = screen.getByRole("link", { name: "Histórico" });
-    expect(link).toHaveAttribute("href", "/historico");
+    expect(screen.getByTestId("primary-nav")).toBeInTheDocument();
   });
 
-  it("não exibe o link para o Histórico quando não há sessão ativa", async () => {
+  it("não exibe a navegação principal quando não há sessão ativa", async () => {
     const element = await HomePage();
     render(element);
 
-    expect(screen.queryByRole("link", { name: "Histórico" })).not.toBeInTheDocument();
+    expect(screen.queryByTestId("primary-nav")).not.toBeInTheDocument();
   });
 
   it("substitui o CTA de login por um link para o chat quando o usuário está autenticado", async () => {

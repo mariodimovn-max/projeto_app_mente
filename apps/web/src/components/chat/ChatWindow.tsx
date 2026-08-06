@@ -10,6 +10,7 @@ import { PatternPrivacyNotice } from "@/components/insights/PatternPrivacyNotice
 import { SessionRestedNotice } from "@/components/insights/SessionRestedNotice";
 import { SynthesisCard } from "@/components/insights/SynthesisCard";
 import { endSession } from "@/lib/actions/endSession";
+import { resumeSession } from "@/lib/actions/resumeSession";
 import { depthFraction, depthLevelLabel, depthReadingLabel, nextDepth } from "@/lib/chat/depth";
 import type { ChatMessage, ChatStatus } from "@/types/chat";
 import type { SessionSynthesis } from "@/types/synthesis";
@@ -18,6 +19,12 @@ import styles from "./ChatWindow.module.css";
 // 60 minutos de inatividade (Story 3.1, AC1/AC4) — exportado para ser usado nos testes
 // com fake timers, em vez de duplicar o valor.
 export const INACTIVITY_TIMEOUT_MS = 60 * 60 * 1000;
+
+// Story 4.1, AC1: guarda o id da sessão em andamento no escopo da aba, para que sair de
+// /chat pela PrimaryNav e voltar retome a conversa em vez de começar uma nova do zero.
+// sessionStorage (não localStorage) é intencional — expira sozinho ao fechar a aba, o
+// mesmo limite natural de "sessão em andamento".
+export const ACTIVE_SESSION_STORAGE_KEY = "diario:activeSessionId";
 
 interface ChatState {
   status: ChatStatus;
@@ -31,7 +38,8 @@ type ChatAction =
   | { type: "stream_start"; assistantMessageId: string }
   | { type: "stream_chunk"; delta: string }
   | { type: "stream_done" }
-  | { type: "error"; message: string };
+  | { type: "error"; message: string }
+  | { type: "hydrate"; messages: ChatMessage[] };
 
 const initialState: ChatState = {
   status: "idle",
@@ -84,6 +92,8 @@ function reducer(state: ChatState, action: ChatAction): ChatState {
       return { ...state, status: "idle", pendingText: null };
     case "error":
       return { ...state, status: "error", errorMessage: action.message };
+    case "hydrate":
+      return { ...state, status: "idle", errorMessage: null, pendingText: null, messages: action.messages };
     default:
       return state;
   }
@@ -104,8 +114,45 @@ export function ChatWindow() {
   const [endSessionError, setEndSessionError] = useState<string | null>(null);
   const [isEndingSession, setIsEndingSession] = useState(false);
   const isEndingRef = useRef(false);
+  // Story 4.1, AC1: evita que uma retomada de sessão em andamento (efeito assíncrono de
+  // montagem) sobrescreva uma conversa nova que o usuário já começou a digitar/enviar
+  // antes de a busca terminar.
+  const hasSentRef = useRef(false);
+  // Suprime o texto de estado vazio ("Escreva quando quiser começar.") enquanto a busca
+  // pela sessão em andamento (se houver) ainda não terminou, para não piscar essa
+  // mensagem por um instante antes de a conversa retomada aparecer.
+  const [hasCheckedResume, setHasCheckedResume] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    const storedSessionId = window.sessionStorage.getItem(ACTIVE_SESSION_STORAGE_KEY);
+    // Passa pelo mesmo continuation assíncrono (.then) mesmo quando não há nada para
+    // retomar, para nunca chamar setState de forma síncrona no corpo do efeito.
+    const pending = storedSessionId ? resumeSession(storedSessionId) : Promise.resolve(null);
+
+    void pending.then((result) => {
+      if (cancelled || hasSentRef.current) {
+        return;
+      }
+
+      if (result && storedSessionId) {
+        if ("error" in result) {
+          window.sessionStorage.removeItem(ACTIVE_SESSION_STORAGE_KEY);
+        } else {
+          sessionIdRef.current = storedSessionId;
+          dispatch({ type: "hydrate", messages: result.messages });
+        }
+      }
+      setHasCheckedResume(true);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function sendMessage(text: string) {
+    hasSentRef.current = true;
     const userMessageId = crypto.randomUUID();
     // Nova atividade de chat invalida um erro de encerramento anterior — sem isso, o banner
     // de "Não consegui gerar a síntese..." ficaria preso na tela mesmo com a conversa seguindo.
@@ -135,6 +182,7 @@ export function ChatWindow() {
       const newSessionId = response.headers.get("X-Session-Id");
       if (newSessionId) {
         sessionIdRef.current = newSessionId;
+        window.sessionStorage.setItem(ACTIVE_SESSION_STORAGE_KEY, newSessionId);
       }
       const isCrisisResponse = response.headers.get("X-Crisis-Response") === "true";
 
@@ -193,6 +241,9 @@ export function ChatWindow() {
           return;
         }
 
+        // Sessão encerrada — não é mais "em andamento", então não deve ser retomada numa
+        // próxima visita a /chat (AC1 é sobre continuidade, não sobre reabrir o que já fechou).
+        window.sessionStorage.removeItem(ACTIVE_SESSION_STORAGE_KEY);
         setSynthesis(result.synthesis);
         setShowPatternPrivacyNotice(result.showPatternPrivacyNotice);
         // Manual: o usuário já pediu para encerrar, mostra a síntese na hora. Automático: a
@@ -273,7 +324,7 @@ export function ChatWindow() {
 
       <div className={styles.main}>
         <div className={styles.history} aria-live="polite">
-          {state.messages.length === 0 && (
+          {state.messages.length === 0 && hasCheckedResume && (
             <p className={styles.emptyState}>Escreva quando quiser começar.</p>
           )}
           {visibleMessages.map((message) => (

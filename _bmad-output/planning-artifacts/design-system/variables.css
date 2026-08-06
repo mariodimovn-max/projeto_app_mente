@@ -43,6 +43,7 @@
   --space-x: 12px;
   --space: 22px;
   --space-lg: 32px;
+  --nav-height: calc(76px + env(safe-area-inset-bottom));
 }
 
 body { background: var(--color-bg); font-family: var(--font-sans); color: var(--color-text); margin: 0; padding: 36px; }

@@ -55,4 +55,13 @@
   --space-x: 12px;
   --space: 22px;
   --space-lg: 32px;
+
+  /* Altura reservada para a PrimaryNav fixa (Story 4.1) — telas que a incluem
+     somam este valor ao padding-bottom para o conteúdo não ficar coberto por ela.
+     76px cobre o conteúdo real da barra (ícone + rótulo + preenchimento); o
+     env(safe-area-inset-bottom) é somado aqui (não só no padding da própria
+     PrimaryNav) para que toda tela que reserva este espaço já contemple a faixa
+     do indicador de início em iOS — sem isso, em iPhones a barra fica mais alta
+     que o espaço reservado e cobre o fim do conteúdo (ex.: o composer do chat). */
+  --nav-height: calc(76px + env(safe-area-inset-bottom));
 }

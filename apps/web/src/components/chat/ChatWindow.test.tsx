@@ -3,13 +3,20 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { THINKING_COPY } from "./ThinkingIndicator";
 
-const { endSessionMock } = vi.hoisted(() => ({ endSessionMock: vi.fn() }));
+const { endSessionMock, resumeSessionMock } = vi.hoisted(() => ({
+  endSessionMock: vi.fn(),
+  resumeSessionMock: vi.fn(),
+}));
 
 vi.mock("@/lib/actions/endSession", () => ({
   endSession: endSessionMock,
 }));
 
-const { ChatWindow, INACTIVITY_TIMEOUT_MS } = await import("./ChatWindow");
+vi.mock("@/lib/actions/resumeSession", () => ({
+  resumeSession: resumeSessionMock,
+}));
+
+const { ChatWindow, INACTIVITY_TIMEOUT_MS, ACTIVE_SESSION_STORAGE_KEY } = await import("./ChatWindow");
 
 function createStreamResponse(chunks: string[], headers: Record<string, string> = {}) {
   let index = 0;
@@ -107,6 +114,8 @@ describe("ChatWindow", () => {
   beforeEach(() => {
     vi.stubGlobal("fetch", vi.fn());
     endSessionMock.mockReset();
+    resumeSessionMock.mockReset();
+    window.sessionStorage.clear();
   });
 
   afterEach(() => {
@@ -480,5 +489,139 @@ describe("ChatWindow", () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  describe("retomada de sessão em andamento (Story 4.1, AC1)", () => {
+    it("grava no sessionStorage o sessionId recebido do servidor ao enviar uma mensagem", async () => {
+      vi.mocked(fetch).mockResolvedValue(
+        createStreamResponse(["Certo."], { "X-Session-Id": "session-1" }) as unknown as Response
+      );
+
+      render(<ChatWindow />);
+      sendMessage("Uma mensagem válida de teste.");
+      await waitFor(() => expect(screen.getByText("Certo.")).toBeInTheDocument());
+
+      expect(window.sessionStorage.getItem(ACTIVE_SESSION_STORAGE_KEY)).toBe("session-1");
+    });
+
+    it("retoma as mensagens de uma sessão em andamento salva no sessionStorage ao montar", async () => {
+      window.sessionStorage.setItem(ACTIVE_SESSION_STORAGE_KEY, "session-anterior");
+      resumeSessionMock.mockResolvedValue({
+        messages: [
+          { id: "m1", role: "user", content: "Tenho dormido mal.", createdAt: "2026-07-25T10:00:00Z" },
+          { id: "m2", role: "assistant", content: "O que mudou?", createdAt: "2026-07-25T10:00:05Z" },
+        ],
+      });
+
+      render(<ChatWindow />);
+
+      expect(await screen.findByText("Tenho dormido mal.")).toBeInTheDocument();
+      expect(screen.getByText("O que mudou?")).toBeInTheDocument();
+      expect(resumeSessionMock).toHaveBeenCalledWith("session-anterior");
+
+      // A conversa retomada continua na mesma sessão — não numa nova.
+      vi.mocked(fetch).mockResolvedValue(
+        createStreamResponse(["Continuando."], { "X-Session-Id": "session-anterior" }) as unknown as Response
+      );
+      sendMessage("Mais uma mensagem.");
+      await waitFor(() => expect(screen.getByText("Continuando.")).toBeInTheDocument());
+
+      const [, init] = vi.mocked(fetch).mock.calls[0]!;
+      expect(JSON.parse(init!.body as string)).toEqual({
+        message: "Mais uma mensagem.",
+        sessionId: "session-anterior",
+      });
+    });
+
+    it("limpa o sessionStorage e mostra o estado vazio quando a sessão salva já foi encerrada", async () => {
+      window.sessionStorage.setItem(ACTIVE_SESSION_STORAGE_KEY, "session-encerrada");
+      resumeSessionMock.mockResolvedValue({ error: "Não consegui recuperar essa conversa." });
+
+      render(<ChatWindow />);
+
+      expect(await screen.findByText("Escreva quando quiser começar.")).toBeInTheDocument();
+      expect(window.sessionStorage.getItem(ACTIVE_SESSION_STORAGE_KEY)).toBeNull();
+    });
+
+    it("não mostra o estado vazio antes de terminar de verificar se há uma sessão para retomar", async () => {
+      window.sessionStorage.setItem(ACTIVE_SESSION_STORAGE_KEY, "session-anterior");
+      let resolveResume!: (result: { messages: unknown[] }) => void;
+      resumeSessionMock.mockReturnValue(
+        new Promise((resolve) => {
+          resolveResume = resolve;
+        })
+      );
+
+      render(<ChatWindow />);
+
+      expect(screen.queryByText("Escreva quando quiser começar.")).not.toBeInTheDocument();
+
+      resolveResume({ messages: [] });
+      await waitFor(() =>
+        expect(screen.getByText("Escreva quando quiser começar.")).toBeInTheDocument()
+      );
+    });
+
+    it("não deixa uma retomada assíncrona sobrescrever uma conversa nova já iniciada pelo usuário", async () => {
+      window.sessionStorage.setItem(ACTIVE_SESSION_STORAGE_KEY, "session-anterior");
+      let resolveResume!: (result: { messages: unknown[] }) => void;
+      resumeSessionMock.mockReturnValue(
+        new Promise((resolve) => {
+          resolveResume = resolve;
+        })
+      );
+      vi.mocked(fetch).mockResolvedValue(
+        createStreamResponse(["Resposta nova."], { "X-Session-Id": "session-nova" }) as unknown as Response
+      );
+
+      render(<ChatWindow />);
+      sendMessage("Já comecei uma conversa nova.");
+      await waitFor(() => expect(screen.getByText("Resposta nova.")).toBeInTheDocument());
+
+      resolveResume({
+        messages: [
+          { id: "m1", role: "user", content: "Mensagem antiga.", createdAt: "2026-07-25T10:00:00Z" },
+        ],
+      });
+      // Dá tempo para o .then() da retomada rodar, caso ele fosse (indevidamente) aplicar o estado.
+      await Promise.resolve();
+      await Promise.resolve();
+
+      expect(screen.queryByText("Mensagem antiga.")).not.toBeInTheDocument();
+      expect(screen.getByText("Já comecei uma conversa nova.")).toBeInTheDocument();
+    });
+
+    it("limpa o sessionStorage ao encerrar a sessão, para não tentar retomá-la depois", async () => {
+      vi.mocked(fetch).mockResolvedValue(
+        createStreamResponse(["Certo, entendi."], { "X-Session-Id": "session-1" }) as unknown as Response
+      );
+      endSessionMock.mockResolvedValue({
+        synthesis: {
+          id: "synthesis-1",
+          title: "Título.",
+          themes: [],
+          explored: "...",
+          patterns: ["..."],
+          openQuestion: "...?",
+          depth: 1,
+          durationMinutes: 5,
+          exchangeCount: 1,
+          createdAt: "2026-07-25T10:23:00Z",
+        },
+        showPatternPrivacyNotice: false,
+      });
+
+      render(<ChatWindow />);
+      sendMessage("Uma mensagem válida de teste.");
+      await waitFor(() => expect(screen.getByText("Certo, entendi.")).toBeInTheDocument());
+      expect(window.sessionStorage.getItem(ACTIVE_SESSION_STORAGE_KEY)).toBe("session-1");
+
+      fireEvent.click(screen.getByRole("button", { name: /Encerrar sessão/i }));
+
+      await waitFor(() =>
+        expect(screen.getByRole("heading", { name: "Título." })).toBeInTheDocument()
+      );
+      expect(window.sessionStorage.getItem(ACTIVE_SESSION_STORAGE_KEY)).toBeNull();
+    });
   });
 });

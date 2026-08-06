@@ -68,7 +68,7 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  padding: 0 var(--space) var(--space);
+  padding: 0 var(--space) calc(var(--nav-height) + var(--space));
 }
 
 .history {
@@ -157,7 +157,7 @@
   }
 
   .main {
-    padding: var(--space-lg) calc(var(--space-lg) * 1.25);
+    padding: var(--space-lg) calc(var(--space-lg) * 1.25) calc(var(--nav-height) + var(--space-lg));
   }
 
   .history {

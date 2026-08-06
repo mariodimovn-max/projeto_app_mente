@@ -20,11 +20,6 @@
   gap: var(--space);
 }
 
-.historyLink {
-  font: 500 0.8125rem var(--font-sans);
-  color: var(--color-muted);
-}
-
 .main {
   display: flex;
   flex-direction: column;
@@ -106,6 +101,13 @@
   gap: var(--space-lg);
   width: 100%;
   padding: var(--space-lg) var(--space);
+}
+
+/* Só reserva espaço para a PrimaryNav quando ela de fato é renderizada (usuário
+   autenticado) — um visitante anônimo não vê a barra e não deveria ver o respiro
+   extra no fim da página por causa dela. */
+.contentWithNav {
+  padding-bottom: calc(var(--nav-height) + var(--space-lg));
 }
 
 .steps {

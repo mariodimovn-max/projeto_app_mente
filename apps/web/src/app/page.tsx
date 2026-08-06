@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { SESSION_USER_HEADER } from "@/proxy";
 import { LogoutButton } from "./LogoutButton";
 import { Aura } from "@/components/aura/Aura";
+import { PrimaryNav } from "@/components/nav/PrimaryNav";
 import styles from "./page.module.css";
 
 const pillars = [
@@ -41,9 +42,6 @@ export default async function Home() {
             <span>seu espaço</span>
           </div>
           <div className={styles.appHeaderActions}>
-            <Link href="/historico" className={styles.historyLink}>
-              Histórico
-            </Link>
             <LogoutButton />
           </div>
         </header>
@@ -101,7 +99,9 @@ export default async function Home() {
           </div>
         </section>
 
-        <section className={`${styles.content} container`}>
+        <section
+          className={`${styles.content}${isAuthenticated ? ` ${styles.contentWithNav}` : ""} container`}
+        >
           <div className={styles.steps} aria-label="pilares do onboarding">
             {pillars.map((pillar) => (
               <article key={pillar.title} className={styles.step}>
@@ -117,6 +117,8 @@ export default async function Home() {
           </p>
         </section>
       </main>
+
+      {isAuthenticated && <PrimaryNav />}
     </>
   );
 }
