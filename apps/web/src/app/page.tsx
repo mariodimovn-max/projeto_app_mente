@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import { SESSION_USER_HEADER } from "@/proxy";
+import { createClient } from "@/lib/supabase/server";
+import { getDashboardData, type DashboardData } from "@/lib/dashboard/dashboard";
 import { LogoutButton } from "./LogoutButton";
 import { Aura } from "@/components/aura/Aura";
 import { PrimaryNav } from "@/components/nav/PrimaryNav";
+import { DashboardStats } from "@/components/dashboard/DashboardStats";
 import styles from "./page.module.css";
 
 const pillars = [
@@ -30,8 +33,38 @@ async function hasAuthenticatedSession() {
   return headerList.get(SESSION_USER_HEADER) === "1";
 }
 
+async function loadDashboardData(): Promise<{
+  data: DashboardData | null;
+  error: string | null;
+}> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { data: null, error: null };
+    }
+
+    return { data: await getDashboardData(supabase, user.id), error: null };
+  } catch (error) {
+    console.error(
+      "Erro ao carregar indicadores de evolução:",
+      error instanceof Error ? { message: error.message, stack: error.stack } : error
+    );
+    return {
+      data: null,
+      error: "Não consegui carregar seu retrato agora. Tente novamente em instantes.",
+    };
+  }
+}
+
 export default async function Home() {
   const isAuthenticated = await hasAuthenticatedSession();
+  const { data: dashboardData, error: dashboardError } = isAuthenticated
+    ? await loadDashboardData()
+    : { data: null, error: null };
 
   return (
     <>
@@ -47,75 +80,98 @@ export default async function Home() {
         </header>
       )}
       <main className={styles.main}>
-        <section className={styles.hero} aria-labelledby="onboarding-title">
-          <div className={styles.heroAuraMobile}>
-            <Aura size={158} />
-          </div>
-
-          <div className={styles.heroText}>
-            <p className={styles.eyebrow}>seu espaço</p>
-            <h1 id="onboarding-title" className={styles.title}>
-              Conheça você
-              <br />
-              <span className={styles.titleEmphasis}>melhor.</span>
-            </h1>
-            <p className={styles.subtitle}>
-              Um espaço para conversar consigo mesmo e enxergar seus próprios
-              padrões. Cada conversa é um mergulho — quanto mais fundo você
-              desce, mais você se conhece.
-            </p>
-
-            <div className={styles.ctaRow}>
-              {isAuthenticated ? (
-                <Link className={styles.primaryButton} href="/chat">
-                  Ir para o chat
-                </Link>
-              ) : (
-                <Link className={styles.primaryButton} href="/auth">
-                  Começar a jornada
-                </Link>
-              )}
-
-              <details className={styles.details}>
-                <summary className={styles.ghostButton}>Como usamos seus dados</summary>
-                <p className={styles.detailText}>
-                  Usamos o conteúdo que você compartilha para melhorar a experiência
-                  do app, oferecer insights mais úteis e preservar seu histórico em
-                  uma sessão segura. Não compartilhamos suas informações com terceiros
-                  para fins comerciais.
-                </p>
-              </details>
+        {isAuthenticated ? (
+          <section
+            className={`${styles.dashboardSection} container`}
+            aria-labelledby="dashboard-title"
+          >
+            <div className={styles.dashboardHead}>
+              <div>
+                <p className={styles.eyebrow}>seu espaço · sua evolução</p>
+                <h1 id="dashboard-title" className={styles.title}>
+                  Bom te ver
+                  <br />
+                  <span className={styles.titleEmphasis}>de novo.</span>
+                </h1>
+              </div>
+              <Link className={styles.primaryButton} href="/chat">
+                Ir para o chat
+              </Link>
             </div>
 
-            <p className={styles.privacyLine}>
-              <span className={styles.privacyDot} aria-hidden="true" />
-              Privado e criptografado · não é terapia profissional
-            </p>
-          </div>
+            {dashboardError ? (
+              <p className={styles.errorBanner} role="alert">
+                {dashboardError}
+              </p>
+            ) : (
+              dashboardData && <DashboardStats data={dashboardData} />
+            )}
+          </section>
+        ) : (
+          <>
+            <section className={styles.hero} aria-labelledby="onboarding-title">
+              <div className={styles.heroAuraMobile}>
+                <Aura size={158} />
+              </div>
 
-          <div className={styles.heroAuraDesktop}>
-            <Aura size={230} />
-            <p className={styles.auraCaption}>A AURA · SUA PRESENÇA</p>
-          </div>
-        </section>
+              <div className={styles.heroText}>
+                <p className={styles.eyebrow}>seu espaço</p>
+                <h1 id="onboarding-title" className={styles.title}>
+                  Conheça você
+                  <br />
+                  <span className={styles.titleEmphasis}>melhor.</span>
+                </h1>
+                <p className={styles.subtitle}>
+                  Um espaço para conversar consigo mesmo e enxergar seus próprios
+                  padrões. Cada conversa é um mergulho — quanto mais fundo você
+                  desce, mais você se conhece.
+                </p>
 
-        <section
-          className={`${styles.content}${isAuthenticated ? ` ${styles.contentWithNav}` : ""} container`}
-        >
-          <div className={styles.steps} aria-label="pilares do onboarding">
-            {pillars.map((pillar) => (
-              <article key={pillar.title} className={styles.step}>
-                <p className={styles.stepTitle}>{pillar.title}</p>
-                <p className={styles.stepDescription}>{pillar.description}</p>
-              </article>
-            ))}
-          </div>
+                <div className={styles.ctaRow}>
+                  <Link className={styles.primaryButton} href="/auth">
+                    Começar a jornada
+                  </Link>
 
-          <p className={styles.notice}>
-            Se estiver em risco imediato, ligue para os serviços de emergência
-            locais.
-          </p>
-        </section>
+                  <details className={styles.details}>
+                    <summary className={styles.ghostButton}>Como usamos seus dados</summary>
+                    <p className={styles.detailText}>
+                      Usamos o conteúdo que você compartilha para melhorar a experiência
+                      do app, oferecer insights mais úteis e preservar seu histórico em
+                      uma sessão segura. Não compartilhamos suas informações com terceiros
+                      para fins comerciais.
+                    </p>
+                  </details>
+                </div>
+
+                <p className={styles.privacyLine}>
+                  <span className={styles.privacyDot} aria-hidden="true" />
+                  Privado e criptografado · não é terapia profissional
+                </p>
+              </div>
+
+              <div className={styles.heroAuraDesktop}>
+                <Aura size={230} />
+                <p className={styles.auraCaption}>A AURA · SUA PRESENÇA</p>
+              </div>
+            </section>
+
+            <section className={`${styles.content} container`}>
+              <div className={styles.steps} aria-label="pilares do onboarding">
+                {pillars.map((pillar) => (
+                  <article key={pillar.title} className={styles.step}>
+                    <p className={styles.stepTitle}>{pillar.title}</p>
+                    <p className={styles.stepDescription}>{pillar.description}</p>
+                  </article>
+                ))}
+              </div>
+
+              <p className={styles.notice}>
+                Se estiver em risco imediato, ligue para os serviços de emergência
+                locais.
+              </p>
+            </section>
+          </>
+        )}
       </main>
 
       {isAuthenticated && <PrimaryNav />}

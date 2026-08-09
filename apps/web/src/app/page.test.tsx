@@ -12,12 +12,25 @@ const { headersMock, headerStore } = vi.hoisted(() => {
   };
 });
 
+const { getUserMock, getDashboardDataMock } = vi.hoisted(() => ({
+  getUserMock: vi.fn(),
+  getDashboardDataMock: vi.fn(),
+}));
+
 vi.mock("next/headers", () => ({
   headers: headersMock,
 }));
 
 vi.mock("@/proxy", () => ({
   SESSION_USER_HEADER: "x-app-session-user",
+}));
+
+vi.mock("@/lib/supabase/server", () => ({
+  createClient: vi.fn(async () => ({ auth: { getUser: getUserMock } })),
+}));
+
+vi.mock("@/lib/dashboard/dashboard", () => ({
+  getDashboardData: getDashboardDataMock,
 }));
 
 vi.mock("./LogoutButton", () => ({
@@ -28,11 +41,23 @@ vi.mock("@/components/nav/PrimaryNav", () => ({
   PrimaryNav: () => <nav data-testid="primary-nav" />,
 }));
 
+vi.mock("@/components/dashboard/DashboardStats", () => ({
+  DashboardStats: ({ data }: { data: { streakDays: number; sessionCount: number } }) => (
+    <div data-testid="dashboard-stats">
+      {data.streakDays} dias · {data.sessionCount} sessões
+    </div>
+  ),
+}));
+
 import HomePage from "./page";
 
 describe("Home onboarding page", () => {
   beforeEach(() => {
     headerStore.clear();
+    getUserMock.mockReset();
+    getDashboardDataMock.mockReset();
+    getUserMock.mockResolvedValue({ data: { user: { id: "user-1" } } });
+    getDashboardDataMock.mockResolvedValue({ streakDays: 0, sessionCount: 0, themes: [] });
   });
 
   it("renders the onboarding pillars and the entry CTA", async () => {
@@ -93,5 +118,40 @@ describe("Home onboarding page", () => {
     expect(screen.queryByRole("link", { name: /Começar a jornada/i })).not.toBeInTheDocument();
     const cta = screen.getByRole("link", { name: /Ir para o chat/i });
     expect(cta.getAttribute("href")).toBe("/chat");
+  });
+
+  it("não busca dados do dashboard quando não há sessão ativa", async () => {
+    const element = await HomePage();
+    render(element);
+
+    expect(getDashboardDataMock).not.toHaveBeenCalled();
+    expect(screen.queryByTestId("dashboard-stats")).not.toBeInTheDocument();
+  });
+
+  it("carrega e renderiza os indicadores de evolução do usuário autenticado (Story 4.2, AC1/AC2)", async () => {
+    headerStore.set("x-app-session-user", "1");
+    getDashboardDataMock.mockResolvedValue({
+      streakDays: 5,
+      sessionCount: 12,
+      themes: [{ label: "sono", count: 3 }],
+    });
+
+    const element = await HomePage();
+    render(element);
+
+    expect(getDashboardDataMock).toHaveBeenCalledWith(expect.anything(), "user-1");
+    expect(screen.getByTestId("dashboard-stats")).toHaveTextContent("5 dias · 12 sessões");
+    expect(screen.queryByText(/Conheça você/i)).not.toBeInTheDocument();
+  });
+
+  it("mostra uma mensagem de erro amigável quando a busca dos indicadores falha", async () => {
+    headerStore.set("x-app-session-user", "1");
+    getDashboardDataMock.mockRejectedValue(new Error("db down"));
+
+    const element = await HomePage();
+    render(element);
+
+    expect(screen.getByRole("alert")).toHaveTextContent(/Não consegui carregar seu retrato/i);
+    expect(screen.queryByTestId("dashboard-stats")).not.toBeInTheDocument();
   });
 });
