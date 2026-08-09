@@ -1,6 +1,6 @@
 # Story 4.2: Dashboard de Indicadores de Evolução
 
-Status: review
+Status: done
 
 ## Story
 
