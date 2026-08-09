@@ -18,7 +18,12 @@ function pluralize(count: number, singular: string, plural: string): string {
 // gamification (AC3): nenhum ponto, nível, badge ou comparação — só o retrato do que já
 // aconteceu, na mesma linguagem serena do resto do app.
 export function DashboardStats({ data }: DashboardStatsProps) {
-  if (data.sessionCount === 0) {
+  // sessionCount vem de user_patterns (só sessões encerradas com síntese) enquanto
+  // streakDays vem das sessões em si (basta ter existido, ver lib/dashboard/dashboard.ts)
+  // — as duas fontes divergem enquanto uma sessão ainda está em andamento. Sem checar
+  // streakDays aqui, um usuário presente há dias mas no meio da primeira conversa veria
+  // essa presença descartada e a mensagem de "primeira vez", incoerentes entre si.
+  if (data.sessionCount === 0 && data.streakDays === 0) {
     return (
       <section className={styles.empty} aria-label="Seus indicadores de evolução">
         <p className={styles.emptyText}>

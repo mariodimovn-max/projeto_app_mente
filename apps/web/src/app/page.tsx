@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { SESSION_USER_HEADER } from "@/proxy";
 import { createClient } from "@/lib/supabase/server";
 import { getDashboardData, type DashboardData } from "@/lib/dashboard/dashboard";
@@ -33,10 +34,17 @@ async function hasAuthenticatedSession() {
   return headerList.get(SESSION_USER_HEADER) === "1";
 }
 
-async function loadDashboardData(): Promise<{
-  data: DashboardData | null;
-  error: string | null;
-}> {
+type DashboardLoadResult =
+  | { status: "no-session" }
+  | { status: "error"; error: string }
+  | { status: "ok"; data: DashboardData };
+
+// O header de sessão (hasAuthenticatedSession) já foi validado pelo proxy, mas pode estar
+// obsoleto num cookie vencido/inválido entre a validação e esta renderização — por isso o
+// resultado é distinguido de "erro de carregamento" (status "no-session"): quem chama decide
+// redirecionar para /auth em vez de mostrar um painel autenticado vazio, do jeito que
+// /historico e /insights já fazem para essa mesma inconsistência.
+async function loadDashboardData(): Promise<DashboardLoadResult> {
   try {
     const supabase = await createClient();
     const {
@@ -44,17 +52,17 @@ async function loadDashboardData(): Promise<{
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return { data: null, error: null };
+      return { status: "no-session" };
     }
 
-    return { data: await getDashboardData(supabase, user.id), error: null };
+    return { status: "ok", data: await getDashboardData(supabase, user.id) };
   } catch (error) {
     console.error(
       "Erro ao carregar indicadores de evolução:",
       error instanceof Error ? { message: error.message, stack: error.stack } : error
     );
     return {
-      data: null,
+      status: "error",
       error: "Não consegui carregar seu retrato agora. Tente novamente em instantes.",
     };
   }
@@ -62,9 +70,20 @@ async function loadDashboardData(): Promise<{
 
 export default async function Home() {
   const isAuthenticated = await hasAuthenticatedSession();
-  const { data: dashboardData, error: dashboardError } = isAuthenticated
-    ? await loadDashboardData()
-    : { data: null, error: null };
+  const dashboardResult = isAuthenticated ? await loadDashboardData() : null;
+
+  if (dashboardResult?.status === "no-session") {
+    redirect("/auth");
+  }
+
+  const dashboardData = dashboardResult?.status === "ok" ? dashboardResult.data : null;
+  const dashboardError = dashboardResult?.status === "error" ? dashboardResult.error : null;
+  // Só é "primeira visita" de verdade quando nem o agregado nem o streak têm nada — uma
+  // sessão em andamento (ainda sem síntese) já teria dias de streak, e não deveria ser
+  // recebida com "sua primeira vez" nem com "de novo" (ela não voltou de fato ainda).
+  const isFirstVisitEver = Boolean(
+    dashboardData && dashboardData.sessionCount === 0 && dashboardData.streakDays === 0
+  );
 
   return (
     <>
@@ -81,17 +100,24 @@ export default async function Home() {
       )}
       <main className={styles.main}>
         {isAuthenticated ? (
-          <section
-            className={`${styles.dashboardSection} container`}
-            aria-labelledby="dashboard-title"
-          >
+          <section className={`${styles.dashboardSection} container`}>
             <div className={styles.dashboardHead}>
               <div>
                 <p className={styles.eyebrow}>seu espaço · sua evolução</p>
-                <h1 id="dashboard-title" className={styles.title}>
-                  Bom te ver
-                  <br />
-                  <span className={styles.titleEmphasis}>de novo.</span>
+                <h1 className={styles.title}>
+                  {isFirstVisitEver ? (
+                    <>
+                      Seu espaço
+                      <br />
+                      <span className={styles.titleEmphasis}>está pronto.</span>
+                    </>
+                  ) : (
+                    <>
+                      Bom te ver
+                      <br />
+                      <span className={styles.titleEmphasis}>de novo.</span>
+                    </>
+                  )}
                 </h1>
               </div>
               <Link className={styles.primaryButton} href="/chat">

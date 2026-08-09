@@ -44,12 +44,22 @@ describe("computeStreakDays", () => {
     ];
     expect(computeStreakDays(dates, today)).toBe(2);
   });
+
+  it("usa o fuso America/Sao_Paulo para decidir o dia, não UTC — uma sessão pouco depois da meia-noite local não deve se misturar com o dia UTC anterior", () => {
+    const dates = [
+      "2026-08-09T03:10:00Z", // 2026-08-09 00:10 em São Paulo (UTC-3)
+      "2026-08-09T02:50:00Z", // 2026-08-08 23:50 em São Paulo (UTC-3) — mesmo dia UTC, dia local anterior
+    ];
+    const referenceDate = new Date("2026-08-09T18:00:00Z"); // 2026-08-09 15:00 em São Paulo
+    expect(computeStreakDays(dates, referenceDate)).toBe(2);
+  });
 });
 
 function makeSessionsBuilder(result: { data: unknown; error: unknown }) {
   const builder: Record<string, unknown> = {
     select: () => builder,
     eq: () => builder,
+    gte: () => builder,
     order: () => builder,
     limit: () => builder,
     returns: () => builder,
@@ -166,5 +176,21 @@ describe("getDashboardData", () => {
     };
 
     await expect(getDashboardData(supabase as never, "user-1")).rejects.toThrow("db down");
+  });
+
+  it("propaga o erro quando a leitura do agregado user_patterns falha", async () => {
+    const supabase = {
+      from: (table: string) => {
+        if (table === "sessions") {
+          return makeSessionsBuilder({ data: [], error: null });
+        }
+        if (table === "user_patterns") {
+          return makeUserPatternsBuilder({ data: null, error: new Error("patterns down") });
+        }
+        throw new Error(`Tabela inesperada: ${table}`);
+      },
+    };
+
+    await expect(getDashboardData(supabase as never, "user-1")).rejects.toThrow("patterns down");
   });
 });

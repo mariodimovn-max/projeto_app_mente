@@ -52,6 +52,16 @@ describe("DashboardStats", () => {
     expect(screen.queryByText("0")).not.toBeInTheDocument();
   });
 
+  it("mostra o streak em vez do estado vazio quando há sessões em dias consecutivos mas nenhuma ainda foi encerrada com síntese", () => {
+    render(<DashboardStats data={{ streakDays: 3, sessionCount: 0, themes: [] }} />);
+
+    expect(
+      screen.queryByText("Seu retrato aparece aqui depois da primeira conversa encerrada.")
+    ).not.toBeInTheDocument();
+    expect(screen.getByText("3")).toBeInTheDocument();
+    expect(screen.getByText(/dias seguidos aqui/)).toBeInTheDocument();
+  });
+
   it("não exibe elementos de gamification como pontuação, nível ou selos (Story 4.2, AC3)", () => {
     render(
       <DashboardStats

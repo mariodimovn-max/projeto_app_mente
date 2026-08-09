@@ -154,4 +154,44 @@ describe("Home onboarding page", () => {
     expect(screen.getByRole("alert")).toHaveTextContent(/Não consegui carregar seu retrato/i);
     expect(screen.queryByTestId("dashboard-stats")).not.toBeInTheDocument();
   });
+
+  it("redireciona para /auth quando o header indica sessão mas o Supabase não confirma nenhum usuário (cookie obsoleto)", async () => {
+    headerStore.set("x-app-session-user", "1");
+    getUserMock.mockResolvedValue({ data: { user: null } });
+
+    await expect(HomePage()).rejects.toThrow();
+
+    try {
+      await HomePage();
+    } catch (error) {
+      expect((error as Error & { digest?: string }).digest).toContain("/auth");
+    }
+    expect(getDashboardDataMock).not.toHaveBeenCalled();
+  });
+
+  it("recebe quem ainda não tem nenhuma sessão nem streak com uma saudação de primeira visita, não 'de novo'", async () => {
+    headerStore.set("x-app-session-user", "1");
+    getDashboardDataMock.mockResolvedValue({ streakDays: 0, sessionCount: 0, themes: [] });
+
+    const element = await HomePage();
+    render(element);
+
+    const heading = screen.getByRole("heading", { level: 1 });
+    expect(heading.textContent).toMatch(/Seu espaço/);
+    expect(heading.textContent).toMatch(/está pronto/);
+    expect(heading.textContent).not.toMatch(/Bom te ver/);
+  });
+
+  it("recebe quem já tem streak ou sessões com a saudação 'de novo', mesmo sem sessão concluída ainda (sessão em andamento)", async () => {
+    headerStore.set("x-app-session-user", "1");
+    getDashboardDataMock.mockResolvedValue({ streakDays: 2, sessionCount: 0, themes: [] });
+
+    const element = await HomePage();
+    render(element);
+
+    const heading = screen.getByRole("heading", { level: 1 });
+    expect(heading.textContent).toMatch(/Bom te ver/);
+    expect(heading.textContent).toMatch(/de novo/);
+    expect(heading.textContent).not.toMatch(/está pronto/);
+  });
 });

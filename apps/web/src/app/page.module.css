@@ -144,13 +144,6 @@
   }
 }
 
-/* Só reserva espaço para a PrimaryNav quando ela de fato é renderizada (usuário
-   autenticado) — um visitante anônimo não vê a barra e não deveria ver o respiro
-   extra no fim da página por causa dela. */
-.contentWithNav {
-  padding-bottom: calc(var(--nav-height) + var(--space-lg));
-}
-
 .steps {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

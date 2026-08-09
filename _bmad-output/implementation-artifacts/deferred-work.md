@@ -66,3 +66,10 @@
 - Sem chave de desempate além de `created_at` ao ordenar `sessions`/`messages` em `buildSessionOpeningContext` — mesma limitação já existente em `buildConversationMessages`/`fetchRecentSyntheses` desde as Stories 3.1/3.4; revisitar apenas se inserts quase simultâneos se mostrarem um problema real.
 - `buildSessionOpeningContext` busca o histórico completo de mensagens da sessão anterior sem `.limit()`, só para pegar a primeira mensagem do assistente e uma média — espelha o mesmo padrão já usado por `buildConversationMessages`, não é uma regressão nova desta diff.
 - `.catch(() => null)` em `buildSessionOpeningContext` não distingue "falha transitória na consulta" de "não é abertura de sessão" — um erro passageiro no Supabase na primeira mensagem de um usuário derruba silenciosamente a instrução obrigatória da pergunta-guia padrão (AC1). Decisão explícita do usuário: manter o padrão best-effort (mesmo já usado em `memoryContext`), risco aceito dado o volume do beta fechado.
+
+## Deferred from: code review of 4-2-dashboard-de-indicadores-de-evolucao (2026-08-09)
+
+- Banner de erro dos indicadores de evolução (`app/page.tsx`, `styles.errorBanner`) não tem
+  botão de "tentar novamente" — a única saída é o usuário atualizar a página manualmente. Mesmo
+  padrão já usado no banner de erro do histórico de sessões (Story 3.5); revisitar se um padrão
+  de retry for adotado em algum desses dois lugares, para manter consistência entre eles.
