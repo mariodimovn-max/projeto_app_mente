@@ -1,6 +1,6 @@
 # Story 4.4: Gerar Resumo Semanal
 
-Status: planned
+Status: done
 
 ## Story
 
