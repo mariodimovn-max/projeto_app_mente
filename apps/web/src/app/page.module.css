@@ -103,11 +103,45 @@
   padding: var(--space-lg) var(--space);
 }
 
-/* Só reserva espaço para a PrimaryNav quando ela de fato é renderizada (usuário
-   autenticado) — um visitante anônimo não vê a barra e não deveria ver o respiro
-   extra no fim da página por causa dela. */
-.contentWithNav {
-  padding-bottom: calc(var(--nav-height) + var(--space-lg));
+.dashboardSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  width: 100%;
+  padding: var(--space-lg) var(--space) calc(var(--nav-height) + var(--space-lg));
+}
+
+.dashboardHead {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space);
+  align-items: flex-start;
+  width: 100%;
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+}
+
+.dashboardHead .title {
+  margin-top: var(--space-xx);
+}
+
+.errorBanner {
+  composes: errorMessage from "../styles/shared.module.css";
+  max-width: var(--content-max-width);
+  width: 100%;
+  margin: 0 auto;
+}
+
+@media (min-width: 640px) {
+  .dashboardHead {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .dashboardHead .primaryButton {
+    width: auto;
+  }
 }
 
 .steps {
