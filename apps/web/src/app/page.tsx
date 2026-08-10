@@ -4,10 +4,12 @@ import { redirect } from "next/navigation";
 import { SESSION_USER_HEADER } from "@/proxy";
 import { createClient } from "@/lib/supabase/server";
 import { getDashboardData, type DashboardData } from "@/lib/dashboard/dashboard";
+import { getPersonalMilestones, type PersonalMilestone } from "@/lib/milestones/milestones";
 import { LogoutButton } from "./LogoutButton";
 import { Aura } from "@/components/aura/Aura";
 import { PrimaryNav } from "@/components/nav/PrimaryNav";
 import { DashboardStats } from "@/components/dashboard/DashboardStats";
+import { PersonalMilestones } from "@/components/dashboard/PersonalMilestones";
 import styles from "./page.module.css";
 
 const pillars = [
@@ -68,9 +70,48 @@ async function loadDashboardData(): Promise<DashboardLoadResult> {
   }
 }
 
+type MilestonesLoadResult =
+  | { status: "no-session" }
+  | { status: "error"; error: string }
+  | { status: "ok"; data: PersonalMilestone[] };
+
+// Carregada à parte de loadDashboardData: marcos pessoais (Story 4.3) são uma entidade
+// própria (CRUD do usuário), não parte do agregado somente-leitura de user_patterns — uma
+// falha aqui não deve derrubar os indicadores de evolução, nem o contrário.
+async function loadPersonalMilestones(): Promise<MilestonesLoadResult> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { status: "no-session" };
+    }
+
+    return { status: "ok", data: await getPersonalMilestones(supabase, user.id) };
+  } catch (error) {
+    console.error(
+      "Erro ao carregar marcos pessoais:",
+      error instanceof Error ? { message: error.message, stack: error.stack } : error
+    );
+    return {
+      status: "error",
+      error: "Não consegui carregar seus marcos agora. Tente novamente em instantes.",
+    };
+  }
+}
+
 export default async function Home() {
   const isAuthenticated = await hasAuthenticatedSession();
-  const dashboardResult = isAuthenticated ? await loadDashboardData() : null;
+  let dashboardResult: DashboardLoadResult | null = null;
+  let milestonesResult: MilestonesLoadResult | null = null;
+  if (isAuthenticated) {
+    [dashboardResult, milestonesResult] = await Promise.all([
+      loadDashboardData(),
+      loadPersonalMilestones(),
+    ]);
+  }
 
   if (dashboardResult?.status === "no-session") {
     redirect("/auth");
@@ -78,6 +119,8 @@ export default async function Home() {
 
   const dashboardData = dashboardResult?.status === "ok" ? dashboardResult.data : null;
   const dashboardError = dashboardResult?.status === "error" ? dashboardResult.error : null;
+  const milestonesData = milestonesResult?.status === "ok" ? milestonesResult.data : null;
+  const milestonesError = milestonesResult?.status === "error" ? milestonesResult.error : null;
   // Só é "primeira visita" de verdade quando nem o agregado nem o streak têm nada — uma
   // sessão em andamento (ainda sem síntese) já teria dias de streak, e não deveria ser
   // recebida com "sua primeira vez" nem com "de novo" (ela não voltou de fato ainda).
@@ -131,6 +174,14 @@ export default async function Home() {
               </p>
             ) : (
               dashboardData && <DashboardStats data={dashboardData} />
+            )}
+
+            {milestonesError ? (
+              <p className={styles.errorBanner} role="alert">
+                {milestonesError}
+              </p>
+            ) : (
+              milestonesData && <PersonalMilestones initialMilestones={milestonesData} />
             )}
           </section>
         ) : (

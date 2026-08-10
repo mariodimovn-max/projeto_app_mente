@@ -12,9 +12,10 @@ const { headersMock, headerStore } = vi.hoisted(() => {
   };
 });
 
-const { getUserMock, getDashboardDataMock } = vi.hoisted(() => ({
+const { getUserMock, getDashboardDataMock, getPersonalMilestonesMock } = vi.hoisted(() => ({
   getUserMock: vi.fn(),
   getDashboardDataMock: vi.fn(),
+  getPersonalMilestonesMock: vi.fn(),
 }));
 
 vi.mock("next/headers", () => ({
@@ -33,6 +34,10 @@ vi.mock("@/lib/dashboard/dashboard", () => ({
   getDashboardData: getDashboardDataMock,
 }));
 
+vi.mock("@/lib/milestones/milestones", () => ({
+  getPersonalMilestones: getPersonalMilestonesMock,
+}));
+
 vi.mock("./LogoutButton", () => ({
   LogoutButton: () => <div data-testid="logout-button" />,
 }));
@@ -49,6 +54,12 @@ vi.mock("@/components/dashboard/DashboardStats", () => ({
   ),
 }));
 
+vi.mock("@/components/dashboard/PersonalMilestones", () => ({
+  PersonalMilestones: ({ initialMilestones }: { initialMilestones: unknown[] }) => (
+    <div data-testid="personal-milestones">{initialMilestones.length} marcos</div>
+  ),
+}));
+
 import HomePage from "./page";
 
 describe("Home onboarding page", () => {
@@ -56,8 +67,10 @@ describe("Home onboarding page", () => {
     headerStore.clear();
     getUserMock.mockReset();
     getDashboardDataMock.mockReset();
+    getPersonalMilestonesMock.mockReset();
     getUserMock.mockResolvedValue({ data: { user: { id: "user-1" } } });
     getDashboardDataMock.mockResolvedValue({ streakDays: 0, sessionCount: 0, themes: [] });
+    getPersonalMilestonesMock.mockResolvedValue([]);
   });
 
   it("renders the onboarding pillars and the entry CTA", async () => {
@@ -120,12 +133,14 @@ describe("Home onboarding page", () => {
     expect(cta.getAttribute("href")).toBe("/chat");
   });
 
-  it("não busca dados do dashboard quando não há sessão ativa", async () => {
+  it("não busca dados do dashboard nem marcos pessoais quando não há sessão ativa", async () => {
     const element = await HomePage();
     render(element);
 
     expect(getDashboardDataMock).not.toHaveBeenCalled();
+    expect(getPersonalMilestonesMock).not.toHaveBeenCalled();
     expect(screen.queryByTestId("dashboard-stats")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("personal-milestones")).not.toBeInTheDocument();
   });
 
   it("carrega e renderiza os indicadores de evolução do usuário autenticado (Story 4.2, AC1/AC2)", async () => {
@@ -153,6 +168,32 @@ describe("Home onboarding page", () => {
 
     expect(screen.getByRole("alert")).toHaveTextContent(/Não consegui carregar seu retrato/i);
     expect(screen.queryByTestId("dashboard-stats")).not.toBeInTheDocument();
+  });
+
+  it("carrega e renderiza os marcos pessoais do usuário autenticado (Story 4.3, AC1)", async () => {
+    headerStore.set("x-app-session-user", "1");
+    getPersonalMilestonesMock.mockResolvedValue([
+      { id: "m1", title: "Meu foco", theme: "dinheiro", progress: 2, createdAt: "2026-08-01T10:00:00Z" },
+    ]);
+
+    const element = await HomePage();
+    render(element);
+
+    expect(getPersonalMilestonesMock).toHaveBeenCalledWith(expect.anything(), "user-1");
+    expect(screen.getByTestId("personal-milestones")).toHaveTextContent("1 marcos");
+  });
+
+  it("mostra uma mensagem de erro amigável quando a busca dos marcos pessoais falha, sem afetar os indicadores", async () => {
+    headerStore.set("x-app-session-user", "1");
+    getDashboardDataMock.mockResolvedValue({ streakDays: 5, sessionCount: 12, themes: [] });
+    getPersonalMilestonesMock.mockRejectedValue(new Error("db down"));
+
+    const element = await HomePage();
+    render(element);
+
+    expect(screen.getByRole("alert")).toHaveTextContent(/Não consegui carregar seus marcos/i);
+    expect(screen.getByTestId("dashboard-stats")).toBeInTheDocument();
+    expect(screen.queryByTestId("personal-milestones")).not.toBeInTheDocument();
   });
 
   it("redireciona para /auth quando o header indica sessão mas o Supabase não confirma nenhum usuário (cookie obsoleto)", async () => {
