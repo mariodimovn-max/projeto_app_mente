@@ -7,15 +7,25 @@ import styles from "./WeeklySummaryCard.module.css";
 
 const UNEXPECTED_ERROR = "Não consegui gerar o resumo agora. Tente novamente.";
 
+// Mesmo fuso fixo usado em lib/dashboard/dashboard.ts — sem isso, o período exibido mudaria
+// de dia conforme o fuso do navegador de cada usuário, divergindo do que foi de fato
+// calculado no servidor.
+const APP_TIMEZONE = "America/Sao_Paulo";
+
 function formatPeriodDate(iso: string): string {
   return new Date(iso)
-    .toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })
+    .toLocaleDateString("pt-BR", { timeZone: APP_TIMEZONE, day: "2-digit", month: "short" })
     .replace(/\.$/, "");
 }
 
 function formatTimelineDate(iso: string): string {
   return new Date(iso)
-    .toLocaleDateString("pt-BR", { day: "2-digit", month: "short", weekday: "short" })
+    .toLocaleDateString("pt-BR", {
+      timeZone: APP_TIMEZONE,
+      day: "2-digit",
+      month: "short",
+      weekday: "short",
+    })
     .replace(/\.$/, "");
 }
 
@@ -45,6 +55,7 @@ export function WeeklySummaryCard() {
       setSummary(result.summary);
     } catch {
       setError(UNEXPECTED_ERROR);
+      setSummary(null);
     } finally {
       setIsLoading(false);
     }

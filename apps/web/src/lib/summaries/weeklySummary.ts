@@ -59,21 +59,28 @@ function topEntries(counts: Record<string, number>, limit: number): WeeklySummar
     .slice(0, limit);
 }
 
+function pluralize(count: number, singular: string, plural: string): string {
+  return count === 1 ? singular : plural;
+}
+
 // Texto honesto sobre o ritmo da semana (sem gamification — FR7): compara só a contagem de
 // sessões com a semana anterior, nunca insinua "meta" ou julgamento de desempenho.
 function buildProgressNote(currentCount: number, previousCount: number): string {
+  const currentLabel = `${currentCount} ${pluralize(currentCount, "sessão", "sessões")}`;
+
   if (previousCount === 0) {
-    return currentCount === 1
-      ? "Uma sessão nesta semana — um começo."
-      : `${currentCount} sessões nesta semana — um começo.`;
+    return `${currentLabel} nesta semana — um começo.`;
   }
+
+  const previousArticle = pluralize(previousCount, "a", "as");
+
   if (currentCount > previousCount) {
-    return `${currentCount} sessões nesta semana, mais que as ${previousCount} da semana passada.`;
+    return `${currentLabel} nesta semana, mais que ${previousArticle} ${previousCount} da semana passada.`;
   }
   if (currentCount < previousCount) {
-    return `${currentCount} sessões nesta semana, menos que as ${previousCount} da semana passada — o ritmo é seu.`;
+    return `${currentLabel} nesta semana, menos que ${previousArticle} ${previousCount} da semana passada — o ritmo é seu.`;
   }
-  return `${currentCount} sessões nesta semana, no mesmo ritmo da semana passada.`;
+  return `${currentLabel} nesta semana, no mesmo ritmo da semana passada.`;
 }
 
 // Resumo semanal sob demanda (Story 4.4, AC1): calculado deterministicamente a partir de
@@ -89,7 +96,8 @@ export async function getWeeklySummaryData(
   const periodEnd = referenceDate;
   const periodStart = new Date(periodEnd.getTime() - WEEK_MS);
   const previousPeriodStart = new Date(periodStart.getTime() - WEEK_MS);
-  const periodStartIso = periodStart.toISOString();
+  const periodStartMs = periodStart.getTime();
+  const periodEndMs = periodEnd.getTime();
 
   const { data, error } = await supabase
     .from("session_syntheses")
@@ -105,11 +113,19 @@ export async function getWeeklySummaryData(
   }
 
   const rows = data ?? [];
-  const currentRows = rows.filter((row) => row.created_at >= periodStartIso);
-  const previousRows = rows.filter((row) => row.created_at < periodStartIso);
+  // Comparação por instante (epoch), não por string: o `created_at` retornado pelo Postgres
+  // não usa necessariamente o mesmo formato do `toISOString()` do JS (ex.: sufixo "+00:00" em
+  // vez de "Z") — comparar como string classificaria linhas incorretamente mesmo quando
+  // representam o mesmo instante. O limite superior evita incluir linhas além de `periodEnd`
+  // caso `referenceDate` não seja "agora".
+  const rowsWithMs = rows.map((row) => ({ row, ms: new Date(row.created_at).getTime() }));
+  const currentRows = rowsWithMs
+    .filter(({ ms }) => ms >= periodStartMs && ms <= periodEndMs)
+    .map(({ row }) => row);
+  const previousRows = rowsWithMs.filter(({ ms }) => ms < periodStartMs).map(({ row }) => row);
 
   const timeline = [...currentRows]
-    .sort((a, b) => a.created_at.localeCompare(b.created_at))
+    .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
     .map((row) => ({ sessionId: row.session_id, title: row.title, createdAt: row.created_at }));
 
   return {

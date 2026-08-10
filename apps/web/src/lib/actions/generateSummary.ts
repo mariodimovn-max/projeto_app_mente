@@ -4,8 +4,11 @@ import { createClient } from "@/lib/supabase/server";
 import { getWeeklySummaryData, type WeeklySummaryData } from "@/lib/summaries/weeklySummary";
 
 const GENERIC_ERROR = "Não consegui gerar o resumo agora. Tente novamente.";
+// Precisão de linguagem: sessionCount conta sessões com síntese salva (endSession concluído),
+// não toda conversa iniciada — mesma distinção já feita no texto vazio de DashboardStats
+// ("depois da primeira conversa encerrada").
 const NO_SESSIONS_ERROR =
-  "Você ainda não teve conversas nesta última semana. Volte quando tiver algumas sessões para ver seu resumo.";
+  "Você ainda não encerrou nenhuma sessão nesta última semana. Volte quando tiver algumas para ver seu resumo.";
 
 // Story 4.4 (AC1): gera o resumo semanal sob demanda a partir de `session_syntheses` do
 // próprio usuário — RLS já restringe a leitura, o filtro por user_id em

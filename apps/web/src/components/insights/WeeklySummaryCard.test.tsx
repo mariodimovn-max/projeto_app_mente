@@ -20,7 +20,7 @@ const SUMMARY = {
   topics: [{ label: "sono", count: 2 }],
   emotions: [{ label: "ansiedade", count: 1 }],
   timeline: [{ sessionId: "s1", title: "Hoje você tocou no medo.", createdAt: "2026-08-09T10:00:00Z" }],
-  progressNote: "2 sessões nesta semana, mais que as 1 da semana passada.",
+  progressNote: "2 sessões nesta semana, mais que a 1 da semana passada.",
 };
 
 describe("WeeklySummaryCard", () => {
@@ -52,13 +52,13 @@ describe("WeeklySummaryCard", () => {
 
   it("exibe o erro retornado pela Server Action sem quebrar a tela", async () => {
     generateWeeklySummaryMock.mockResolvedValue({
-      error: "Você ainda não teve conversas nesta última semana. Volte quando tiver algumas sessões para ver seu resumo.",
+      error: "Você ainda não encerrou nenhuma sessão nesta última semana. Volte quando tiver algumas para ver seu resumo.",
     });
     render(<WeeklySummaryCard />);
 
     fireEvent.click(screen.getByRole("button", { name: "Gerar resumo" }));
 
-    expect(await screen.findByRole("alert")).toHaveTextContent("Você ainda não teve conversas");
+    expect(await screen.findByRole("alert")).toHaveTextContent("Você ainda não encerrou nenhuma sessão");
   });
 
   it("exibe erro genérico quando a chamada rejeita inesperadamente", async () => {
@@ -70,5 +70,19 @@ describe("WeeklySummaryCard", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "Não consegui gerar o resumo agora. Tente novamente."
     );
+  });
+
+  it("limpa o resumo anterior quando uma nova geração rejeita inesperadamente, para não mostrar dado desatualizado junto do erro", async () => {
+    generateWeeklySummaryMock.mockResolvedValueOnce({ summary: SUMMARY });
+    render(<WeeklySummaryCard />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Gerar resumo" }));
+    await screen.findByText(SUMMARY.progressNote);
+
+    generateWeeklySummaryMock.mockRejectedValueOnce(new Error("network down"));
+    fireEvent.click(screen.getByRole("button", { name: "Gerar de novo" }));
+
+    expect(await screen.findByRole("alert")).toBeInTheDocument();
+    expect(screen.queryByText(SUMMARY.progressNote)).not.toBeInTheDocument();
   });
 });

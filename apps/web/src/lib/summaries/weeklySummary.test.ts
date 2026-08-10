@@ -108,7 +108,94 @@ describe("getWeeklySummaryData", () => {
 
     const result = await getWeeklySummaryData(moreThanBefore as never, "user-1", REFERENCE_DATE);
 
-    expect(result.progressNote).toBe("2 sessões nesta semana, mais que as 1 da semana passada.");
+    expect(result.progressNote).toBe("2 sessões nesta semana, mais que a 1 da semana passada.");
+  });
+
+  it("concorda gênero/número corretamente quando a contagem atual ou anterior é 1", async () => {
+    const oneVsTwo = {
+      from: () =>
+        makeSynthesesBuilder({
+          data: [
+            { session_id: "s1", title: "t", themes: [], emotions: [], created_at: "2026-08-09T10:00:00Z" },
+            { session_id: "s2", title: "t", themes: [], emotions: [], created_at: "2026-08-02T10:00:00Z" },
+            { session_id: "s3", title: "t", themes: [], emotions: [], created_at: "2026-08-01T10:00:00Z" },
+          ],
+          error: null,
+        }),
+    };
+    expect((await getWeeklySummaryData(oneVsTwo as never, "user-1", REFERENCE_DATE)).progressNote).toBe(
+      "1 sessão nesta semana, menos que as 2 da semana passada — o ritmo é seu."
+    );
+
+    const twoVsOne = {
+      from: () =>
+        makeSynthesesBuilder({
+          data: [
+            { session_id: "s1", title: "t", themes: [], emotions: [], created_at: "2026-08-09T10:00:00Z" },
+            { session_id: "s2", title: "t", themes: [], emotions: [], created_at: "2026-08-08T10:00:00Z" },
+            { session_id: "s3", title: "t", themes: [], emotions: [], created_at: "2026-08-01T10:00:00Z" },
+          ],
+          error: null,
+        }),
+    };
+    expect((await getWeeklySummaryData(twoVsOne as never, "user-1", REFERENCE_DATE)).progressNote).toBe(
+      "2 sessões nesta semana, mais que a 1 da semana passada."
+    );
+  });
+
+  it("classifica corretamente linhas cujo created_at vem no formato do Postgres (+00:00), não no formato toISOString() do JS", async () => {
+    const supabase = {
+      from: () =>
+        makeSynthesesBuilder({
+          data: [
+            {
+              session_id: "s1",
+              title: "t",
+              themes: ["sono"],
+              emotions: [],
+              // Mesmo instante que o início do período (REFERENCE_DATE - 7 dias), mas no
+              // formato que o Postgres/PostgREST normalmente retorna, não o "Z" do JS.
+              created_at: "2026-08-03T12:00:00+00:00",
+            },
+          ],
+          error: null,
+        }),
+    };
+
+    const result = await getWeeklySummaryData(supabase as never, "user-1", REFERENCE_DATE);
+
+    expect(result.sessionCount).toBe(1);
+    expect(result.topics).toEqual([{ label: "sono", count: 1 }]);
+  });
+
+  it("ignora linhas depois de periodEnd quando referenceDate não é o instante mais recente possível", async () => {
+    const supabase = {
+      from: () =>
+        makeSynthesesBuilder({
+          data: [
+            {
+              session_id: "future",
+              title: "t",
+              themes: ["futuro"],
+              emotions: [],
+              created_at: "2026-08-11T10:00:00Z", // depois de REFERENCE_DATE
+            },
+            {
+              session_id: "s1",
+              title: "t",
+              themes: ["sono"],
+              emotions: [],
+              created_at: "2026-08-09T10:00:00Z",
+            },
+          ],
+          error: null,
+        }),
+    };
+
+    const result = await getWeeklySummaryData(supabase as never, "user-1", REFERENCE_DATE);
+
+    expect(result.sessionCount).toBe(1);
+    expect(result.topics).toEqual([{ label: "sono", count: 1 }]);
   });
 
   it("retorna zero sessões, listas vazias e nota de início quando não há sínteses", async () => {

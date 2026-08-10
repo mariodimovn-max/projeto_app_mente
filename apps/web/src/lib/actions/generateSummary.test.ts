@@ -21,7 +21,7 @@ const SUMMARY = {
   topics: [{ label: "sono", count: 2 }],
   emotions: [{ label: "ansiedade", count: 1 }],
   timeline: [],
-  progressNote: "2 sessões nesta semana, mais que as 1 da semana passada.",
+  progressNote: "2 sessões nesta semana, mais que a 1 da semana passada.",
 };
 
 describe("generateWeeklySummary", () => {
@@ -58,8 +58,7 @@ describe("generateWeeklySummary", () => {
     const result = await generateWeeklySummary();
 
     expect(result).toEqual({
-      error:
-        "Você ainda não teve conversas nesta última semana. Volte quando tiver algumas sessões para ver seu resumo.",
+      error: "Você ainda não encerrou nenhuma sessão nesta última semana. Volte quando tiver algumas para ver seu resumo.",
     });
   });
 
