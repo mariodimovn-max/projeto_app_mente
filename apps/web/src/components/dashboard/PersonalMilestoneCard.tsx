@@ -13,6 +13,8 @@ interface PersonalMilestoneCardProps {
 
 const UNEXPECTED_SAVE_ERROR = "Não consegui salvar seu marco agora. Tente novamente.";
 const UNEXPECTED_DELETE_ERROR = "Não consegui remover seu marco agora. Tente novamente.";
+const TITLE_MAX_LENGTH = 140;
+const THEME_MAX_LENGTH = 40;
 
 function pluralize(count: number, singular: string, plural: string): string {
   return count === 1 ? singular : plural;
@@ -69,7 +71,12 @@ export function PersonalMilestoneCard({ milestone, onUpdated, onDeleted }: Perso
         return;
       }
 
-      onUpdated({ ...milestone, title: trimmedTitle, theme: trimmedTheme.toLowerCase() });
+      onUpdated({
+        ...milestone,
+        title: trimmedTitle,
+        theme: trimmedTheme.toLowerCase(),
+        progress: result.progress,
+      });
       setIsEditing(false);
     } catch {
       setError(UNEXPECTED_SAVE_ERROR);
@@ -116,7 +123,7 @@ export function PersonalMilestoneCard({ milestone, onUpdated, onDeleted }: Perso
               type="text"
               value={title}
               onChange={(event) => setTitle(event.target.value)}
-              maxLength={140}
+              maxLength={TITLE_MAX_LENGTH}
               required
             />
           </label>
@@ -126,7 +133,7 @@ export function PersonalMilestoneCard({ milestone, onUpdated, onDeleted }: Perso
               type="text"
               value={theme}
               onChange={(event) => setTheme(event.target.value)}
-              maxLength={40}
+              maxLength={THEME_MAX_LENGTH}
               required
             />
           </label>
@@ -171,25 +178,27 @@ export function PersonalMilestoneCard({ milestone, onUpdated, onDeleted }: Perso
       )}
 
       {confirmingDelete ? (
-        <div className={styles.confirmButtons}>
+        <div className={styles.confirmGroup}>
           <p className={styles.confirmText}>Remover este marco pessoal?</p>
-          <button
-            type="button"
-            className={styles.actionButton}
-            onClick={() => setConfirmingDelete(false)}
-            disabled={isDeleting}
-          >
-            Cancelar
-          </button>
-          <button
-            type="button"
-            className={styles.confirmDelete}
-            onClick={() => void handleDelete()}
-            disabled={isDeleting}
-            aria-busy={isDeleting}
-          >
-            {isDeleting ? "Removendo…" : "Remover"}
-          </button>
+          <div className={styles.confirmButtons}>
+            <button
+              type="button"
+              className={styles.actionButton}
+              onClick={() => setConfirmingDelete(false)}
+              disabled={isDeleting}
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              className={styles.confirmDelete}
+              onClick={() => void handleDelete()}
+              disabled={isDeleting}
+              aria-busy={isDeleting}
+            >
+              {isDeleting ? "Removendo…" : "Remover"}
+            </button>
+          </div>
         </div>
       ) : (
         <div className={styles.actions}>

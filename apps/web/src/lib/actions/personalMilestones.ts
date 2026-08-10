@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { normalizeThemeLabel } from "@/lib/milestones/milestones";
+import { getUserPatterns } from "@/lib/patterns/userPatterns";
 import type { PersonalMilestoneInput } from "@/types/personalMilestone";
 
 const SAVE_GENERIC_ERROR = "Não consegui salvar seu marco agora. Tente novamente.";
@@ -29,6 +30,19 @@ function logSupabaseError(
   });
 }
 
+// Um marco pode ser criado (ou ter o tema trocado na edição) para um assunto que já
+// apareceu em sessões anteriores — sem isto, o cliente assumiria progresso 0 mesmo quando
+// o tema já tem contagem acumulada em user_patterns, contradizendo o AC2 logo na primeira
+// renderização (só se corrigiria depois de um refresh de página).
+async function getThemeProgress(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  theme: string
+): Promise<number> {
+  const patterns = await getUserPatterns(supabase, userId);
+  return patterns?.themes[normalizeThemeLabel(theme)] ?? 0;
+}
+
 async function assertOwnsMilestone(
   supabase: Awaited<ReturnType<typeof createClient>>,
   userId: string,
@@ -49,7 +63,7 @@ async function assertOwnsMilestone(
 
 export async function createPersonalMilestone(
   input: PersonalMilestoneInput
-): Promise<{ success: true; id: string } | { error: string }> {
+): Promise<{ success: true; id: string; progress: number } | { error: string }> {
   const parsedInput = milestoneInputSchema.safeParse(input);
   if (!parsedInput.success) {
     return { error: SAVE_GENERIC_ERROR };
@@ -83,7 +97,8 @@ export async function createPersonalMilestone(
       return { error: SAVE_GENERIC_ERROR };
     }
 
-    return { success: true, id: data.id as string };
+    const progress = await getThemeProgress(supabase, user.id, parsedInput.data.theme);
+    return { success: true, id: data.id, progress };
   } catch (error) {
     console.error(
       "Erro ao criar marco pessoal:",
@@ -96,7 +111,7 @@ export async function createPersonalMilestone(
 export async function updatePersonalMilestone(
   milestoneId: string,
   input: PersonalMilestoneInput
-): Promise<{ success: true } | { error: string }> {
+): Promise<{ success: true; progress: number } | { error: string }> {
   const parsedId = milestoneIdSchema.safeParse(milestoneId);
   const parsedInput = milestoneInputSchema.safeParse(input);
   if (!parsedId.success || !parsedInput.success) {
@@ -132,7 +147,8 @@ export async function updatePersonalMilestone(
       return { error: SAVE_GENERIC_ERROR };
     }
 
-    return { success: true };
+    const progress = await getThemeProgress(supabase, user.id, parsedInput.data.theme);
+    return { success: true, progress };
   } catch (error) {
     console.error(
       "Erro ao atualizar marco pessoal:",

@@ -55,7 +55,7 @@ describe("PersonalMilestones", () => {
   });
 
   it("cria um novo marco pelo formulário e o exibe na lista (AC1)", async () => {
-    createPersonalMilestoneMock.mockResolvedValue({ success: true, id: "milestone-2" });
+    createPersonalMilestoneMock.mockResolvedValue({ success: true, id: "milestone-2", progress: 0 });
 
     render(<PersonalMilestones initialMilestones={[]} />);
 
@@ -76,6 +76,23 @@ describe("PersonalMilestones", () => {
       theme: "dinheiro",
     });
     expect(screen.getByText("Ainda não apareceu nas suas conversas.")).toBeInTheDocument();
+  });
+
+  it("exibe o progresso já existente (não zero) quando o tema do novo marco já apareceu em user_patterns (AC2)", async () => {
+    createPersonalMilestoneMock.mockResolvedValue({ success: true, id: "milestone-2", progress: 4 });
+
+    render(<PersonalMilestones initialMilestones={[]} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "+ Novo marco" }));
+    fireEvent.change(screen.getByPlaceholderText(/Quero entender meu relacionamento com dinheiro/), {
+      target: { value: "Meu foco" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Ex.: dinheiro"), {
+      target: { value: "dinheiro" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Salvar marco" }));
+
+    expect(await screen.findByText("Apareceu em 4 conversas.")).toBeInTheDocument();
   });
 
   it("mostra erro e mantém o formulário aberto quando a criação falha", async () => {

@@ -59,7 +59,7 @@ describe("PersonalMilestoneCard", () => {
   });
 
   it("edita título e tema e chama updatePersonalMilestone com os valores normalizados (AC3)", async () => {
-    updatePersonalMilestoneMock.mockResolvedValue({ success: true });
+    updatePersonalMilestoneMock.mockResolvedValue({ success: true, progress: 5 });
     const onUpdated = vi.fn();
 
     render(
@@ -83,7 +83,12 @@ describe("PersonalMilestoneCard", () => {
       title: "Novo foco",
       theme: "Sono",
     });
-    expect(onUpdated).toHaveBeenCalledWith({ ...MILESTONE, title: "Novo foco", theme: "sono" });
+    expect(onUpdated).toHaveBeenCalledWith({
+      ...MILESTONE,
+      title: "Novo foco",
+      theme: "sono",
+      progress: 5,
+    });
   });
 
   it("mostra erro e mantém o modo de edição quando a atualização falha", async () => {

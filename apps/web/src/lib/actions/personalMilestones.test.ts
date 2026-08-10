@@ -16,6 +16,7 @@ function createSupabaseStub(options: {
   insertResult?: { data: unknown; error: unknown };
   updateResult?: { error: unknown };
   deleteResult?: { error: unknown };
+  userPatterns?: { data: unknown; error: unknown };
 }) {
   let mode: "update" | "delete" | null = null;
   const insertPayloads: unknown[] = [];
@@ -46,11 +47,18 @@ function createSupabaseStub(options: {
     },
   };
 
+  const userPatternsBuilder = {
+    select: () => userPatternsBuilder,
+    eq: () => userPatternsBuilder,
+    maybeSingle: async () => options.userPatterns ?? { data: null, error: null },
+  };
+
   return {
     supabase: {
       auth: { getUser: getUserMock },
       from: (table: string) => {
         if (table === "personal_milestones") return builder;
+        if (table === "user_patterns") return userPatternsBuilder;
         throw new Error(`Tabela inesperada: ${table}`);
       },
     },
@@ -119,7 +127,7 @@ describe("createPersonalMilestone", () => {
       theme: "  Dinheiro  ",
     });
 
-    expect(result).toEqual({ success: true, id: "m1" });
+    expect(result).toEqual({ success: true, id: "m1", progress: 0 });
     expect(insertPayloads).toEqual([
       {
         user_id: USER_ID,
@@ -127,6 +135,21 @@ describe("createPersonalMilestone", () => {
         theme: "dinheiro",
       },
     ]);
+  });
+
+  it("retorna o progresso já existente quando o tema do novo marco já apareceu em user_patterns", async () => {
+    const { supabase } = createSupabaseStub({
+      insertResult: { data: { id: "m1" }, error: null },
+      userPatterns: { data: { themes: { dinheiro: 4 }, emotions: {}, triggers: {}, session_count: 6 }, error: null },
+    });
+    const { createClient } = await import("@/lib/supabase/server");
+    vi.mocked(createClient).mockResolvedValue(supabase as never);
+    getUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
+
+    const { createPersonalMilestone } = await import("./personalMilestones");
+    const result = await createPersonalMilestone({ title: "Meu foco", theme: "dinheiro" });
+
+    expect(result).toEqual({ success: true, id: "m1", progress: 4 });
   });
 
   it("retorna erro genérico quando o insert falha", async () => {
@@ -185,10 +208,11 @@ describe("updatePersonalMilestone", () => {
     expect(result).toEqual({ error: SAVE_ERROR });
   });
 
-  it("atualiza título e tema (normalizado) quando o usuário é dono do marco (AC3)", async () => {
+  it("atualiza título e tema (normalizado) e retorna o progresso do novo tema quando o usuário é dono do marco (AC3)", async () => {
     const { supabase, updatePayloads } = createSupabaseStub({
       ownership: { data: { id: VALID_ID }, error: null },
       updateResult: { error: null },
+      userPatterns: { data: { themes: { sono: 5 }, emotions: {}, triggers: {}, session_count: 6 }, error: null },
     });
     const { createClient } = await import("@/lib/supabase/server");
     vi.mocked(createClient).mockResolvedValue(supabase as never);
@@ -200,7 +224,7 @@ describe("updatePersonalMilestone", () => {
       theme: "Sono",
     });
 
-    expect(result).toEqual({ success: true });
+    expect(result).toEqual({ success: true, progress: 5 });
     expect(updatePayloads).toHaveLength(1);
     expect(updatePayloads[0]).toMatchObject({ title: "Novo foco", theme: "sono" });
   });

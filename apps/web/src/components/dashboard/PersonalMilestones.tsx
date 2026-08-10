@@ -58,7 +58,7 @@ export function PersonalMilestones({ initialMilestones }: PersonalMilestonesProp
         id: result.id,
         title: trimmedTitle,
         theme: trimmedTheme.toLowerCase(),
-        progress: 0,
+        progress: result.progress,
         createdAt: new Date().toISOString(),
       };
       setMilestones((current) => [created, ...current]);
