@@ -108,6 +108,11 @@ export async function endSession(
         patterns: content.patterns,
         open_question: content.openQuestion,
         depth: parsedDepth.data,
+        // Story 4.4: mesmos valores já calculados por generateSessionSynthesis para
+        // alimentar user_patterns — persistidos aqui também para que o resumo semanal
+        // consiga ler "emoções da semana" por sessão, sem chamada nova à IA.
+        emotions: content.emotions,
+        triggers: content.triggers,
       })
       .select("id, title, themes, explored, patterns, open_question, depth, created_at")
       .single();

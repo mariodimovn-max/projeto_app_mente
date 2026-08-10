@@ -67,6 +67,11 @@
 - `buildSessionOpeningContext` busca o histórico completo de mensagens da sessão anterior sem `.limit()`, só para pegar a primeira mensagem do assistente e uma média — espelha o mesmo padrão já usado por `buildConversationMessages`, não é uma regressão nova desta diff.
 - `.catch(() => null)` em `buildSessionOpeningContext` não distingue "falha transitória na consulta" de "não é abertura de sessão" — um erro passageiro no Supabase na primeira mensagem de um usuário derruba silenciosamente a instrução obrigatória da pergunta-guia padrão (AC1). Decisão explícita do usuário: manter o padrão best-effort (mesmo já usado em `memoryContext`), risco aceito dado o volume do beta fechado.
 
+## Deferred from: code review of 4-4-gerar-resumo-semanal (2026-08-10)
+
+- Sem seletor real "Semana"/"Mês" no botão de gerar resumo — só existe "Gerar resumo da semana" (`components/insights/WeeklySummaryCard.tsx`). O AC da Story 4.4 nos épicos descreve um fluxo de seleção ("clica em 'Gerar Resumo' e seleciona 'Semana'"), mas o resumo mensal (Story 4.5) ainda não existe; introduzir um seletor com uma única opção real seria construir para um requisito hipotético. Revisitar quando a Story 4.5 (Resumo Mensal) for implementada.
+- Semanas cujo período inclui sessões sintetizadas antes da migration `20260810130000_session_syntheses_emotions_triggers` mostram o bloco "Emoções dominantes" vazio, sem nenhuma indicação de que é uma lacuna de dados de transição (e não ausência real de emoção detectada). Não há como fazer backfill: a emoção da sessão nunca foi persistida antes desta migration, só existia efêmera dentro da chamada que gera a síntese. Mesma classe de limitação já aceita para `user_patterns` na Story 3.3 (agregado só passa a acumular a partir do próximo `endSession` depois do deploy).
+
 ## Deferred from: code review of 4-2-dashboard-de-indicadores-de-evolucao (2026-08-09)
 
 - Banner de erro dos indicadores de evolução (`app/page.tsx`, `styles.errorBanner`) não tem

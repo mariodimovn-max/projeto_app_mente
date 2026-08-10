@@ -1,6 +1,7 @@
 .main {
   display: flex;
   flex-direction: column;
+  gap: var(--space-lg);
   min-height: 100dvh;
   padding: var(--space-lg) var(--space) calc(var(--nav-height) + var(--space-lg));
   background: radial-gradient(130% 55% at 50% 8%, #123138 0%, #0b171b 40%, #080f12 100%);
