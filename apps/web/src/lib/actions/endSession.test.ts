@@ -240,6 +240,8 @@ describe("endSession", () => {
       patterns: GENERATED_CONTENT.patterns,
       open_question: GENERATED_CONTENT.openQuestion,
       depth: TEST_DEPTH,
+      emotions: GENERATED_CONTENT.emotions,
+      triggers: GENERATED_CONTENT.triggers,
     });
   });
 
