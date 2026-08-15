@@ -17,8 +17,8 @@ vi.mock("@/proxy", () => ({ SESSION_USER_HEADER: "x-app-session-user" }));
 vi.mock("@/components/nav/PrimaryNav", () => ({
   PrimaryNav: () => <nav data-testid="primary-nav" />,
 }));
-vi.mock("@/components/insights/WeeklySummaryCard", () => ({
-  WeeklySummaryCard: () => <section data-testid="weekly-summary-card" />,
+vi.mock("@/components/insights/SummaryCard", () => ({
+  SummaryCard: () => <section data-testid="summary-card" />,
 }));
 
 import InsightsPage from "./page";
@@ -45,6 +45,6 @@ describe("InsightsPage", () => {
 
     expect(screen.getByRole("heading", { name: "Insights" })).toBeInTheDocument();
     expect(screen.getByTestId("primary-nav")).toBeInTheDocument();
-    expect(screen.getByTestId("weekly-summary-card")).toBeInTheDocument();
+    expect(screen.getByTestId("summary-card")).toBeInTheDocument();
   });
 });

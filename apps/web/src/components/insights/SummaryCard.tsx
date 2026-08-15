@@ -1,9 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { generateWeeklySummary } from "@/lib/actions/generateSummary";
+import { generateMonthlySummary, generateWeeklySummary } from "@/lib/actions/generateSummary";
 import type { WeeklySummaryData } from "@/lib/summaries/weeklySummary";
-import styles from "./WeeklySummaryCard.module.css";
+import type { MonthlySummaryData } from "@/lib/summaries/monthlySummary";
+import styles from "./SummaryCard.module.css";
+
+type SummaryPeriod = "week" | "month";
+type SummaryData = WeeklySummaryData | MonthlySummaryData;
 
 const UNEXPECTED_ERROR = "Não consegui gerar o resumo agora. Tente novamente.";
 
@@ -11,6 +15,24 @@ const UNEXPECTED_ERROR = "Não consegui gerar o resumo agora. Tente novamente.";
 // de dia conforme o fuso do navegador de cada usuário, divergindo do que foi de fato
 // calculado no servidor.
 const APP_TIMEZONE = "America/Sao_Paulo";
+
+const PERIOD_COPY: Record<
+  SummaryPeriod,
+  { toggleLabel: string; heading: string; emptyText: string; sectionLabel: string }
+> = {
+  week: {
+    toggleLabel: "Semana",
+    heading: "Resumo da semana",
+    emptyText: "Veja os principais temas e emoções dos últimos 7 dias, reunidos em um só lugar.",
+    sectionLabel: "Resumo semanal",
+  },
+  month: {
+    toggleLabel: "Mês",
+    heading: "Resumo do mês",
+    emptyText: "Veja os principais temas e emoções dos últimos 30 dias, reunidos em um só lugar.",
+    sectionLabel: "Resumo mensal",
+  },
+};
 
 function formatPeriodDate(iso: string): string {
   return new Date(iso)
@@ -29,14 +51,25 @@ function formatTimelineDate(iso: string): string {
     .replace(/\.$/, "");
 }
 
-// Resumo semanal sob demanda (Story 4.4, AC1/AC2): botão único (só "Semana" existe até
-// aqui — o seletor "Semana/Mês" descrito nos épicos só faz sentido quando o resumo mensal
-// da Story 4.5 também existir). Texto + chips + linha do tempo simples, sem gráficos
-// (AC2); nada aqui vem de conteúdo bruto de conversa (AC3).
-export function WeeklySummaryCard() {
-  const [summary, setSummary] = useState<WeeklySummaryData | null>(null);
+// Resumo semanal (Story 4.4) e mensal (Story 4.5) sob demanda, no mesmo cartão (AC2 da
+// Story 4.5): um seletor Semana/Mês decide qual Server Action é chamada ao clicar em "Gerar
+// resumo" — ambas calculam deterministicamente a partir de `session_syntheses`, sem
+// histórico bruto de conversa (AC3). Trocar de período limpa o resumo/erro exibido, para não
+// mostrar dado de um período com o rótulo do outro.
+export function SummaryCard() {
+  const [period, setPeriod] = useState<SummaryPeriod>("week");
+  const [summary, setSummary] = useState<SummaryData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  function handleSelectPeriod(nextPeriod: SummaryPeriod) {
+    if (nextPeriod === period || isLoading) {
+      return;
+    }
+    setPeriod(nextPeriod);
+    setSummary(null);
+    setError(null);
+  }
 
   async function handleGenerate() {
     if (isLoading) {
@@ -46,7 +79,7 @@ export function WeeklySummaryCard() {
     setError(null);
 
     try {
-      const result = await generateWeeklySummary();
+      const result = period === "week" ? await generateWeeklySummary() : await generateMonthlySummary();
       if ("error" in result) {
         setError(result.error);
         setSummary(null);
@@ -61,10 +94,31 @@ export function WeeklySummaryCard() {
     }
   }
 
+  const copy = PERIOD_COPY[period];
+
   return (
-    <section className={styles.section} aria-label="Resumo semanal">
+    <section className={styles.section} aria-label={copy.sectionLabel}>
+      <div className={styles.periodToggle} role="group" aria-label="Selecionar período do resumo">
+        {(Object.keys(PERIOD_COPY) as SummaryPeriod[]).map((key) => (
+          <button
+            key={key}
+            type="button"
+            className={
+              period === key
+                ? `${styles.periodButton} ${styles.periodButtonActive}`
+                : styles.periodButton
+            }
+            aria-pressed={period === key}
+            disabled={isLoading}
+            onClick={() => handleSelectPeriod(key)}
+          >
+            {PERIOD_COPY[key].toggleLabel}
+          </button>
+        ))}
+      </div>
+
       <div className={styles.head}>
-        <p className={styles.heading}>Resumo da semana</p>
+        <p className={styles.heading}>{copy.heading}</p>
         <button
           type="button"
           className={styles.generateButton}
@@ -75,11 +129,7 @@ export function WeeklySummaryCard() {
         </button>
       </div>
 
-      {!summary && !error && (
-        <p className={styles.emptyText}>
-          Veja os principais temas e emoções dos últimos 7 dias, reunidos em um só lugar.
-        </p>
-      )}
+      {!summary && !error && <p className={styles.emptyText}>{copy.emptyText}</p>}
 
       {error && (
         <p className={styles.error} role="alert">
