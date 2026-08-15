@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { generateMonthlySummary, generateWeeklySummary } from "@/lib/actions/generateSummary";
 import type { WeeklySummaryData } from "@/lib/summaries/weeklySummary";
-import type { MonthlySummaryData } from "@/lib/summaries/monthlySummary";
+import type { MonthlySummaryData, MonthlySummaryTrendDirection } from "@/lib/summaries/monthlySummary";
 import styles from "./SummaryCard.module.css";
 
 type SummaryPeriod = "week" | "month";
@@ -34,11 +34,33 @@ const PERIOD_COPY: Record<
   },
 };
 
-function formatPeriodDate(iso: string): string {
+// O resumo mensal tem 30 dias de janela e pode cruzar a virada do ano (ex.: 06 dez – 05 jan);
+// sem o ano, as duas pontas do período pareceriam do mesmo ano. O resumo semanal nunca
+// precisa disso na prática (7 dias não cruza um ano de forma ambígua para o usuário).
+function formatPeriodDate(iso: string, includeYear: boolean): string {
   return new Date(iso)
-    .toLocaleDateString("pt-BR", { timeZone: APP_TIMEZONE, day: "2-digit", month: "short" })
+    .toLocaleDateString("pt-BR", {
+      timeZone: APP_TIMEZONE,
+      day: "2-digit",
+      month: "short",
+      year: includeYear ? "numeric" : undefined,
+    })
     .replace(/\.$/, "");
 }
+
+const TREND_DIRECTION_GLYPH: Record<MonthlySummaryTrendDirection, string> = {
+  up: "↑",
+  down: "↓",
+  new: "＋",
+  stable: "→",
+};
+
+const TREND_DIRECTION_LABEL: Record<MonthlySummaryTrendDirection, string> = {
+  up: "mais presente que no mês anterior",
+  down: "menos presente que no mês anterior",
+  new: "novo neste mês",
+  stable: "no mesmo nível do mês anterior",
+};
 
 function formatTimelineDate(iso: string): string {
   return new Date(iso)
@@ -140,7 +162,8 @@ export function SummaryCard() {
       {summary && (
         <div className={styles.card}>
           <p className={styles.period}>
-            {formatPeriodDate(summary.periodStart)} – {formatPeriodDate(summary.periodEnd)}
+            {formatPeriodDate(summary.periodStart, period === "month")} –{" "}
+            {formatPeriodDate(summary.periodEnd, period === "month")}
           </p>
           <p className={styles.progressNote}>{summary.progressNote}</p>
 
@@ -151,6 +174,12 @@ export function SummaryCard() {
                 {summary.topics.map((topic) => (
                   <li key={topic.label} className={styles.chip}>
                     {topic.label}
+                    {"direction" in topic && (
+                      <span className={styles.trendGlyph} aria-label={TREND_DIRECTION_LABEL[topic.direction]}>
+                        {" "}
+                        {TREND_DIRECTION_GLYPH[topic.direction]}
+                      </span>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -164,6 +193,12 @@ export function SummaryCard() {
                 {summary.emotions.map((emotion) => (
                   <li key={emotion.label} className={styles.chip}>
                     {emotion.label}
+                    {"direction" in emotion && (
+                      <span className={styles.trendGlyph} aria-label={TREND_DIRECTION_LABEL[emotion.direction]}>
+                        {" "}
+                        {TREND_DIRECTION_GLYPH[emotion.direction]}
+                      </span>
+                    )}
                   </li>
                 ))}
               </ul>

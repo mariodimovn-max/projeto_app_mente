@@ -30,8 +30,8 @@ const MONTH_SUMMARY = {
   periodEnd: "2026-08-10T12:00:00Z",
   sessionCount: 8,
   previousSessionCount: 5,
-  topics: [{ label: "trabalho", count: 6 }],
-  emotions: [{ label: "cansaço", count: 4 }],
+  topics: [{ label: "trabalho", count: 6, previousCount: 3, direction: "up" as const }],
+  emotions: [{ label: "cansaço", count: 4, previousCount: 4, direction: "stable" as const }],
   timeline: [{ sessionId: "s2", title: "Um mês olhando para dentro.", createdAt: "2026-08-01T10:00:00Z" }],
   progressNote: "8 sessões neste mês, mais que os 5 do mês passado.",
 };
@@ -80,6 +80,41 @@ describe("SummaryCard", () => {
     expect(await screen.findByText(MONTH_SUMMARY.progressNote)).toBeInTheDocument();
     expect(screen.getByText("trabalho")).toBeInTheDocument();
     expect(screen.getByText("cansaço")).toBeInTheDocument();
+    expect(generateWeeklySummaryMock).not.toHaveBeenCalled();
+  });
+
+  it("mostra o indicador de tendência (alta/estável) nos chips do resumo mensal, com rótulo acessível", async () => {
+    generateMonthlySummaryMock.mockResolvedValue({ summary: MONTH_SUMMARY });
+    render(<SummaryCard />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Mês" }));
+    fireEvent.click(screen.getByRole("button", { name: "Gerar resumo" }));
+
+    expect(await screen.findByText("↑")).toBeInTheDocument();
+    expect(screen.getByLabelText("mais presente que no mês anterior")).toBeInTheDocument();
+    expect(screen.getByLabelText("no mesmo nível do mês anterior")).toBeInTheDocument();
+  });
+
+  it("não mostra indicador de tendência nos chips do resumo semanal", async () => {
+    generateWeeklySummaryMock.mockResolvedValue({ summary: WEEK_SUMMARY });
+    render(<SummaryCard />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Gerar resumo" }));
+
+    await screen.findByText(WEEK_SUMMARY.progressNote);
+    expect(screen.queryByText("↑")).not.toBeInTheDocument();
+  });
+
+  it("exibe o erro específico de mês sem sessões sem quebrar a tela", async () => {
+    generateMonthlySummaryMock.mockResolvedValue({
+      error: "Você ainda não encerrou nenhuma sessão neste último mês. Volte quando tiver algumas para ver seu resumo.",
+    });
+    render(<SummaryCard />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Mês" }));
+    fireEvent.click(screen.getByRole("button", { name: "Gerar resumo" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Você ainda não encerrou nenhuma sessão");
     expect(generateWeeklySummaryMock).not.toHaveBeenCalled();
   });
 

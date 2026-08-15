@@ -59,12 +59,12 @@ describe("getMonthlySummaryData", () => {
     expect(result.sessionCount).toBe(2);
     expect(result.previousSessionCount).toBe(1);
     expect(result.topics).toEqual([
-      { label: "sono", count: 2 },
-      { label: "rotina", count: 1 },
+      { label: "sono", count: 2, previousCount: 0, direction: "new" },
+      { label: "rotina", count: 1, previousCount: 0, direction: "new" },
     ]);
     expect(result.emotions).toEqual([
-      { label: "ansiedade", count: 2 },
-      { label: "alívio", count: 1 },
+      { label: "ansiedade", count: 2, previousCount: 0, direction: "new" },
+      { label: "alívio", count: 1, previousCount: 0, direction: "new" },
     ]);
     expect(result.timeline).toEqual([
       { sessionId: "s2", title: "Título 2", createdAt: "2026-07-15T10:00:00Z" },
@@ -91,7 +91,62 @@ describe("getMonthlySummaryData", () => {
 
     const result = await getMonthlySummaryData(supabase as never, "user-1", REFERENCE_DATE);
 
-    expect(result.topics).toEqual([{ label: "sono", count: 1 }]);
+    expect(result.topics).toEqual([{ label: "sono", count: 1, previousCount: 0, direction: "new" }]);
+  });
+
+  it("calcula a tendência de cada tema comparando a contagem com o mês anterior (alta, queda, estável, novo)", async () => {
+    const supabase = {
+      from: () =>
+        makeSynthesesBuilder({
+          data: [
+            {
+              session_id: "c1",
+              title: "t",
+              themes: ["sono", "estudo", "rotina", "novo"],
+              emotions: [],
+              created_at: "2026-08-09T10:00:00Z",
+            },
+            {
+              session_id: "c2",
+              title: "t",
+              themes: ["sono", "rotina"],
+              emotions: [],
+              created_at: "2026-08-05T10:00:00Z",
+            },
+            {
+              session_id: "p1",
+              title: "t",
+              themes: ["sono", "rotina"],
+              emotions: [],
+              created_at: "2026-06-20T10:00:00Z",
+            },
+            {
+              session_id: "p2",
+              title: "t",
+              themes: ["estudo", "rotina"],
+              emotions: [],
+              created_at: "2026-06-25T10:00:00Z",
+            },
+            {
+              session_id: "p3",
+              title: "t",
+              themes: ["estudo"],
+              emotions: [],
+              created_at: "2026-06-28T10:00:00Z",
+            },
+          ],
+          error: null,
+        }),
+    };
+
+    const result = await getMonthlySummaryData(supabase as never, "user-1", REFERENCE_DATE);
+
+    expect(result.topics).toEqual([
+      { label: "rotina", count: 2, previousCount: 2, direction: "stable" },
+      { label: "sono", count: 2, previousCount: 1, direction: "up" },
+      { label: "estudo", count: 1, previousCount: 2, direction: "down" },
+      { label: "novo", count: 1, previousCount: 0, direction: "new" },
+    ]);
   });
 
   it("gera uma nota de progresso comparando com o mês anterior", async () => {
@@ -166,7 +221,7 @@ describe("getMonthlySummaryData", () => {
     const result = await getMonthlySummaryData(supabase as never, "user-1", REFERENCE_DATE);
 
     expect(result.sessionCount).toBe(1);
-    expect(result.topics).toEqual([{ label: "sono", count: 1 }]);
+    expect(result.topics).toEqual([{ label: "sono", count: 1, previousCount: 0, direction: "new" }]);
   });
 
   it("ignora linhas depois de periodEnd quando referenceDate não é o instante mais recente possível", async () => {
@@ -196,7 +251,7 @@ describe("getMonthlySummaryData", () => {
     const result = await getMonthlySummaryData(supabase as never, "user-1", REFERENCE_DATE);
 
     expect(result.sessionCount).toBe(1);
-    expect(result.topics).toEqual([{ label: "sono", count: 1 }]);
+    expect(result.topics).toEqual([{ label: "sono", count: 1, previousCount: 0, direction: "new" }]);
   });
 
   it("retorna zero sessões, listas vazias e nota de início quando não há sínteses", async () => {

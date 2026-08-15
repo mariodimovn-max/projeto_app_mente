@@ -29,6 +29,7 @@
 
 .periodButton:disabled {
   cursor: default;
+  opacity: 0.5;
 }
 
 .periodButtonActive {
@@ -124,6 +125,10 @@
   border: 1px solid rgba(127, 208, 200, 0.24);
   font: 500 0.8125rem var(--font-sans);
   color: rgba(233, 241, 238, 0.85);
+}
+
+.trendGlyph {
+  color: #c9f0ea;
 }
 
 .timeline {
