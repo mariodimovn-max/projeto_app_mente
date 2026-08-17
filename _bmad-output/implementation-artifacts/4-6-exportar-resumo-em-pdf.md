@@ -1,6 +1,6 @@
 # Story 4.6: Exportar Resumo em PDF
 
-Status: planned
+Status: done
 
 ## Story
 
@@ -16,5 +16,5 @@ so that eu tenha um registro fora do app.
 
 ## Tasks / Subtasks
 
-- [ ] Implementar a exportação de resumo para PDF.
-- [ ] Garantir download imediato e formatação legível.
+- [x] Implementar a exportação de resumo para PDF.
+- [x] Garantir download imediato e formatação legível.
