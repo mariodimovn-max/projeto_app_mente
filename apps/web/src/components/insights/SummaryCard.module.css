@@ -158,6 +158,17 @@
   line-height: var(--lh-body);
 }
 
+.exportButton {
+  align-self: flex-start;
+  padding: 8px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: transparent;
+  font: 500 0.8125rem var(--font-sans);
+  color: rgba(233, 241, 238, 0.85);
+  cursor: pointer;
+}
+
 .privacyCaption {
   margin: 0;
   font-size: 0.75rem;

@@ -2,14 +2,19 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { generateWeeklySummaryMock, generateMonthlySummaryMock } = vi.hoisted(() => ({
+const { generateWeeklySummaryMock, generateMonthlySummaryMock, downloadSummaryPdfMock } = vi.hoisted(() => ({
   generateWeeklySummaryMock: vi.fn(),
   generateMonthlySummaryMock: vi.fn(),
+  downloadSummaryPdfMock: vi.fn(),
 }));
 
 vi.mock("@/lib/actions/generateSummary", () => ({
   generateWeeklySummary: generateWeeklySummaryMock,
   generateMonthlySummary: generateMonthlySummaryMock,
+}));
+
+vi.mock("@/lib/pdf/summaryPdf", () => ({
+  downloadSummaryPdf: downloadSummaryPdfMock,
 }));
 
 const { SummaryCard } = await import("./SummaryCard");
@@ -40,6 +45,7 @@ describe("SummaryCard", () => {
   beforeEach(() => {
     generateWeeklySummaryMock.mockReset();
     generateMonthlySummaryMock.mockReset();
+    downloadSummaryPdfMock.mockReset();
   });
 
   it("mostra o texto inicial e o botão de gerar com Semana selecionada por padrão", () => {
@@ -151,6 +157,50 @@ describe("SummaryCard", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "Não consegui gerar o resumo agora. Tente novamente."
     );
+  });
+
+  it("não mostra o botão de exportar PDF antes de um resumo ser gerado", () => {
+    render(<SummaryCard />);
+
+    expect(screen.queryByRole("button", { name: "Exportar PDF" })).not.toBeInTheDocument();
+  });
+
+  it("exporta o resumo semanal em PDF imediatamente ao clicar em Exportar PDF, sem etapas extras", async () => {
+    generateWeeklySummaryMock.mockResolvedValue({ summary: WEEK_SUMMARY });
+    render(<SummaryCard />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Gerar resumo" }));
+    await screen.findByText(WEEK_SUMMARY.progressNote);
+
+    fireEvent.click(screen.getByRole("button", { name: "Exportar PDF" }));
+
+    expect(downloadSummaryPdfMock).toHaveBeenCalledTimes(1);
+    const [content, filename] = downloadSummaryPdfMock.mock.calls[0]!;
+    expect(content.heading).toBe("Resumo da semana");
+    expect(content.progressNote).toBe(WEEK_SUMMARY.progressNote);
+    expect(content.topics).toEqual([{ label: "sono", trendLabel: undefined }]);
+    expect(content.emotions).toEqual([{ label: "ansiedade", trendLabel: undefined }]);
+    expect(content.timeline).toHaveLength(1);
+    expect(content.timeline[0].title).toBe("Hoje você tocou no medo.");
+    expect(filename).toMatch(/^resumo-semana-\d{4}-\d{2}-\d{2}\.pdf$/);
+  });
+
+  it("exporta o resumo mensal em PDF com o rótulo de tendência de cada chip", async () => {
+    generateMonthlySummaryMock.mockResolvedValue({ summary: MONTH_SUMMARY });
+    render(<SummaryCard />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Mês" }));
+    fireEvent.click(screen.getByRole("button", { name: "Gerar resumo" }));
+    await screen.findByText(MONTH_SUMMARY.progressNote);
+
+    fireEvent.click(screen.getByRole("button", { name: "Exportar PDF" }));
+
+    expect(downloadSummaryPdfMock).toHaveBeenCalledTimes(1);
+    const [content, filename] = downloadSummaryPdfMock.mock.calls[0]!;
+    expect(content.heading).toBe("Resumo do mês");
+    expect(content.topics).toEqual([{ label: "trabalho", trendLabel: "mais presente que no mês anterior" }]);
+    expect(content.emotions).toEqual([{ label: "cansaço", trendLabel: "no mesmo nível do mês anterior" }]);
+    expect(filename).toMatch(/^resumo-mes-\d{4}-\d{2}-\d{2}\.pdf$/);
   });
 
   it("limpa o resumo anterior quando uma nova geração rejeita inesperadamente, para não mostrar dado desatualizado junto do erro", async () => {

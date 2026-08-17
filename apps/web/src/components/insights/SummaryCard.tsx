@@ -4,6 +4,7 @@ import { useState } from "react";
 import { generateMonthlySummary, generateWeeklySummary } from "@/lib/actions/generateSummary";
 import type { WeeklySummaryData } from "@/lib/summaries/weeklySummary";
 import type { MonthlySummaryData, MonthlySummaryTrendDirection } from "@/lib/summaries/monthlySummary";
+import { downloadSummaryPdf, type SummaryPdfContent } from "@/lib/pdf/summaryPdf";
 import styles from "./SummaryCard.module.css";
 
 type SummaryPeriod = "week" | "month";
@@ -73,6 +74,14 @@ function formatTimelineDate(iso: string): string {
     .replace(/\.$/, "");
 }
 
+// yyyy-mm-dd no mesmo fuso fixo usado no resto do cartão — só para nome de arquivo, não
+// precisa ser exato ao segundo, mas precisa bater com o período exibido na tela.
+function formatFilenameDate(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-CA", { timeZone: APP_TIMEZONE });
+}
+
+const PRIVACY_CAPTION = "Este resumo reflete só temas e emoções, sem trechos das suas conversas.";
+
 // Resumo semanal (Story 4.4) e mensal (Story 4.5) sob demanda, no mesmo cartão (AC2 da
 // Story 4.5): um seletor Semana/Mês decide qual Server Action é chamada ao clicar em "Gerar
 // resumo" — ambas calculam deterministicamente a partir de `session_syntheses`, sem
@@ -83,6 +92,7 @@ export function SummaryCard() {
   const [summary, setSummary] = useState<SummaryData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const copy = PERIOD_COPY[period];
 
   function handleSelectPeriod(nextPeriod: SummaryPeriod) {
     if (nextPeriod === period || isLoading) {
@@ -116,7 +126,36 @@ export function SummaryCard() {
     }
   }
 
-  const copy = PERIOD_COPY[period];
+  function handleExportPdf() {
+    if (!summary) {
+      return;
+    }
+
+    const content: SummaryPdfContent = {
+      heading: copy.heading,
+      periodLabel: `${formatPeriodDate(summary.periodStart, period === "month")} – ${formatPeriodDate(
+        summary.periodEnd,
+        period === "month"
+      )}`,
+      progressNote: summary.progressNote,
+      topics: summary.topics.map((topic) => ({
+        label: topic.label,
+        ...("direction" in topic ? { trendLabel: TREND_DIRECTION_LABEL[topic.direction] } : {}),
+      })),
+      emotions: summary.emotions.map((emotion) => ({
+        label: emotion.label,
+        ...("direction" in emotion ? { trendLabel: TREND_DIRECTION_LABEL[emotion.direction] } : {}),
+      })),
+      timeline: summary.timeline.map((entry) => ({
+        date: formatTimelineDate(entry.createdAt),
+        title: entry.title,
+      })),
+      privacyCaption: PRIVACY_CAPTION,
+    };
+
+    const periodSlug = period === "week" ? "semana" : "mes";
+    downloadSummaryPdf(content, `resumo-${periodSlug}-${formatFilenameDate(summary.periodEnd)}.pdf`);
+  }
 
   return (
     <section className={styles.section} aria-label={copy.sectionLabel}>
@@ -219,9 +258,11 @@ export function SummaryCard() {
             </div>
           )}
 
-          <p className={styles.privacyCaption}>
-            Este resumo reflete só temas e emoções, sem trechos das suas conversas.
-          </p>
+          <button type="button" className={styles.exportButton} onClick={handleExportPdf}>
+            Exportar PDF
+          </button>
+
+          <p className={styles.privacyCaption}>{PRIVACY_CAPTION}</p>
         </div>
       )}
     </section>
