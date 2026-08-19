@@ -43,11 +43,33 @@ export async function deleteAccount(): Promise<{ error: string } | undefined> {
       return { error: GENERIC_ERROR };
     }
 
-    const admin = createAdminClient();
-    const { error: deleteError } = await admin.auth.admin.deleteUser(user.id);
-
-    if (deleteError) {
-      console.error("Falha ao excluir conta no Supabase Auth:", deleteError);
+    try {
+      const admin = createAdminClient();
+      const { error: deleteError } = await admin.auth.admin.deleteUser(user.id);
+      if (deleteError) {
+        throw deleteError;
+      }
+    } catch (deleteAccountError) {
+      console.error(
+        "Falha ao excluir conta no Supabase Auth:",
+        deleteAccountError instanceof Error
+          ? { message: deleteAccountError.message, stack: deleteAccountError.stack }
+          : deleteAccountError
+      );
+      // A auditoria acima já registrou a tentativa (AC3) antes de sabermos que a exclusão
+      // falharia — grava um segundo registro para a trilha não ficar enganosa (parecendo que
+      // a conta foi destruída quando não foi), já que audit_log só permite insert, nunca
+      // update/delete, nem para o próprio dono.
+      const { error: compensatingAuditError } = await supabase.from("audit_log").insert({
+        user_id: user.id,
+        action: "delete_account_failed",
+      });
+      if (compensatingAuditError) {
+        console.error(
+          "Falha ao registrar auditoria de exclusão de conta que falhou:",
+          compensatingAuditError
+        );
+      }
       return { error: GENERIC_ERROR };
     }
   } catch (error) {
@@ -59,11 +81,15 @@ export async function deleteAccount(): Promise<{ error: string } | undefined> {
   }
 
   // A conta já não existe mais neste ponto — encerra a sessão local mesmo que o signOut
-  // falhe (ex.: o refresh token já foi invalidado junto com o usuário), para não deixar
-  // cookies de sessão "zumbis" no navegador.
-  const { error: signOutError } = await supabase.auth.signOut();
-  if (signOutError) {
-    console.error("Falha ao encerrar sessão local após excluir conta:", signOutError);
+  // falhe ou rejeite (ex.: o refresh token já foi invalidado junto com o usuário), para não
+  // deixar cookies de sessão "zumbis" no navegador nem travar o redirect abaixo.
+  try {
+    const { error: signOutError } = await supabase.auth.signOut();
+    if (signOutError) {
+      console.error("Falha ao encerrar sessão local após excluir conta:", signOutError);
+    }
+  } catch (signOutException) {
+    console.error("Erro inesperado ao encerrar sessão local após excluir conta:", signOutException);
   }
 
   redirect("/");

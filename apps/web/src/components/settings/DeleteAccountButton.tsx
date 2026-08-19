@@ -4,6 +4,8 @@ import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { deleteAccount } from "@/lib/actions/deleteAccount";
 import styles from "./DeleteAccountButton.module.css";
 
+const UNEXPECTED_ERROR = "Não foi possível excluir sua conta agora. Tente novamente em instantes.";
+
 // Story 5.2: mesmo padrão de confirmação acessível do LogoutButton (role="alertdialog",
 // focus trap, fecha com Escape), mas mantido como card separado do ExportDataButton — a ação é
 // destrutiva e irreversível (AC4), então o texto do diálogo reforça isso explicitamente em vez
@@ -60,12 +62,20 @@ export function DeleteAccountButton() {
   }
 
   async function handleConfirm() {
+    if (submitting) {
+      return;
+    }
     setSubmitting(true);
-    const result = await deleteAccount();
-    setSubmitting(false);
-
-    if (result?.error) {
-      setError(result.error);
+    setError(null);
+    try {
+      const result = await deleteAccount();
+      if (result?.error) {
+        setError(result.error);
+      }
+    } catch {
+      setError(UNEXPECTED_ERROR);
+    } finally {
+      setSubmitting(false);
     }
   }
 

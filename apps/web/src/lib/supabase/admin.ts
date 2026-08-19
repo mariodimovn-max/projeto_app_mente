@@ -6,6 +6,10 @@ import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 // SUPABASE_SERVICE_ROLE_KEY (sem prefixo NEXT_PUBLIC_) configurada manualmente — não existia
 // no projeto antes desta história.
 export function createAdminClient() {
+  if (typeof window !== "undefined") {
+    throw new Error("createAdminClient não pode ser chamado no browser.");
+  }
+
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 

@@ -105,8 +105,8 @@ describe("deleteAccount", () => {
     expect(redirectMock).not.toHaveBeenCalled();
   });
 
-  it("retorna erro genérico e não redireciona quando a exclusão no Supabase Auth falha", async () => {
-    const { supabase } = createSupabaseStub();
+  it("retorna erro genérico, não redireciona e grava um registro compensatório quando a exclusão no Supabase Auth falha", async () => {
+    const { supabase, auditLogInserts } = createSupabaseStub();
     const { createClient } = await import("@/lib/supabase/server");
     vi.mocked(createClient).mockResolvedValue(supabase as never);
     getUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
@@ -117,6 +117,10 @@ describe("deleteAccount", () => {
 
     expect(result).toEqual({ error: GENERIC_ERROR });
     expect(redirectMock).not.toHaveBeenCalled();
+    expect(auditLogInserts).toEqual([
+      { user_id: USER_ID, action: "delete_account" },
+      { user_id: USER_ID, action: "delete_account_failed" },
+    ]);
   });
 
   it("redireciona mesmo quando o signOut falha, já que a conta já foi destruída", async () => {
@@ -133,8 +137,8 @@ describe("deleteAccount", () => {
     expect(redirectMock).toHaveBeenCalledWith("/");
   });
 
-  it("retorna erro genérico quando o client admin não está configurado (service role key ausente)", async () => {
-    const { supabase } = createSupabaseStub();
+  it("retorna erro genérico e grava um registro compensatório quando o client admin não está configurado (service role key ausente)", async () => {
+    const { supabase, auditLogInserts } = createSupabaseStub();
     const { createClient } = await import("@/lib/supabase/server");
     vi.mocked(createClient).mockResolvedValue(supabase as never);
     getUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
@@ -147,5 +151,23 @@ describe("deleteAccount", () => {
 
     expect(result).toEqual({ error: GENERIC_ERROR });
     expect(redirectMock).not.toHaveBeenCalled();
+    expect(auditLogInserts).toEqual([
+      { user_id: USER_ID, action: "delete_account" },
+      { user_id: USER_ID, action: "delete_account_failed" },
+    ]);
+  });
+
+  it("retorna erro genérico e redireciona mesmo quando signOut() rejeita em vez de retornar { error }", async () => {
+    const { supabase } = createSupabaseStub();
+    const { createClient } = await import("@/lib/supabase/server");
+    vi.mocked(createClient).mockResolvedValue(supabase as never);
+    getUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
+    deleteUserMock.mockResolvedValue({ error: null });
+    signOutMock.mockRejectedValue(new Error("network down"));
+
+    const { deleteAccount } = await import("./deleteAccount");
+    await deleteAccount();
+
+    expect(redirectMock).toHaveBeenCalledWith("/");
   });
 });

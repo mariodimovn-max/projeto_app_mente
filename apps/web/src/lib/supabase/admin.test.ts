@@ -39,4 +39,18 @@ describe("createAdminClient", () => {
 
     expect(() => createAdminClient()).toThrow();
   });
+
+  it("recusa rodar no browser, mesmo com as variáveis de ambiente configuradas", async () => {
+    const { createAdminClient } = await import("./admin");
+    const originalWindow = globalThis.window;
+    // @ts-expect-error -- simula um contexto de browser para o guard de server-only
+    globalThis.window = {};
+
+    try {
+      expect(() => createAdminClient()).toThrow(/browser/);
+      expect(createClientMock).not.toHaveBeenCalled();
+    } finally {
+      globalThis.window = originalWindow;
+    }
+  });
 });

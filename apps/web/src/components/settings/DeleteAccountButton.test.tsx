@@ -51,6 +51,38 @@ describe("DeleteAccountButton", () => {
     await waitFor(() => expect(deleteAccountMock).toHaveBeenCalled());
   });
 
+  it("não chama a Server Action mais de uma vez ao clicar em confirmar repetidamente antes da resposta", async () => {
+    let resolveDeleteAccount: (value: undefined) => void = () => {};
+    deleteAccountMock.mockImplementation(
+      () => new Promise((resolve) => { resolveDeleteAccount = resolve; })
+    );
+    render(<DeleteAccountButton />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Excluir minha conta" }));
+    const dialog = screen.getByRole("alertdialog");
+    const confirmButton = within(dialog).getByRole("button", { name: /Excluir permanentemente/i });
+    fireEvent.click(confirmButton);
+    fireEvent.click(confirmButton);
+    fireEvent.click(confirmButton);
+
+    resolveDeleteAccount(undefined);
+    await waitFor(() => expect(deleteAccountMock).toHaveBeenCalledTimes(1));
+  });
+
+  it("exibe erro genérico e libera o botão quando a Server Action rejeita inesperadamente", async () => {
+    deleteAccountMock.mockRejectedValue(new Error("network down"));
+    render(<DeleteAccountButton />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Excluir minha conta" }));
+    const dialog = screen.getByRole("alertdialog");
+    fireEvent.click(within(dialog).getByRole("button", { name: /Excluir permanentemente/i }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Não foi possível excluir sua conta agora. Tente novamente em instantes."
+    );
+    expect(within(dialog).getByRole("button", { name: /Excluir permanentemente/i })).not.toBeDisabled();
+  });
+
   it("exibe erro sem fechar a confirmação quando a Server Action falha", async () => {
     deleteAccountMock.mockResolvedValue({
       error: "Não foi possível excluir sua conta agora. Tente novamente em instantes.",
