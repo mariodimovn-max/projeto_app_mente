@@ -108,6 +108,17 @@ describe("Home onboarding page", () => {
     expect(screen.getByTestId("logout-button")).toBeInTheDocument();
   });
 
+  it("exibe o link de Configurações quando o usuário está autenticado (Story 5.1)", async () => {
+    headerStore.set("x-app-session-user", "1");
+    const element = await HomePage();
+    render(element);
+
+    expect(screen.getByRole("link", { name: "Configurações" })).toHaveAttribute(
+      "href",
+      "/configuracoes"
+    );
+  });
+
   it("exibe a navegação principal quando o usuário está autenticado (Story 4.1)", async () => {
     headerStore.set("x-app-session-user", "1");
     const element = await HomePage();

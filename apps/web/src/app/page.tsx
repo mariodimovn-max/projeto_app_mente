@@ -137,6 +137,9 @@ export default async function Home() {
             <span>seu espaço</span>
           </div>
           <div className={styles.appHeaderActions}>
+            <Link className={styles.settingsLink} href="/configuracoes">
+              Configurações
+            </Link>
             <LogoutButton />
           </div>
         </header>

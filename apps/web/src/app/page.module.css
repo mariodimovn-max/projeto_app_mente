@@ -20,6 +20,17 @@
   gap: var(--space);
 }
 
+.settingsLink {
+  font: 400 0.8125rem var(--font-sans);
+  color: var(--color-muted);
+  text-decoration: none;
+}
+
+.settingsLink:hover,
+.settingsLink:focus-visible {
+  color: var(--color-text);
+}
+
 .main {
   display: flex;
   flex-direction: column;
