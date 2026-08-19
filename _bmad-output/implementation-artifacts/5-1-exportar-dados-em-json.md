@@ -16,8 +16,8 @@ so that eu tenha controle total sobre minhas informações, conforme a LGPD.
 
 ## Tasks / Subtasks
 
-- [ ] Implementar a Server Action para exportação JSON.
-- [ ] Registrar o evento e disponibilizar o download.
+- [x] Implementar a Server Action para exportação JSON.
+- [x] Registrar o evento e disponibilizar o download.
 
 ### Review Findings
 
