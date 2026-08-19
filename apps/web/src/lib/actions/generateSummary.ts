@@ -2,13 +2,16 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { getWeeklySummaryData, type WeeklySummaryData } from "@/lib/summaries/weeklySummary";
+import { getMonthlySummaryData, type MonthlySummaryData } from "@/lib/summaries/monthlySummary";
 
 const GENERIC_ERROR = "Não consegui gerar o resumo agora. Tente novamente.";
 // Precisão de linguagem: sessionCount conta sessões com síntese salva (endSession concluído),
 // não toda conversa iniciada — mesma distinção já feita no texto vazio de DashboardStats
 // ("depois da primeira conversa encerrada").
-const NO_SESSIONS_ERROR =
+const NO_SESSIONS_WEEK_ERROR =
   "Você ainda não encerrou nenhuma sessão nesta última semana. Volte quando tiver algumas para ver seu resumo.";
+const NO_SESSIONS_MONTH_ERROR =
+  "Você ainda não encerrou nenhuma sessão neste último mês. Volte quando tiver algumas para ver seu resumo.";
 
 // Story 4.4 (AC1): gera o resumo semanal sob demanda a partir de `session_syntheses` do
 // próprio usuário — RLS já restringe a leitura, o filtro por user_id em
@@ -29,13 +32,44 @@ export async function generateWeeklySummary(): Promise<
     const summary = await getWeeklySummaryData(supabase, user.id);
 
     if (summary.sessionCount === 0) {
-      return { error: NO_SESSIONS_ERROR };
+      return { error: NO_SESSIONS_WEEK_ERROR };
     }
 
     return { summary };
   } catch (error) {
     console.error(
       "Erro ao gerar resumo semanal:",
+      error instanceof Error ? { message: error.message, stack: error.stack } : error
+    );
+    return { error: GENERIC_ERROR };
+  }
+}
+
+// Story 4.5 (AC1/AC3): mesmo princípio do resumo semanal, mas com janela de 30 dias e
+// agregado a partir de `session_syntheses` — sem histórico bruto de conversa.
+export async function generateMonthlySummary(): Promise<
+  { summary: MonthlySummaryData } | { error: string }
+> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { error: GENERIC_ERROR };
+    }
+
+    const summary = await getMonthlySummaryData(supabase, user.id);
+
+    if (summary.sessionCount === 0) {
+      return { error: NO_SESSIONS_MONTH_ERROR };
+    }
+
+    return { summary };
+  } catch (error) {
+    console.error(
+      "Erro ao gerar resumo mensal:",
       error instanceof Error ? { message: error.message, stack: error.stack } : error
     );
     return { error: GENERIC_ERROR };

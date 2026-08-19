@@ -1,6 +1,6 @@
 # Story 4.5: Gerar Resumo Mensal
 
-Status: planned
+Status: done
 
 ## Story
 
@@ -16,5 +16,5 @@ so that eu veja padrões e tendências de longo prazo que uma semana não revela
 
 ## Tasks / Subtasks
 
-- [ ] Implementar a Server Action de resumo mensal.
-- [ ] Reaproveitar o componente visual do resumo semanal.
+- [x] Implementar a Server Action de resumo mensal.
+- [x] Reaproveitar o componente visual do resumo semanal.

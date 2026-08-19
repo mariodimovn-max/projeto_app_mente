@@ -2,12 +2,13 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { SESSION_USER_HEADER } from "@/proxy";
 import { PrimaryNav } from "@/components/nav/PrimaryNav";
-import { SummaryCard } from "@/components/insights/SummaryCard";
+import { ExportDataButton } from "@/components/settings/ExportDataButton";
 import styles from "./page.module.css";
 
-// Destino de navegação da Story 4.1. Resumo semanal (Story 4.4) e mensal (Story 4.5) sob
-// demanda já moram aqui, no mesmo cartão; detecção de padrões (FR4) continua pendente.
-export default async function InsightsPage() {
+// Story 5.1: primeira tela de "configurações da conta" do produto (ainda não existia — ver
+// nota da Story 1.7). Hoje só tem a exportação de dados; deleção de conta (Story 5.2) e
+// qualquer preferência futura devem entrar aqui também, no mesmo lugar.
+export default async function ConfiguracoesPage() {
   const headerList = await headers();
   const isAuthenticated = headerList.get(SESSION_USER_HEADER) === "1";
 
@@ -19,10 +20,10 @@ export default async function InsightsPage() {
     <>
       <main className={styles.main}>
         <header className={styles.header}>
-          <h1 className={styles.title}>Insights</h1>
-          <p className={styles.subtitle}>Gere um resumo da sua semana ou do seu mês sempre que quiser.</p>
+          <h1 className={styles.title}>Configurações</h1>
+          <p className={styles.subtitle}>Gerencie seus dados e sua conta.</p>
         </header>
-        <SummaryCard />
+        <ExportDataButton />
       </main>
       <PrimaryNav />
     </>

@@ -1,0 +1,51 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-x);
+  width: 100%;
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space);
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.028);
+  padding: var(--space);
+}
+
+.heading {
+  margin: 0;
+  font: 600 0.6875rem var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #c9f0ea;
+}
+
+.description {
+  margin: 0;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-body);
+  color: rgba(233, 241, 238, 0.6);
+}
+
+.error {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--color-error);
+}
+
+.success {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: rgba(233, 241, 238, 0.6);
+}
+
+.exportButton {
+  composes: primaryButton from "../../styles/shared.module.css";
+  align-self: flex-start;
+  padding: 8px 16px;
+}
