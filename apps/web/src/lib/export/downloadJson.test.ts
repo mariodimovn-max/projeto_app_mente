@@ -3,17 +3,17 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { downloadJsonFile } from "./downloadJson";
 
 describe("downloadJsonFile", () => {
-  let createObjectURLMock: ReturnType<typeof vi.fn>;
-  let revokeObjectURLMock: ReturnType<typeof vi.fn>;
-  let clickMock: ReturnType<typeof vi.fn>;
+  let createObjectURLMock: ReturnType<typeof vi.fn<(obj: Blob) => string>>;
+  let revokeObjectURLMock: ReturnType<typeof vi.fn<() => void>>;
+  let clickMock: ReturnType<typeof vi.fn<() => void>>;
 
   beforeEach(() => {
     createObjectURLMock = vi.fn(() => "blob:mock-url");
     revokeObjectURLMock = vi.fn();
-    URL.createObjectURL = createObjectURLMock;
-    URL.revokeObjectURL = revokeObjectURLMock;
     clickMock = vi.fn();
-    HTMLAnchorElement.prototype.click = clickMock;
+    URL.createObjectURL = createObjectURLMock as unknown as typeof URL.createObjectURL;
+    URL.revokeObjectURL = revokeObjectURLMock as unknown as typeof URL.revokeObjectURL;
+    HTMLAnchorElement.prototype.click = clickMock as unknown as typeof HTMLAnchorElement.prototype.click;
   });
 
   afterEach(() => {

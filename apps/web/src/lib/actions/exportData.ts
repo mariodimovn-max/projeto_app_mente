@@ -9,6 +9,10 @@ const GENERIC_ERROR = "Não consegui exportar seus dados agora. Tente novamente.
 // lib/summaries/weeklySummary.ts, não um teto real.
 const SESSIONS_ROW_CAP = 3000;
 
+// Cobre bem mais mensagens do que qualquer usuário do beta fechado deveria acumular — mesma
+// filosofia de salvaguarda do cap acima, não um teto real.
+const MESSAGES_ROW_CAP = 20000;
+
 interface SessionRow {
   id: string;
   created_at: string;
@@ -103,11 +107,15 @@ export async function exportUserData(): Promise<
       return { error: GENERIC_ERROR };
     }
 
-    const { data: sessions, error: sessionsError } = await supabase
+    // Busca as sessões mais recentes primeiro e reordena em memória (ascendente) depois —
+    // se o usuário tiver mais sessões que SESSIONS_ROW_CAP, o corte precisa descartar as mais
+    // antigas, nunca as mais recentes (achado da revisão de código: ordenar ascendente antes
+    // do limit fazia o oposto).
+    const { data: sessionsDescending, error: sessionsError } = await supabase
       .from("sessions")
       .select("id, created_at, marked")
       .eq("user_id", user.id)
-      .order("created_at", { ascending: true })
+      .order("created_at", { ascending: false })
       .limit(SESSIONS_ROW_CAP)
       .returns<SessionRow[]>();
 
@@ -115,7 +123,10 @@ export async function exportUserData(): Promise<
       throw sessionsError;
     }
 
-    const sessionIds = (sessions ?? []).map((session) => session.id);
+    const sessions = [...(sessionsDescending ?? [])].sort(
+      (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    );
+    const sessionIds = sessions.map((session) => session.id);
 
     const [messagesResult, synthesesResult, patternsResult] = await Promise.all([
       sessionIds.length === 0
@@ -124,7 +135,10 @@ export async function exportUserData(): Promise<
             .from("messages")
             .select("id, session_id, role, content, created_at")
             .in("session_id", sessionIds)
-            .order("created_at", { ascending: true })
+            // Mesmo raciocínio das sessões acima: mais recentes primeiro, para que um
+            // eventual corte pelo cap descarte histórico antigo, não as mensagens recentes.
+            .order("created_at", { ascending: false })
+            .limit(MESSAGES_ROW_CAP)
             .returns<MessageRow[]>(),
       sessionIds.length === 0
         ? { data: [] as SynthesisRow[], error: null }
@@ -134,6 +148,9 @@ export async function exportUserData(): Promise<
               "session_id, title, themes, explored, patterns, open_question, depth, emotions, triggers, created_at"
             )
             .in("session_id", sessionIds)
+            // No máximo 1 síntese por sessão (índice único) — o mesmo cap de sessions já
+            // garante que essa consulta nunca precisa descartar linhas.
+            .limit(SESSIONS_ROW_CAP)
             .returns<SynthesisRow[]>(),
       supabase
         .from("user_patterns")
@@ -152,8 +169,14 @@ export async function exportUserData(): Promise<
       throw patternsResult.error;
     }
 
+    // Reordena ascendente para a leitura cronológica final, já que a busca acima veio
+    // mais-recente-primeiro (só para proteger o cap, não é a ordem de exibição desejada).
+    const messagesAscending = [...(messagesResult.data ?? [])].sort(
+      (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    );
+
     const messagesBySession = new Map<string, ExportedMessage[]>();
-    for (const message of messagesResult.data ?? []) {
+    for (const message of messagesAscending) {
       const list = messagesBySession.get(message.session_id) ?? [];
       list.push({
         id: message.id,
@@ -179,7 +202,7 @@ export async function exportUserData(): Promise<
       });
     }
 
-    const exportedSessions: ExportedSession[] = (sessions ?? []).map((session) => ({
+    const exportedSessions: ExportedSession[] = sessions.map((session) => ({
       id: session.id,
       createdAt: session.created_at,
       marked: session.marked,

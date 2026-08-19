@@ -78,3 +78,10 @@
   botão de "tentar novamente" — a única saída é o usuário atualizar a página manualmente. Mesmo
   padrão já usado no banner de erro do histórico de sessões (Story 3.5); revisitar se um padrão
   de retry for adotado em algum desses dois lugares, para manter consistência entre eles.
+
+## Deferred from: code review of 5-1-exportar-dados-em-json (2026-08-19)
+
+- `.in("session_id", sessionIds)` com até 3000 ids pode aproximar-se de limites de tamanho de URL/query string do PostgREST — mesma filosofia de "salvaguarda contra volume anômalo, não teto real" já usada em `dashboard.ts`/`weeklySummary.ts`; impacto teórico dado o volume do beta fechado (5–10 usuários).
+- `exportUserData` não tem rate limiting próprio — mesmo padrão (ausência) de todas as outras Server Actions do projeto.
+- Falha transitória na consulta de `user_patterns` aborta a exportação inteira em vez de degradar para `patterns: null` — decisão consciente: falhar de forma visível é mais honesto que entregar um "export completo" silenciosamente incompleto, mesma granularidade tudo-ou-nada já aceita em `buildMemoryContext` (Story 3.4).
+- `JSON.stringify` + `Blob` síncronos no main thread em `lib/export/downloadJson.ts` podem travar a UI para payloads muito grandes — mesma tolerância de escala do restante do projeto (geração de PDF na Story 4.6 também é síncrona no main thread).

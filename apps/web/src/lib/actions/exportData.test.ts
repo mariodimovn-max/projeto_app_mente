@@ -189,6 +189,36 @@ describe("exportUserData", () => {
     });
   });
 
+  it("reordena sessões e mensagens em ordem cronológica ascendente mesmo quando o banco retorna mais recentes primeiro (cap protege o histórico recente, não o antigo)", async () => {
+    const { supabase } = createSupabaseStub({
+      sessions: {
+        data: [
+          { id: "s2", created_at: "2026-08-02T10:00:00Z", marked: false },
+          { id: "s1", created_at: "2026-08-01T10:00:00Z", marked: false },
+        ],
+        error: null,
+      },
+      messages: {
+        data: [
+          { id: "m2", session_id: "s1", role: "assistant", content: "Olá", created_at: "2026-08-01T10:01:00Z" },
+          { id: "m1", session_id: "s1", role: "user", content: "Oi", created_at: "2026-08-01T10:00:00Z" },
+        ],
+        error: null,
+      },
+      syntheses: { data: [], error: null },
+    });
+    const { createClient } = await import("@/lib/supabase/server");
+    vi.mocked(createClient).mockResolvedValue(supabase as never);
+    getUserMock.mockResolvedValue({ data: { user: { id: USER_ID, email: null } } });
+
+    const { exportUserData } = await import("./exportData");
+    const result = await exportUserData();
+
+    if (!("data" in result)) throw new Error("esperava data");
+    expect(result.data.sessions.map((session) => session.id)).toEqual(["s1", "s2"]);
+    expect(result.data.sessions[0]!.messages.map((message) => message.id)).toEqual(["m1", "m2"]);
+  });
+
   it("marca a síntese como null quando a sessão ainda não foi encerrada", async () => {
     const { supabase } = createSupabaseStub({
       sessions: { data: [{ id: "s1", created_at: "2026-08-01T10:00:00Z", marked: false }], error: null },
@@ -203,7 +233,7 @@ describe("exportUserData", () => {
     const result = await exportUserData();
 
     if (!("data" in result)) throw new Error("esperava data");
-    expect(result.data.sessions[0].synthesis).toBeNull();
+    expect(result.data.sessions[0]!.synthesis).toBeNull();
   });
 
   it("retorna os dados mesmo quando o registro de auditoria falha (best-effort, AC3 não bloqueia AC1/AC2)", async () => {
