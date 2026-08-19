@@ -1,0 +1,118 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-x);
+  width: 100%;
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space);
+  border: 1px solid var(--color-error);
+  border-radius: 18px;
+  background: rgba(241, 99, 77, 0.04);
+  padding: var(--space);
+}
+
+.heading {
+  margin: 0;
+  font: 600 0.6875rem var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-error);
+}
+
+.description {
+  margin: 0;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-body);
+  color: rgba(233, 241, 238, 0.6);
+}
+
+.error {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--color-error);
+}
+
+.deleteButton {
+  align-self: flex-start;
+  border: 1px solid var(--color-error);
+  border-radius: 999px;
+  padding: 0.75rem 1.2rem;
+  background: transparent;
+  color: var(--color-error);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space);
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 10;
+}
+
+.dialog {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-x);
+  width: 100%;
+  max-width: 420px;
+  padding: var(--space);
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  background: var(--color-surface);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+}
+
+.dialogTitle {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.dialogText {
+  color: var(--color-muted);
+  line-height: var(--lh-body);
+}
+
+.dialogActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-x);
+}
+
+.cancelButton {
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 0.75rem 1.1rem;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.confirmButton {
+  border: none;
+  border-radius: 999px;
+  padding: 0.75rem 1.2rem;
+  background: var(--color-error);
+  color: #2a0a05;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.errorMessage {
+  composes: errorMessage from "../../styles/shared.module.css";
+}
