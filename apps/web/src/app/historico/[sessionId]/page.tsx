@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getSessionDetail, type SessionDetail } from "@/lib/history/sessions";
 import { MessageBubble } from "@/components/chat/MessageBubble";
 import { SynthesisCard } from "@/components/insights/SynthesisCard";
+import { PrivacySeal } from "@/components/privacy/PrivacySeal";
 import styles from "./page.module.css";
 
 interface SessionDetailPageProps {
@@ -71,6 +72,8 @@ export default async function SessionDetailPage({ params }: SessionDetailPagePro
       <Link href="/historico" className={styles.backLink}>
         ← Histórico
       </Link>
+
+      <PrivacySeal />
 
       <div className={styles.messages} aria-label="Conversa desta sessão">
         {detail.messages.map((message) => (

@@ -7,6 +7,7 @@ import { MessageBubble } from "./MessageBubble";
 import { ThinkingIndicator } from "./ThinkingIndicator";
 import { Aura } from "@/components/aura/Aura";
 import { PatternPrivacyNotice } from "@/components/insights/PatternPrivacyNotice";
+import { PrivacySeal } from "@/components/privacy/PrivacySeal";
 import { SessionRestedNotice } from "@/components/insights/SessionRestedNotice";
 import { SynthesisCard } from "@/components/insights/SynthesisCard";
 import { endSession } from "@/lib/actions/endSession";
@@ -380,6 +381,10 @@ export function ChatWindow() {
             </div>
           </>
         )}
+
+        <div className={styles.privacyFooter}>
+          <PrivacySeal />
+        </div>
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { listSessionHistory } from "@/lib/history/sessions";
 import { HistoryList } from "@/components/history/HistoryList";
 import { PrimaryNav } from "@/components/nav/PrimaryNav";
+import { PrivacySeal } from "@/components/privacy/PrivacySeal";
 import type { HistorySessionSummary } from "@/types/history";
 import styles from "./page.module.css";
 
@@ -43,6 +44,7 @@ export default async function HistoryPage() {
         <header className={styles.header}>
           <h1 className={styles.title}>Histórico</h1>
           <p className={styles.subtitle}>Suas conversas anteriores, do jeito que você deixou.</p>
+          <PrivacySeal />
         </header>
 
         {loadError ? (

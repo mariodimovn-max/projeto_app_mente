@@ -1,0 +1,21 @@
+.seal {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 auto;
+  width: 100%;
+  max-width: var(--content-max-width);
+  font-size: var(--fs-sm);
+  color: var(--color-muted);
+}
+
+.icon {
+  font-size: 0.85em;
+}
+
+.link {
+  color: rgba(168, 224, 217, 0.85);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
