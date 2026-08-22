@@ -1,6 +1,6 @@
 # Story 5.3: Trilha de Auditoria para Eventos Sensíveis
 
-Status: planned
+Status: done
 
 ## Story
 
@@ -15,5 +15,5 @@ so that exista uma trilha de auditoria para qualquer acesso sensível, conforme 
 
 ## Tasks / Subtasks
 
-- [ ] Implementar a gravação de eventos sensíveis em `audit_log`.
-- [ ] Garantir que o registro permaneça somente para auditoria.
+- [x] Implementar a gravação de eventos sensíveis em `audit_log`.
+- [x] Garantir que o registro permaneça somente para auditoria.
