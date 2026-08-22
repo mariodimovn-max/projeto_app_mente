@@ -10,13 +10,12 @@ const GENERIC_ERROR = "Não foi possível excluir sua conta agora. Tente novamen
 // usado em export_data (Story 5.1), aqui a gravação bloqueia a exclusão se falhar, já que a
 // ordem "audita, depois destrói" é o próprio critério de aceite, não um extra. Todas as tabelas
 // com dados do usuário (sessions, messages, session_syntheses, session_synthesis_reactions,
-// user_patterns, personal_milestones e o próprio audit_log) já têm ON DELETE CASCADE a partir
-// de auth.users, então excluir o usuário no Auth (AC2) já destrói tudo em cascata (AC1) — não há
-// delete explícito tabela a tabela. Isso inclui a própria linha de audit_log criada logo abaixo:
-// ela é apagada junto pela cascata assim que a conta é destruída, consistente com "destruição
-// permanente e irreversível" (AC4), mas significa que audit_log não sobrevive para consulta
-// posterior — uma trilha de auditoria persistente fora do escopo do usuário é assunto da
-// Story 5.3.
+// user_patterns, personal_milestones) têm ON DELETE CASCADE a partir de auth.users, então
+// excluir o usuário no Auth (AC2) já destrói tudo em cascata (AC1) — não há delete explícito
+// tabela a tabela. audit_log é a exceção deliberada (Story 5.3): sua FK para auth.users não tem
+// CASCADE, então a própria linha gravada logo abaixo sobrevive à conta que a originou —
+// necessário para que a trilha de auditoria da exclusão continue existindo depois que não há
+// mais conta para consultar.
 export async function deleteAccount(): Promise<{ error: string } | undefined> {
   const supabase = await createClient();
   const {
