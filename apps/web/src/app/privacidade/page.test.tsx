@@ -9,11 +9,8 @@ describe("PrivacyPolicyPage", () => {
 
     expect(screen.getByRole("heading", { name: "Como seus dados são usados" })).toBeInTheDocument();
     expect(screen.getByText(/TLS 1\.3\+/)).toBeInTheDocument();
-    expect(screen.getByText(/AES-256/)).toBeInTheDocument();
+    expect(screen.getAllByText(/AES-256/).length).toBeGreaterThan(0);
     expect(screen.getByText(/fisicamente incompatível/)).toBeInTheDocument();
-  });
-
-  it("é acessível sem exigir autenticação (não faz nenhuma checagem de sessão)", () => {
-    expect(() => render(<PrivacyPolicyPage />)).not.toThrow();
+    expect(screen.queryByText(/ponta a ponta na infraestrutura/)).not.toBeInTheDocument();
   });
 });

@@ -85,3 +85,7 @@
 - `exportUserData` não tem rate limiting próprio — mesmo padrão (ausência) de todas as outras Server Actions do projeto.
 - Falha transitória na consulta de `user_patterns` aborta a exportação inteira em vez de degradar para `patterns: null` — decisão consciente: falhar de forma visível é mais honesto que entregar um "export completo" silenciosamente incompleto, mesma granularidade tudo-ou-nada já aceita em `buildMemoryContext` (Story 3.4).
 - `JSON.stringify` + `Blob` síncronos no main thread em `lib/export/downloadJson.ts` podem travar a UI para payloads muito grandes — mesma tolerância de escala do restante do projeto (geração de PDF na Story 4.6 também é síncrona no main thread).
+
+## Deferred from: code review of 5-4-politica-de-privacidade-e-indicadores-visiveis (2026-08-22)
+
+- O link "← Voltar" de `/privacidade` (`apps/web/src/app/privacidade/page.tsx`) é fixo para `/`, não usa `router.back()`. Se o usuário chegar a essa rota a partir do link do `PrivacySeal` em `/chat` (com um rascunho não enviado no composer) ou em `/insights` (com um resumo semanal/mensal já gerado em memória), voltar pelo link perde esse estado efêmero em vez de retornar à tela de origem. Risco pré-existente e mais amplo do que esta story — nenhum lugar do app hoje protege rascunho de composer ou resumo gerado contra navegação (o link "Início" da `PrimaryNav`, por exemplo, já tinha o mesmo efeito antes desta diff). Usar `router.back()` aqui também destoaria do padrão já estabelecido pelo app (`historico/[sessionId]` já usa um link de volta fixo, não baseado em histórico).

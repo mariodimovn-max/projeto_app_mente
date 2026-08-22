@@ -45,8 +45,8 @@ export default function PrivacyPolicyPage() {
           agente de IA precisa processar o conteúdo das suas mensagens em texto legível — isso é
           fisicamente incompatível com uma criptografia de ponta a ponta onde nem o servidor
           consegue ler os dados. Preferimos dizer isso com clareza a prometer uma proteção que o
-          app não tem: o que oferecemos é criptografia de ponta a ponta na infraestrutura
-          (em trânsito e em repouso), não a impossibilidade técnica de leitura pelo servidor.
+          app não tem: o que oferecemos é criptografia em trânsito (TLS) e em repouso (AES-256),
+          não a impossibilidade técnica de leitura pelo servidor.
         </p>
       </section>
 
