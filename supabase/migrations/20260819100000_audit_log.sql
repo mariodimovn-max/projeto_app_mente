@@ -1,6 +1,8 @@
 -- Story 5.1 (AC3): trilha mínima de auditoria para eventos sensíveis — hoje só exportação
 -- de dados; login e deleção de conta foram cobertos na Story 5.3 reaproveitando esta mesma
--- tabela (login.ts/deleteAccount.ts também inserem em audit_log, sem migration nova). RLS
+-- tabela (login.ts/deleteAccount.ts também inserem em audit_log — nenhuma migration nova
+-- precisou tocar esta tabela só para os inserts em si; a Story 5.3 trouxe uma migration
+-- separada, 20260822090000, mas por outro motivo: remover o ON DELETE CASCADE abaixo). RLS
 -- permite ao usuário inserir sua própria linha, mas não expõe select/update/delete: o
 -- registro de auditoria não é visível nem editável pelo próprio usuário via UI (Story 5.3, AC2).
 create table if not exists public.audit_log (

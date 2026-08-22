@@ -67,6 +67,26 @@ describe("login", () => {
     expect(redirectMock).toHaveBeenCalledWith("/");
   });
 
+  it("ainda redireciona quando o insert de auditoria lança exceção em vez de resolver com erro", async () => {
+    signInWithPasswordMock.mockResolvedValue({ data: { user: { id: USER_ID } }, error: null });
+    const { login } = await import("./login");
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    createClientMock.mockResolvedValueOnce({
+      auth: { signInWithPassword: signInWithPasswordMock },
+      from: () => ({
+        insert: () => {
+          throw new Error("network down");
+        },
+      }),
+    } as never);
+
+    await login("usuario@exemplo.com", "senha1234");
+
+    expect(redirectMock).toHaveBeenCalledWith("/");
+    consoleErrorSpy.mockRestore();
+  });
+
   it("retorna mensagem de rate limit sem expor detalhes quando o Supabase bloqueia por excesso de tentativas", async () => {
     signInWithPasswordMock.mockResolvedValue({
       data: { user: null },
