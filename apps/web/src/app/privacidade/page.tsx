@@ -39,7 +39,7 @@ export default function PrivacyPolicyPage() {
       </section>
 
       <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>Por que não é "ponta a ponta" no sentido literal</h2>
+        <h2 className={styles.sectionTitle}>Por que não é “ponta a ponta” no sentido literal</h2>
         <p className={styles.text}>
           Para conversar com você, gerar sínteses e identificar padrões ao longo do tempo, o
           agente de IA precisa processar o conteúdo das suas mensagens em texto legível — isso é
