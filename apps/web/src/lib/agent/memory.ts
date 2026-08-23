@@ -2,6 +2,7 @@ import type { MessageParam } from "@anthropic-ai/sdk/resources/messages";
 import type { createClient } from "@/lib/supabase/server";
 import { CRISIS_RESPONSE_MESSAGE } from "@/lib/agent/crisis";
 import { getUserPatterns, type PatternCounts, type UserPatternsSummary } from "@/lib/patterns/userPatterns";
+import type { ResponsePattern, SessionOpeningContext } from "./sessionOpeningContext";
 
 export interface MessageRow {
   role: "user" | "assistant";
@@ -171,15 +172,6 @@ const SHORT_RESPONSE_CHAR_THRESHOLD = 80;
 // memória em camadas completa) porque aqui é só um sinal de fundo para variar a abertura,
 // não um resumo do histórico.
 const TOP_OPENING_THEMES_LIMIT = 3;
-
-export type ResponsePattern = "curto" | "longo" | null;
-
-export interface SessionOpeningContext {
-  isFirstSession: boolean;
-  previousOpeningPhrase: string | null;
-  responsePattern: ResponsePattern;
-  topThemes: string[];
-}
 
 interface SessionIdRow {
   id: string;

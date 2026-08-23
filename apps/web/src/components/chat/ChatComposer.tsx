@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { MAX_MESSAGE_LENGTH, MIN_MESSAGE_LENGTH, messageContentSchema } from "@/lib/validation/message";
 import { useSpeechRecognition } from "@/lib/voice/useSpeechRecognition";
 import { TranscriptBlock } from "./TranscriptBlock";
@@ -21,6 +21,7 @@ export function ChatComposer({ disabled, onSend }: ChatComposerProps) {
   const [justTranscribed, setJustTranscribed] = useState(false);
   const [pendingTranscript, setPendingTranscript] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
   const micButtonRef = useRef<HTMLButtonElement>(null);
   const justDiscardedTranscriptRef = useRef(false);
 
@@ -67,6 +68,16 @@ export function ChatComposer({ disabled, onSend }: ChatComposerProps) {
     onSend(result.data);
     setText("");
     setJustTranscribed(false);
+  }
+
+  function handleTextareaKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+    // Enter envia, Shift+Enter quebra linha (padrão de apps de chat); isComposing evita
+    // interromper a confirmação de um caractere em teclados de IME (ex.: japonês/chinês),
+    // onde Enter fecha a composição em vez de significar "enviar".
+    if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
+      event.preventDefault();
+      formRef.current?.requestSubmit();
+    }
   }
 
   function handleMicClick() {
@@ -140,7 +151,7 @@ export function ChatComposer({ disabled, onSend }: ChatComposerProps) {
       </div>
 
       {mode === "texto" ? (
-        <form className={styles.form} onSubmit={handleSubmit}>
+        <form ref={formRef} className={styles.form} onSubmit={handleSubmit}>
           <div className={styles.bar}>
             <label className="sr-only" htmlFor="chat-message">
               Sua mensagem
@@ -154,6 +165,7 @@ export function ChatComposer({ disabled, onSend }: ChatComposerProps) {
                 setText(event.target.value);
                 setJustTranscribed(false);
               }}
+              onKeyDown={handleTextareaKeyDown}
               placeholder="escreva o que veio agora…"
               rows={1}
               disabled={disabled}

@@ -1,9 +1,9 @@
 ---
-description: Desenvolve uma história BMAD ponta a ponta, com checkpoint de commit e code review em contexto limpo
-argument-hint: [nome-ou-caminho-da-historia]
+name: dev-story
+description: Conduz o ciclo COMPLETO de implementação de uma história BMAD, ponta a ponta — leitura dos Acceptance Criteria, implementação com a persona Dev do BMAD, checkpoint de commit, code review adversarial em contexto limpo (via /clear), testes automatizados, teste manual verificado item a item contra cada AC, e fechamento com push. Use quando o usuário digitar "/dev-story", disser "desenvolve a história X", "implementa a story X do início ao fim" ou pedir para tocar uma história do BMAD com checkpoint de commit e revisão inclusos. NÃO use para apenas iniciar/continuar a implementação sem esses checkpoints (isso é o bmad-dev-story) nem para revisar código que já foi escrito e commitado (isso é o bmad-code-review).
 ---
 
-Você vai conduzir o ciclo completo de desenvolvimento da história: **$ARGUMENTS**
+Você vai conduzir o ciclo completo de desenvolvimento da história indicada pelo usuário (nome ou caminho do arquivo da história). Se não vier explícito no pedido, pergunte antes de continuar.
 
 Siga estas fases **na ordem**, sem pular etapas. Cada fase tem um objetivo específico — não misture as responsabilidades entre elas.
 
