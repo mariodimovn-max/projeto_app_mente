@@ -103,6 +103,7 @@ function reducer(state: ChatState, action: ChatAction): ChatState {
 export function ChatWindow() {
   const [state, dispatch] = useReducer(reducer, initialState);
   const sessionIdRef = useRef<string | null>(null);
+  const historyEndRef = useRef<HTMLDivElement>(null);
   const [depth, setDepth] = useState(0);
   const [synthesis, setSynthesis] = useState<SessionSynthesis | null>(null);
   // Encerramento manual revela a síntese na hora; encerramento automático por inatividade
@@ -283,6 +284,13 @@ export function ChatWindow() {
     (message) => message.role === "assistant" && message.content !== ""
   );
 
+  // Acompanha o fim da conversa automaticamente — sem isto, o container de histórico
+  // (overflow-y: auto) nunca rola sozinho e o usuário pode ficar preso numa etapa
+  // antiga enquanto novas mensagens (inclusive chunks do streaming) chegam abaixo.
+  useEffect(() => {
+    historyEndRef.current?.scrollIntoView?.({ block: "end" });
+  }, [state.messages, isThinking]);
+
   // AC4: encerramento automático por inatividade, em background. O temporizador
   // reinicia a cada nova mensagem (histórico muda) e é cancelado assim que uma
   // síntese já existe, para não disparar de novo depois de a sessão já ter encerrado.
@@ -332,6 +340,7 @@ export function ChatWindow() {
             <MessageBubble key={message.id} message={message} />
           ))}
           {isThinking && <ThinkingIndicator />}
+          <div ref={historyEndRef} />
         </div>
 
         {state.status === "error" && !synthesis && (

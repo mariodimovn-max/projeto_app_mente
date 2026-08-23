@@ -1,5 +1,6 @@
 import type { createClient } from "@/lib/supabase/server";
 import { getUserPatterns } from "@/lib/patterns/userPatterns";
+import { toDayKey } from "@/lib/dashboard/date";
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>;
 
@@ -16,18 +17,6 @@ export interface DashboardData {
 
 const MAX_THEMES = 6;
 
-// Beta fechado é hoje só para usuários no Brasil (ver CLAUDE.md) — sem timezone por
-// usuário salvo em lugar nenhum, um dia de calendário é decidido neste fuso fixo. Sem
-// isso, computeStreakDays usaria o dia UTC: uma sessão às 21h em São Paulo (UTC-3) cairia
-// no dia seguinte em UTC e quebraria o streak de quem conversa à noite.
-const APP_TIMEZONE = "America/Sao_Paulo";
-const dayKeyFormatter = new Intl.DateTimeFormat("en-CA", {
-  timeZone: APP_TIMEZONE,
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
-});
-
 // Cobre bem mais dias do que qualquer streak real de um beta fechado deveria alcançar,
 // filtrando por data (não por quantidade de linhas) — um usuário com várias sessões no
 // mesmo dia não deve "gastar" essa janela mais rápido que um com uma sessão por dia. O
@@ -37,10 +26,6 @@ const STREAK_LOOKBACK_ROW_CAP = 3000;
 
 interface SessionDateRow {
   created_at: string;
-}
-
-function toDayKey(date: Date): string {
-  return dayKeyFormatter.format(date);
 }
 
 // Conta dias consecutivos de presença (Story 4.2, AC1) a partir das datas em que o

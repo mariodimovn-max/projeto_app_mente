@@ -1,5 +1,5 @@
 import type { EmotionalIntensity, EmotionalState } from "./emotional-state";
-import type { SessionOpeningContext } from "./memory";
+import type { SessionOpeningContext } from "./sessionOpeningContext";
 
 interface ToneConfig {
   description: string;
