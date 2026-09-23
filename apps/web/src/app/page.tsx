@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { SESSION_USER_HEADER } from "@/proxy";
 import { createClient } from "@/lib/supabase/server";
 import { getDashboardData, type DashboardData } from "@/lib/dashboard/dashboard";
+import { getWelcomeMessage } from "@/lib/dashboard/welcomeMessage";
 import { getPersonalMilestones, type PersonalMilestone } from "@/lib/milestones/milestones";
 import { LogoutButton } from "./LogoutButton";
 import { Aura } from "@/components/aura/Aura";
@@ -11,21 +12,6 @@ import { PrimaryNav } from "@/components/nav/PrimaryNav";
 import { DashboardStats } from "@/components/dashboard/DashboardStats";
 import { PersonalMilestones } from "@/components/dashboard/PersonalMilestones";
 import styles from "./page.module.css";
-
-const pillars = [
-  {
-    title: "Propósito",
-    description: "Explorar pensamentos e emoções com calma e honestidade.",
-  },
-  {
-    title: "Privacidade",
-    description: "Seus registros são tratados com cuidado e você decide como quer usar o app.",
-  },
-  {
-    title: "Começar",
-    description: "Uma sessão guiada para entrar em contato com o que está vivo em você.",
-  },
-];
 
 async function hasAuthenticatedSession() {
   // proxy.ts já valida a sessão (getUser()) em toda requisição e repassa o
@@ -102,14 +88,41 @@ async function loadPersonalMilestones(): Promise<MilestonesLoadResult> {
   }
 }
 
+// Carregada à parte das duas funções acima pelo mesmo motivo da Story 4.3: a mensagem de
+// boas-vindas (welcomeMessage.ts) é best-effort por dentro e nunca lança — este loader só
+// existe para checar a sessão antes de chamá-la, então uma falha aqui não deve derrubar
+// os indicadores de evolução nem os marcos pessoais.
+async function loadWelcomeMessage(): Promise<string | null> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return null;
+    }
+
+    return await getWelcomeMessage(supabase, user.id);
+  } catch (error) {
+    console.error(
+      "Erro ao carregar a mensagem de boas-vindas:",
+      error instanceof Error ? { message: error.message, stack: error.stack } : error
+    );
+    return null;
+  }
+}
+
 export default async function Home() {
   const isAuthenticated = await hasAuthenticatedSession();
   let dashboardResult: DashboardLoadResult | null = null;
   let milestonesResult: MilestonesLoadResult | null = null;
+  let welcomeMessage: string | null = null;
   if (isAuthenticated) {
-    [dashboardResult, milestonesResult] = await Promise.all([
+    [dashboardResult, milestonesResult, welcomeMessage] = await Promise.all([
       loadDashboardData(),
       loadPersonalMilestones(),
+      loadWelcomeMessage(),
     ]);
   }
 
@@ -146,111 +159,105 @@ export default async function Home() {
       )}
       <main className={styles.main}>
         {isAuthenticated ? (
-          <section className={`${styles.dashboardSection} container`}>
-            <div className={styles.dashboardHead}>
-              <div>
-                <p className={styles.eyebrow}>seu espaço · sua evolução</p>
-                <h1 className={styles.title}>
-                  {isFirstVisitEver ? (
-                    <>
-                      Seu espaço
-                      <br />
-                      <span className={styles.titleEmphasis}>está pronto.</span>
-                    </>
-                  ) : (
-                    <>
-                      Bom te ver
-                      <br />
-                      <span className={styles.titleEmphasis}>de novo.</span>
-                    </>
+          <section className={styles.dashboardSection}>
+            <div className={styles.dashboardLayout}>
+              <aside className={styles.dashboardAura}>
+                <Aura size={64} className={styles.dashboardOrb} />
+                <div className={styles.dashboardGreeting}>
+                  <h1 className={styles.dashboardGreetingTitle}>
+                    {isFirstVisitEver ? (
+                      <>
+                        Seu espaço
+                        <br />
+                        <span className={styles.titleEmphasis}>está pronto.</span>
+                      </>
+                    ) : (
+                      <>
+                        Bom te ver
+                        <br />
+                        <span className={styles.titleEmphasis}>de novo.</span>
+                      </>
+                    )}
+                  </h1>
+                  {!isFirstVisitEver && welcomeMessage && (
+                    <p className={styles.dashboardGreetingMessage}>{welcomeMessage}</p>
                   )}
-                </h1>
-              </div>
-              <Link className={styles.primaryButton} href="/chat">
-                Ir para o chat
-              </Link>
-            </div>
+                </div>
+                <p className={styles.dashboardAuraCaption}>Só você vê isto</p>
+              </aside>
 
-            {dashboardError ? (
-              <p className={styles.errorBanner} role="alert">
-                {dashboardError}
-              </p>
-            ) : (
-              dashboardData && <DashboardStats data={dashboardData} />
-            )}
-
-            {milestonesError ? (
-              <p className={styles.errorBanner} role="alert">
-                {milestonesError}
-              </p>
-            ) : (
-              milestonesData && <PersonalMilestones initialMilestones={milestonesData} />
-            )}
-          </section>
-        ) : (
-          <>
-            <section className={styles.hero} aria-labelledby="onboarding-title">
-              <div className={styles.heroAuraMobile}>
-                <Aura size={158} />
-              </div>
-
-              <div className={styles.heroText}>
-                <p className={styles.eyebrow}>seu espaço</p>
-                <h1 id="onboarding-title" className={styles.title}>
-                  Conheça você
-                  <br />
-                  <span className={styles.titleEmphasis}>melhor.</span>
-                </h1>
-                <p className={styles.subtitle}>
-                  Um espaço para conversar consigo mesmo e enxergar seus próprios
-                  padrões. Cada conversa é um mergulho — quanto mais fundo você
-                  desce, mais você se conhece.
-                </p>
-
-                <div className={styles.ctaRow}>
-                  <Link className={styles.primaryButton} href="/auth">
-                    Começar a jornada
+              <div className={styles.dashboardContent}>
+                <div className={styles.dashboardHead}>
+                  <p className={styles.eyebrow}>seu espaço · sua evolução</p>
+                  <Link className={styles.primaryButton} href="/chat">
+                    Ir para o chat
                   </Link>
-
-                  <details className={styles.details}>
-                    <summary className={styles.ghostButton}>Como usamos seus dados</summary>
-                    <p className={styles.detailText}>
-                      Usamos o conteúdo que você compartilha para melhorar a experiência
-                      do app, oferecer insights mais úteis e preservar seu histórico em
-                      uma sessão segura. Não compartilhamos suas informações com terceiros
-                      para fins comerciais.
-                    </p>
-                  </details>
                 </div>
 
-                <p className={styles.privacyLine}>
-                  <span className={styles.privacyDot} aria-hidden="true" />
-                  Privado e criptografado · não é terapia profissional
-                </p>
-              </div>
+                {dashboardError ? (
+                  <p className={styles.errorBanner} role="alert">
+                    {dashboardError}
+                  </p>
+                ) : (
+                  dashboardData && <DashboardStats data={dashboardData} />
+                )}
 
-              <div className={styles.heroAuraDesktop}>
-                <Aura size={230} />
-                <p className={styles.auraCaption}>A AURA · SUA PRESENÇA</p>
+                {milestonesError ? (
+                  <p className={styles.errorBanner} role="alert">
+                    {milestonesError}
+                  </p>
+                ) : (
+                  milestonesData && <PersonalMilestones initialMilestones={milestonesData} />
+                )}
               </div>
-            </section>
+            </div>
+          </section>
+        ) : (
+          <section className={styles.hero} aria-labelledby="onboarding-title">
+            <div className={styles.heroAuraMobile}>
+              <Aura size={158} />
+            </div>
 
-            <section className={`${styles.content} container`}>
-              <div className={styles.steps} aria-label="pilares do onboarding">
-                {pillars.map((pillar) => (
-                  <article key={pillar.title} className={styles.step}>
-                    <p className={styles.stepTitle}>{pillar.title}</p>
-                    <p className={styles.stepDescription}>{pillar.description}</p>
-                  </article>
-                ))}
-              </div>
-
-              <p className={styles.notice}>
-                Se estiver em risco imediato, ligue para os serviços de emergência
-                locais.
+            <div className={styles.heroText}>
+              <p className={styles.eyebrow}>seu espaço</p>
+              <h1 id="onboarding-title" className={styles.title}>
+                Conheça você
+                <br />
+                <span className={styles.titleEmphasis}>melhor.</span>
+              </h1>
+              <p className={styles.subtitle}>
+                Um espaço para conversar consigo mesmo e enxergar seus próprios
+                padrões. Cada conversa é um mergulho — quanto mais fundo você
+                desce, mais você se conhece.
               </p>
-            </section>
-          </>
+
+              <div className={styles.ctaRow}>
+                <Link className={styles.primaryButton} href="/auth">
+                  Começar a jornada
+                </Link>
+
+                <details className={styles.details}>
+                  <summary className={styles.ghostButton}>Como usamos seus dados</summary>
+                  <p className={styles.detailText}>
+                    Usamos o conteúdo que você compartilha para melhorar a experiência
+                    do app, oferecer insights mais úteis e preservar seu histórico em
+                    uma sessão segura. Não compartilhamos suas informações com terceiros
+                    para fins comerciais.
+                  </p>
+                </details>
+              </div>
+
+              <p className={styles.privacyLine}>
+                <span className={styles.privacyDot} aria-hidden="true" />
+                Privado e criptografado · não é terapia profissional
+              </p>
+            </div>
+
+            <div className={styles.heroAuraDesktop}>
+              <Aura size={230} className={styles.heroOrb} />
+              <p className={styles.auraCaption}>A AURA · SUA PRESENÇA</p>
+            </div>
+          </section>
         )}
       </main>
 

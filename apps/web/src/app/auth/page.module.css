@@ -1,44 +1,75 @@
 .main {
-  min-height: 100vh;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-lg) var(--space);
+  min-height: 100vh;
 }
 
-.card {
+.hero {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: var(--space);
-  padding: var(--space-lg);
-  border: 1px solid var(--color-border);
-  border-radius: 24px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.28);
+  text-align: center;
+  width: 100%;
+  padding: var(--space-lg) var(--space);
+  background: radial-gradient(120% 80% at 50% 18%, var(--color-surface-alt) 0%, #0c1c22 42%, var(--color-bg) 100%);
+}
+
+.heroAuraMobile {
+  display: flex;
+}
+
+.heroAuraDesktop {
+  display: none;
+}
+
+.auraCaption {
+  margin-top: var(--space-x);
+  font: 400 0.625rem var(--font-mono);
+  letter-spacing: 0.2em;
+  color: rgba(168, 224, 217, 0.5);
+}
+
+.heroText {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-x);
+  width: 100%;
+  max-width: 380px;
 }
 
 .eyebrow {
-  font-size: var(--fs-sm);
-  font-weight: 700;
-  letter-spacing: 0.16em;
+  font: 400 0.6875rem var(--font-mono);
+  letter-spacing: 0.32em;
   text-transform: uppercase;
-  color: var(--color-accent-1);
+  color: rgba(168, 224, 217, 0.55);
 }
 
 .title {
-  font-size: var(--fs-xl);
+  font: 300 2rem/1.2 var(--font-serif);
+  letter-spacing: -0.01em;
   color: var(--color-text);
 }
 
+.titleEmphasis {
+  font-style: italic;
+  color: #a8e0d9;
+}
+
 .subtitle {
+  font-size: var(--fs-md);
   color: var(--color-muted);
   line-height: var(--lh-body);
+  max-width: 40ch;
 }
 
 .form {
   display: flex;
   flex-direction: column;
   gap: var(--space-x);
+  width: 100%;
+  margin-top: var(--space-x);
+  text-align: left;
 }
 
 .field {
@@ -55,7 +86,7 @@
 .field input {
   border: 1px solid var(--color-border);
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.05);
   color: var(--color-text);
   padding: 0.9rem 1rem;
   font: inherit;
@@ -67,19 +98,62 @@
 
 .primaryButton {
   composes: primaryButton from "../../styles/shared.module.css";
+  width: 100%;
+  height: 56px;
+  padding: 0 30px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, var(--color-accent-1), var(--color-accent-2));
+  box-shadow: 0 16px 34px -12px rgba(111, 200, 193, 0.6);
+}
+
+.linksRow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: var(--space-x);
 }
 
 .secondaryLink {
   color: var(--color-accent-1);
   font-weight: 600;
+  font-size: var(--fs-sm);
 }
 
 .errorMessage {
   composes: errorMessage from "../../styles/shared.module.css";
 }
 
-@media (max-width: 640px) {
-  .card {
-    padding: var(--space);
+@media (min-width: 960px) {
+  .hero {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    text-align: left;
+    gap: var(--space-lg);
+    padding: calc(var(--space-lg) * 1.5) var(--space-lg);
+  }
+
+  .heroAuraMobile {
+    display: none;
+  }
+
+  .heroAuraDesktop {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    order: -1;
+    flex: none;
+    width: 300px;
+  }
+
+  .heroText {
+    align-items: flex-start;
+    text-align: left;
+    max-width: 420px;
+  }
+
+  .linksRow {
+    align-items: flex-start;
   }
 }

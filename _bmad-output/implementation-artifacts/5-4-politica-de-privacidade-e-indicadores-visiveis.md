@@ -1,6 +1,6 @@
 # Story 5.4: Política de Privacidade e Indicadores Visíveis
 
-Status: planned
+Status: done
 
 ## Story
 
@@ -16,5 +16,19 @@ so that eu confie no app antes de compartilhar algo íntimo.
 
 ## Tasks / Subtasks
 
-- [ ] Implementar indicadores visíveis de privacidade no app.
-- [ ] Criar a página/política de uso de dados com copy precisa.
+- [x] Implementar indicadores visíveis de privacidade no app.
+- [x] Criar a página/política de uso de dados com copy precisa.
+
+## Review Findings
+
+- [x] [Review][Patch] Contradição de E2EE na política ("ponta a ponta na infraestrutura" reaparecendo logo após negar E2EE literal) [apps/web/src/app/privacidade/page.tsx]
+- [x] [Review][Patch] Teste vazio que só verificava `render()` sem exercitar comportamento real [apps/web/src/app/privacidade/page.test.tsx]
+- [x] [Review][Defer] Link "← Voltar" de `/privacidade` fixo em `/` em vez de `router.back()`, pode perder rascunho de chat/resumo gerado ao voltar — deferred, pre-existing [apps/web/src/app/privacidade/page.tsx]
+
+## Dev Agent Record
+
+- Novo componente `PrivacySeal` (selo + link "Como seus dados são usados") integrado a `ChatWindow`, `/historico`, `/historico/[sessionId]` e `/insights`; nova rota pública `/privacidade` (sem checagem de auth — acessível de qualquer tela, inclusive anônima).
+- Copy segue o modelo real de criptografia documentado em `architecture.md` (TLS 1.3+ em trânsito + AES-256 em repouso, sem E2EE literal) — decisão consciente de não seguir a copy desatualizada "armazenadas localmente" de `ux-patterns.md`, que é factualmente incorreta (dados ficam no Supabase Cloud).
+- AC3 (telas de exclusão) já estava satisfeito pelas Stories 3.5 e 5.2, sem alteração necessária.
+- Sem migration nova.
+- Teste manual em navegador pendente do usuário — não há `.env.local` neste ambiente e o middleware (`proxy.ts`) exige as variáveis do Supabase em toda rota, então não foi possível subir o servidor local para verificação visual.

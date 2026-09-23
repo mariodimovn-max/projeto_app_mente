@@ -113,3 +113,73 @@ export async function getUserPatterns(
     sessionCount: data.session_count ?? 0,
   };
 }
+
+export interface DailyGreetingState {
+  sessionCount: number;
+  topTheme: string | null;
+  cachedMessage: string | null;
+  cachedDate: string | null;
+}
+
+interface DailyGreetingRow {
+  daily_greeting: string | null;
+  daily_greeting_date: string | null;
+  session_count: number | null;
+  themes: PatternCounts | null;
+}
+
+function topThemeLabel(themes: PatternCounts): string | null {
+  const [label] = Object.entries(themes).sort((a, b) => b[1] - a[1])[0] ?? [];
+  return label ?? null;
+}
+
+// Leitura para a mensagem de boas-vindas gerada por IA na Home (welcomeMessage.ts):
+// devolve tanto o estado necessário para decidir se vale a pena gerar uma mensagem
+// (há alguma sessão sintetizada? qual o tema mais recorrente?) quanto o cache do dia
+// anterior, se houver. Retorna null quando o usuário ainda não tem nenhuma linha em
+// user_patterns (mesma condição de getUserPatterns) — nesse caso não há o que refletir.
+export async function getDailyGreetingState(
+  supabase: SupabaseServerClient,
+  userId: string
+): Promise<DailyGreetingState | null> {
+  const { data, error } = await supabase
+    .from("user_patterns")
+    .select("daily_greeting, daily_greeting_date, session_count, themes")
+    .eq("user_id", userId)
+    .maybeSingle<DailyGreetingRow>();
+
+  if (error) {
+    throw error;
+  }
+
+  if (!data) {
+    return null;
+  }
+
+  return {
+    sessionCount: data.session_count ?? 0,
+    topTheme: topThemeLabel(data.themes ?? {}),
+    cachedMessage: data.daily_greeting,
+    cachedDate: data.daily_greeting_date,
+  };
+}
+
+// Grava o cache diário — best-effort do ponto de vista de quem chama (welcomeMessage.ts):
+// se isto falhar, a mensagem já gerada ainda é exibida nesta requisição, só não fica
+// guardada para a próxima. Update simples (não upsert): só é chamado depois de
+// getDailyGreetingState já ter confirmado que a linha existe.
+export async function saveDailyGreeting(
+  supabase: SupabaseServerClient,
+  userId: string,
+  message: string,
+  dayKey: string
+): Promise<void> {
+  const { error } = await supabase
+    .from("user_patterns")
+    .update({ daily_greeting: message, daily_greeting_date: dayKey })
+    .eq("user_id", userId);
+
+  if (error) {
+    throw error;
+  }
+}

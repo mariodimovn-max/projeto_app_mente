@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { EmotionalState } from "./emotional-state";
-import type { SessionOpeningContext } from "./memory";
+import type { SessionOpeningContext } from "./sessionOpeningContext";
 import {
   BASE_SYSTEM_PROMPT,
   STANDARD_OPENING_QUESTION,

@@ -1,8 +1,10 @@
 import styles from "./Aura.module.css";
 
 interface AuraProps {
-  /** Diâmetro do orbe em pixels. */
+  /** Diâmetro do orbe em pixels (usado como fallback inline). */
   size: number;
+  /** Classe extra opcional — permite a uma tela sobrescrever o diâmetro via CSS (ex.: clamp() fluido em telas grandes). */
+  className?: string | undefined;
 }
 
 /**
@@ -10,9 +12,13 @@ interface AuraProps {
  * Puramente decorativo: a voz do agente já é lida via texto/aria-live,
  * então o orbe fica oculto de leitores de tela.
  */
-export function Aura({ size }: AuraProps) {
+export function Aura({ size, className }: AuraProps) {
   return (
-    <div className={styles.aura} style={{ width: size, height: size }} aria-hidden="true">
+    <div
+      className={className ? `${styles.aura} ${className}` : styles.aura}
+      style={{ width: size, height: size }}
+      aria-hidden="true"
+    >
       <div className={styles.glow} />
       <div className={styles.core} />
     </div>

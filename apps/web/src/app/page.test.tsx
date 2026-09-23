@@ -12,11 +12,13 @@ const { headersMock, headerStore } = vi.hoisted(() => {
   };
 });
 
-const { getUserMock, getDashboardDataMock, getPersonalMilestonesMock } = vi.hoisted(() => ({
-  getUserMock: vi.fn(),
-  getDashboardDataMock: vi.fn(),
-  getPersonalMilestonesMock: vi.fn(),
-}));
+const { getUserMock, getDashboardDataMock, getPersonalMilestonesMock, getWelcomeMessageMock } =
+  vi.hoisted(() => ({
+    getUserMock: vi.fn(),
+    getDashboardDataMock: vi.fn(),
+    getPersonalMilestonesMock: vi.fn(),
+    getWelcomeMessageMock: vi.fn(),
+  }));
 
 vi.mock("next/headers", () => ({
   headers: headersMock,
@@ -36,6 +38,10 @@ vi.mock("@/lib/dashboard/dashboard", () => ({
 
 vi.mock("@/lib/milestones/milestones", () => ({
   getPersonalMilestones: getPersonalMilestonesMock,
+}));
+
+vi.mock("@/lib/dashboard/welcomeMessage", () => ({
+  getWelcomeMessage: getWelcomeMessageMock,
 }));
 
 vi.mock("./LogoutButton", () => ({
@@ -68,28 +74,27 @@ describe("Home onboarding page", () => {
     getUserMock.mockReset();
     getDashboardDataMock.mockReset();
     getPersonalMilestonesMock.mockReset();
+    getWelcomeMessageMock.mockReset();
     getUserMock.mockResolvedValue({ data: { user: { id: "user-1" } } });
     getDashboardDataMock.mockResolvedValue({ streakDays: 0, sessionCount: 0, themes: [] });
     getPersonalMilestonesMock.mockResolvedValue([]);
+    getWelcomeMessageMock.mockResolvedValue(null);
   });
 
-  it("renders the onboarding pillars and the entry CTA", async () => {
+  it("renders the onboarding hero and the entry CTA", async () => {
     const element = await HomePage();
     render(element);
 
-    expect(screen.getAllByText(/Propósito/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/Privacidade/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/Começar/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Conheça você/i).length).toBeGreaterThan(0);
 
     const cta = screen.getByRole("link", { name: /Começar a jornada/i });
     expect(cta.getAttribute("href")).toBe("/auth");
   });
 
-  it("shows the immediate risk notice and privacy explanation", async () => {
+  it("shows the privacy explanation", async () => {
     const element = await HomePage();
     render(element);
 
-    expect(screen.getAllByText(/Se estiver em risco imediato/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Como usamos seus dados/i).length).toBeGreaterThan(0);
   });
 
@@ -150,6 +155,7 @@ describe("Home onboarding page", () => {
 
     expect(getDashboardDataMock).not.toHaveBeenCalled();
     expect(getPersonalMilestonesMock).not.toHaveBeenCalled();
+    expect(getWelcomeMessageMock).not.toHaveBeenCalled();
     expect(screen.queryByTestId("dashboard-stats")).not.toBeInTheDocument();
     expect(screen.queryByTestId("personal-milestones")).not.toBeInTheDocument();
   });
@@ -245,5 +251,28 @@ describe("Home onboarding page", () => {
     expect(heading.textContent).toMatch(/Bom te ver/);
     expect(heading.textContent).toMatch(/de novo/);
     expect(heading.textContent).not.toMatch(/está pronto/);
+  });
+
+  it("exibe a mensagem de boas-vindas gerada por IA ao lado da Aura quando o usuário já tem histórico", async () => {
+    headerStore.set("x-app-session-user", "1");
+    getDashboardDataMock.mockResolvedValue({ streakDays: 5, sessionCount: 12, themes: [] });
+    getWelcomeMessageMock.mockResolvedValue("Você tem voltado para si, aos poucos.");
+
+    const element = await HomePage();
+    render(element);
+
+    expect(getWelcomeMessageMock).toHaveBeenCalledWith(expect.anything(), "user-1");
+    expect(screen.getByText("Você tem voltado para si, aos poucos.")).toBeInTheDocument();
+  });
+
+  it("não exibe mensagem de boas-vindas gerada por IA na primeira visita (sem histórico para refletir)", async () => {
+    headerStore.set("x-app-session-user", "1");
+    getDashboardDataMock.mockResolvedValue({ streakDays: 0, sessionCount: 0, themes: [] });
+    getWelcomeMessageMock.mockResolvedValue("Você não precisa mergulhar hoje.");
+
+    const element = await HomePage();
+    render(element);
+
+    expect(screen.queryByText("Você não precisa mergulhar hoje.")).not.toBeInTheDocument();
   });
 });

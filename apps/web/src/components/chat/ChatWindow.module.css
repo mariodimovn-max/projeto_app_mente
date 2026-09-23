@@ -140,6 +140,10 @@
   cursor: default;
 }
 
+.privacyFooter {
+  margin-top: var(--space-x);
+}
+
 @media (min-width: 960px) {
   .shell {
     flex-direction: row;

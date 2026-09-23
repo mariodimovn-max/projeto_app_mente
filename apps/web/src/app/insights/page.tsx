@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { SESSION_USER_HEADER } from "@/proxy";
 import { PrimaryNav } from "@/components/nav/PrimaryNav";
 import { SummaryCard } from "@/components/insights/SummaryCard";
+import { PrivacySeal } from "@/components/privacy/PrivacySeal";
 import styles from "./page.module.css";
 
 // Destino de navegação da Story 4.1. Resumo semanal (Story 4.4) e mensal (Story 4.5) sob
@@ -23,6 +24,7 @@ export default async function InsightsPage() {
           <p className={styles.subtitle}>Gere um resumo da sua semana ou do seu mês sempre que quiser.</p>
         </header>
         <SummaryCard />
+        <PrivacySeal />
       </main>
       <PrimaryNav />
     </>
