@@ -2,7 +2,7 @@
 titulo: Conversa, Memória e Histórico de Sessões
 epico: "2, 3"
 status: completo
-ultima_atualizacao: 2026-09-22
+ultima_atualizacao: 2026-11-11
 depende_de: [auth]
 relacionado: [insights-e-resumos, ui-e-navegacao]
 decisoes: [0005-resumo-deterministico-sem-ia]
@@ -84,6 +84,14 @@ antes da correção.
   não adicionar novo contexto ali sem preservar essa exclusão.
 - Retomar sessão pela navegação principal depende do `sessionId` guardado em `sessionStorage` e da
   Server Action `resumeSession` — ver [ui-e-navegacao.md](ui-e-navegacao.md).
+- A síntese (`lib/agent/synthesis.ts`) usa saída estruturada (`messages.parse` + `zodOutputFormat`):
+  se `max_tokens` cortar a resposta, o JSON chega incompleto e o parse lança — a síntese falha por
+  inteiro. O limite era 600 e sessões mais longas estouravam (uma sessão de 4 trocas já gera ~500
+  tokens); hoje é `SYNTHESIS_MAX_TOKENS = 2000`, com teste de regressão. Ao adicionar campos ao
+  schema, revisar esse teto.
+- O SDK remove `maxItems` do JSON Schema enviado à API (não suportado em structured outputs), mas o
+  Zod continua validando `.max(n)` localmente — o modelo pode, em tese, devolver itens a mais e o
+  parse falhar. Até hoje o prompt tem bastado para manter os limites.
 
 ## Pendências
 

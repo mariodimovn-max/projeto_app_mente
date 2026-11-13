@@ -178,9 +178,13 @@ export async function endSession(
       showPatternPrivacyNotice,
     };
   } catch (error) {
+    // Mensagem como string (não objeto): o log de dev do Next serializa objetos aninhados
+    // como "{}", o que escondia a causa real da falha da síntese.
     console.error(
-      "Erro ao gerar síntese da sessão:",
-      error instanceof Error ? { message: error.message, stack: error.stack } : error
+      `Erro ao gerar síntese da sessão: ${
+        error instanceof Error ? `${error.name}: ${error.message}` : JSON.stringify(error)
+      }`,
+      error instanceof Error ? error.stack : undefined
     );
     return { error: GENERIC_ERROR };
   }

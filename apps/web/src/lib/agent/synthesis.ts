@@ -3,7 +3,11 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import type { MessageParam } from "@anthropic-ai/sdk/resources/messages";
 import { sessionSynthesisContentSchema, type SessionSynthesisContent } from "@/lib/validation/synthesis";
 
-const SYNTHESIS_MAX_TOKENS = 600;
+// A síntese é um JSON estruturado com 7 campos em português — numa sessão de só 4 trocas a
+// saída já chega a ~500 tokens. Com o antigo limite de 600, sessões mais longas cortavam o
+// JSON no meio e `messages.parse` lançava "Failed to parse structured output as JSON",
+// derrubando a síntese inteira. Folga ampla aqui: o custo é pelo que é gerado, não pelo teto.
+export const SYNTHESIS_MAX_TOKENS = 2000;
 
 export const SYNTHESIS_SYSTEM_PROMPT = `Você é um espelho reflexivo digital gerando uma síntese ao final de uma sessão de conversa.
 Não diagnostique, não prescreva, não atue como terapeuta.
