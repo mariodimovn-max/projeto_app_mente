@@ -146,6 +146,7 @@ Aplicativo de diário digital que funciona como **espelho reflexivo** — não t
 - [x] Epic 5 — LGPD e Encerramento — ver [docs/wiki/lgpd-e-privacidade.md](docs/wiki/lgpd-e-privacidade.md)
 - [x] Ajuste de UI fora do sprint de épicos (layout de duas colunas da Home + saudação gerada por IA) — ver [docs/wiki/ui-e-navegacao.md](docs/wiki/ui-e-navegacao.md)
 - [x] Correct-course pré-beta (ver `_bmad-output/planning-artifacts/sprint-change-proposal-2026-08-23.md`) — bugs de chat corrigidos em [docs/wiki/conversa-e-memoria.md](docs/wiki/conversa-e-memoria.md); CI, `.env.example`, gate de cobertura e runbooks de deploy/convite em [docs/wiki/pendencias-manuais.md](docs/wiki/pendencias-manuais.md)
+- [x] Reativação do Supabase (nov/2026) — projeto `diario-bem-estar-prod` linkado via CLI, migrations aplicadas com `db push`, config de Auth em `supabase/config.toml`; links de e-mail passam por `/auth/callback` (ver [docs/adr/0006](docs/adr/0006-fluxo-implicito-templates-email-free-tier.md) e [docs/wiki/pendencias-manuais.md](docs/wiki/pendencias-manuais.md))
 
 > O estado consolidado por tópico (o que foi construído, decisões, gotchas, pendências) vive em `docs/wiki/` — comece por [docs/wiki/index.md](docs/wiki/index.md). Decisões pontuais/cross-cutting vivem em `docs/adr/` — comece por [docs/adr/index.md](docs/adr/index.md). Detalhes linha a linha de cada história (arquivos alterados, achados de code review) ficam no histórico do git.
 

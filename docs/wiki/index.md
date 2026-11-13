@@ -11,7 +11,7 @@
 | [insights-e-resumos.md](insights-e-resumos.md) | 4 | completo | Dashboard de indicadores, marcos pessoais, resumos semanal/mensal, PDF |
 | [lgpd-e-privacidade.md](lgpd-e-privacidade.md) | 5 | completo | Exportação de dados, exclusão de conta, auditoria, política de privacidade |
 | [ui-e-navegacao.md](ui-e-navegacao.md) | 4 + ajuste fora do sprint | completo | Navegação principal, layout da Home, saudação gerada por IA |
-| [pendencias-manuais.md](pendencias-manuais.md) | transversal | em andamento | Antes de aplicar/verificar migrations, env vars, CI, runbooks de deploy |
+| [pendencias-manuais.md](pendencias-manuais.md) | transversal | em andamento | Estado do projeto Supabase (CLI linkado, `db push`, `config push`), env vars, convites, CI, runbook de deploy |
 
 ## Como isso se relaciona com o resto da documentação
 

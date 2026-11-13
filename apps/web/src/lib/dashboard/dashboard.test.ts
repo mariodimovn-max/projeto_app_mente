@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { computeStreakDays, getDashboardData } from "./dashboard";
 
 describe("computeStreakDays", () => {
@@ -78,6 +78,18 @@ function makeUserPatternsBuilder(result: { data: unknown; error: unknown }) {
 }
 
 describe("getDashboardData", () => {
+  // getDashboardData usa a data real (new Date()/Date.now()) como referência do streak e do
+  // recorte de 120 dias; sem congelar o relógio, as sessões fixas abaixo deixam de contar
+  // como "ontem/hoje" conforme o tempo passa (o teste quebrou sozinho em nov/2026).
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-09T15:00:00Z"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("combina sessionCount e temas do agregado com o streak calculado a partir das sessões", async () => {
     const supabase = {
       from: (table: string) => {

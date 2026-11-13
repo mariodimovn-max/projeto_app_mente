@@ -34,6 +34,25 @@ describe("generateSessionSynthesis", () => {
     expect(call.output_config?.format).toBeDefined();
   });
 
+  it("reserva tokens de saída suficientes para o JSON completo não ser truncado", async () => {
+    // Regressão: com max_tokens 600 uma sessão de 4 trocas já gerava ~500 tokens, e sessões
+    // mais longas cortavam o JSON no meio — o parse falhava e a síntese não era gerada.
+    const anthropic = createAnthropicStub({
+      title: "...",
+      themes: ["..."],
+      explored: "...",
+      patterns: ["..."],
+      openQuestion: "...?",
+      emotions: ["..."],
+      triggers: [],
+    });
+
+    await generateSessionSynthesis(anthropic, conversation);
+
+    const call = vi.mocked(anthropic.messages.parse).mock.calls[0]![0];
+    expect(call.max_tokens).toBeGreaterThanOrEqual(1500);
+  });
+
   it("sempre termina a lista de mensagens com uma mensagem do usuário, mesmo quando a conversa real termina com a resposta do agente", async () => {
     // Modelos atuais rejeitam com 400 ("assistant message prefill") uma conversa cuja
     // última mensagem é do assistente — o histórico real quase sempre termina assim.

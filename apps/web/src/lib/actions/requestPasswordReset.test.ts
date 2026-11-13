@@ -9,19 +9,45 @@ vi.mock("@/lib/supabase/server", () => ({
   createClient: createClientMock,
 }));
 
+const requestHeaders = new Map<string, string>();
+
+vi.mock("next/headers", () => ({
+  headers: async () => ({
+    get: (name: string) => requestHeaders.get(name) ?? null,
+  }),
+}));
+
 describe("requestPasswordReset", () => {
   beforeEach(() => {
     resetPasswordForEmailMock.mockReset();
+    requestHeaders.clear();
+    requestHeaders.set("origin", "http://localhost:3000");
   });
 
-  it("solicita o link de redefinição via Supabase e não retorna erro quando bem-sucedido", async () => {
+  it("solicita o link de redefinição via Supabase apontando para /auth/callback e não retorna erro quando bem-sucedido", async () => {
     resetPasswordForEmailMock.mockResolvedValue({ error: null });
     const { requestPasswordReset } = await import("./requestPasswordReset");
 
     const result = await requestPasswordReset("usuario@exemplo.com");
 
-    expect(resetPasswordForEmailMock).toHaveBeenCalledWith("usuario@exemplo.com");
+    expect(resetPasswordForEmailMock).toHaveBeenCalledWith("usuario@exemplo.com", {
+      redirectTo: "http://localhost:3000/auth/callback?next=/auth/redefinir-senha",
+    });
     expect(result).toBeUndefined();
+  });
+
+  it("monta o redirectTo a partir de host/x-forwarded-proto quando não há header origin", async () => {
+    requestHeaders.clear();
+    requestHeaders.set("host", "app.exemplo.com");
+    requestHeaders.set("x-forwarded-proto", "https");
+    resetPasswordForEmailMock.mockResolvedValue({ error: null });
+    const { requestPasswordReset } = await import("./requestPasswordReset");
+
+    await requestPasswordReset("usuario@exemplo.com");
+
+    expect(resetPasswordForEmailMock).toHaveBeenCalledWith("usuario@exemplo.com", {
+      redirectTo: "https://app.exemplo.com/auth/callback?next=/auth/redefinir-senha",
+    });
   });
 
   it("retorna mensagem de rate limit quando o Supabase bloqueia por excesso de tentativas", async () => {
