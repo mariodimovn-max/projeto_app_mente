@@ -1,6 +1,6 @@
 .main {
   display: flex;
-  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .hero {
@@ -24,7 +24,7 @@
 
 .auraCaption {
   margin-top: var(--space-x);
-  font: 400 0.625rem var(--font-mono);
+  font: 400 var(--fs-xs) var(--font-mono);
   letter-spacing: 0.2em;
   color: rgba(168, 224, 217, 0.5);
 }
@@ -39,7 +39,7 @@
 }
 
 .eyebrow {
-  font: 400 0.6875rem var(--font-mono);
+  font: 400 var(--fs-xs) var(--font-mono);
   letter-spacing: 0.32em;
   text-transform: uppercase;
   color: rgba(168, 224, 217, 0.55);

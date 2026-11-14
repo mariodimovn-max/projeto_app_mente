@@ -10,7 +10,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-x);
-  font: 400 0.8125rem var(--font-sans);
+  font: 400 var(--fs-sm) var(--font-sans);
   color: var(--color-muted);
 }
 
@@ -21,7 +21,7 @@
 }
 
 .settingsLink {
-  font: 400 0.8125rem var(--font-sans);
+  font: 400 var(--fs-sm) var(--font-sans);
   color: var(--color-muted);
   text-decoration: none;
 }
@@ -45,7 +45,7 @@
   gap: var(--space);
   text-align: center;
   width: 100%;
-  min-height: 100vh;
+  min-height: 100dvh;
   padding: var(--space-lg) var(--space);
   background: radial-gradient(120% 80% at 50% 18%, var(--color-surface-alt) 0%, #0c1c22 42%, var(--color-bg) 100%);
 }
@@ -60,7 +60,7 @@
 
 .auraCaption {
   margin-top: var(--space-x);
-  font: 400 0.625rem var(--font-mono);
+  font: 400 var(--fs-xs) var(--font-mono);
   letter-spacing: 0.2em;
   color: rgba(168, 224, 217, 0.5);
 }
@@ -81,7 +81,7 @@
 }
 
 .eyebrow {
-  font: 400 clamp(0.6875rem, 0.2vw + 0.6rem, 0.8125rem) var(--font-mono);
+  font: 400 var(--fs-xs) var(--font-mono);
   letter-spacing: 0.32em;
   text-transform: uppercase;
   color: rgba(168, 224, 217, 0.55);
@@ -355,7 +355,7 @@
   .dashboardAuraCaption {
     display: block;
     margin-top: var(--space);
-    font: 400 0.625rem var(--font-mono);
+    font: 400 var(--fs-xs) var(--font-mono);
     letter-spacing: 0.2em;
     text-transform: uppercase;
     color: rgba(168, 224, 217, 0.45);

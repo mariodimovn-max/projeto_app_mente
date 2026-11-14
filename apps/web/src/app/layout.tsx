@@ -29,11 +29,15 @@ export const metadata: Metadata = {
   description: APP_DESCRIPTION,
 };
 
-// Story 6.1: barra de status/tema do app instalado na cor de fundo. `viewportFit: "cover"`
-// fica para a Story 6.2, junto com os ajustes de safe-area que ele exige.
+// Story 6.1: barra de status/tema do app instalado na cor de fundo.
+// Story 6.2: `viewportFit: "cover"` libera os `env(safe-area-inset-*)` (barra de gestos e recorte
+// de câmera, inclusive na lateral em paisagem) — o body, a PrimaryNav e os overlays os respeitam.
+// Sem `interactiveWidget` de propósito: o padrão do Chrome Android (resizes-visual) deixa a nav
+// fixa atrás do teclado em vez de empurrá-la para cima, comendo a área útil.
 export const viewport: Viewport = {
   themeColor: PWA_THEME,
   colorScheme: "dark",
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

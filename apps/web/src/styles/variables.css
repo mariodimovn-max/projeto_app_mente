@@ -46,7 +46,8 @@
   --fs-xl: 1.5rem;    /* 24px */
   --fs-lg: 1.125rem;  /* 18px */
   --fs-md: 1rem;      /* 16px */
-  --fs-sm: 0.875rem;  /* 14px */
+  --fs-sm: 0.875rem;  /* 14px — mínimo para todo texto de conteúdo ou interativo (NFR6) */
+  --fs-xs: 0.75rem;   /* 12px — SÓ rótulos decorativos mono em caixa alta e metadados (horários, contadores); ver ADR 0008 */
   --lh-body: 1.6;
 
   /* Layout */

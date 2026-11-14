@@ -7,7 +7,7 @@
 }
 
 .agentLabel {
-  font: 400 0.6875rem var(--font-mono);
+  font: 400 var(--fs-xs) var(--font-mono);
   letter-spacing: 0.24em;
   text-transform: uppercase;
   color: rgba(168, 224, 217, 0.55);
@@ -41,7 +41,7 @@
 
 .timestamp {
   align-self: flex-end;
-  font: 400 0.6875rem var(--font-mono);
+  font: 400 var(--fs-xs) var(--font-mono);
   color: var(--color-muted);
   opacity: 0.6;
 }

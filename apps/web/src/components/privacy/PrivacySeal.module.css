@@ -11,7 +11,8 @@
 }
 
 .icon {
-  font-size: 0.85em;
+  /* Ícone (não texto) do selo — via token, como todo tamanho abaixo de 14px (ADR 0008). */
+  font-size: var(--fs-xs);
 }
 
 .link {

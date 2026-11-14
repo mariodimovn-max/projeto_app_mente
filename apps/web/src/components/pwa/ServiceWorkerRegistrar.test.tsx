@@ -2,6 +2,7 @@
 import { render, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ServiceWorkerRegistrar } from "./ServiceWorkerRegistrar";
+import { getInstallPromptState, resetInstallPromptForTests } from "@/lib/pwa/installPrompt";
 
 function stubServiceWorker(register: ReturnType<typeof vi.fn>) {
   Object.defineProperty(navigator, "serviceWorker", {
@@ -57,5 +58,30 @@ describe("ServiceWorkerRegistrar", () => {
 
     await waitFor(() => expect(consoleError).toHaveBeenCalled());
     expect(container).toBeEmptyDOMElement();
+  });
+});
+
+// Story 6.2: a captura do `beforeinstallprompt` começa no layout raiz, em qualquer ambiente,
+// para o item "Instalar" de Configurações não perder o evento da primeira página.
+describe("ServiceWorkerRegistrar — captura do convite de instalação", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    resetInstallPromptForTests();
+  });
+
+  it.each(["development", "production"])("começa a capturar o evento em %s", (env) => {
+    vi.stubEnv("NODE_ENV", env);
+    resetInstallPromptForTests();
+
+    render(<ServiceWorkerRegistrar />);
+    window.dispatchEvent(
+      Object.assign(new Event("beforeinstallprompt", { cancelable: true }), {
+        prompt: vi.fn(),
+        userChoice: Promise.resolve({ outcome: "dismissed", platform: "web" }),
+        platforms: ["web"],
+      })
+    );
+
+    expect(getInstallPromptState()).toBe("available");
   });
 });

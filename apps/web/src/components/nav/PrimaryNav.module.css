@@ -8,6 +8,10 @@
   justify-content: center;
   gap: var(--space-lg);
   padding: var(--space-x) var(--space) calc(var(--space-x) + env(safe-area-inset-bottom));
+  /* Story 6.2: fixa, não herda o padding de safe-area do body — trata as laterais (recorte da
+     câmera em paisagem) por conta própria. */
+  padding-left: max(var(--space), env(safe-area-inset-left));
+  padding-right: max(var(--space), env(safe-area-inset-right));
   background: rgba(8, 15, 18, 0.92);
   backdrop-filter: blur(10px);
   border-top: 1px solid var(--color-border);
@@ -22,7 +26,7 @@
   padding: 4px 6px;
   border-radius: 12px;
   color: var(--color-muted);
-  font: 500 0.6875rem var(--font-sans);
+  font: 500 var(--fs-sm) var(--font-sans);
 }
 
 .item[data-active] {

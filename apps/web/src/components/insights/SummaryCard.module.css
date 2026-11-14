@@ -22,7 +22,7 @@
   border: none;
   border-radius: 999px;
   background: transparent;
-  font: 500 0.8125rem var(--font-sans);
+  font: 500 var(--fs-sm) var(--font-sans);
   color: rgba(233, 241, 238, 0.6);
   cursor: pointer;
 }
@@ -46,7 +46,7 @@
 
 .heading {
   margin: 0;
-  font: 600 0.6875rem var(--font-mono);
+  font: 600 var(--fs-xs) var(--font-mono);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #c9f0ea;
@@ -82,7 +82,7 @@
 
 .period {
   margin: 0;
-  font: 500 0.75rem var(--font-mono);
+  font: 500 var(--fs-xs) var(--font-mono);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--color-muted);
@@ -103,7 +103,7 @@
 
 .blockLabel {
   margin: 0;
-  font: 600 0.6875rem var(--font-mono);
+  font: 600 var(--fs-xs) var(--font-mono);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #c9f0ea;
@@ -123,7 +123,7 @@
   border-radius: 999px;
   background: rgba(127, 208, 200, 0.1);
   border: 1px solid rgba(127, 208, 200, 0.24);
-  font: 500 0.8125rem var(--font-sans);
+  font: 500 var(--fs-sm) var(--font-sans);
   color: rgba(233, 241, 238, 0.85);
 }
 
@@ -149,7 +149,7 @@
 
 .timelineDate {
   flex-shrink: 0;
-  font: 500 0.75rem var(--font-mono);
+  font: 500 var(--fs-xs) var(--font-mono);
   color: var(--color-muted);
 }
 
@@ -164,13 +164,13 @@
   border: 1px solid var(--color-border);
   border-radius: 999px;
   background: transparent;
-  font: 500 0.8125rem var(--font-sans);
+  font: 500 var(--fs-sm) var(--font-sans);
   color: rgba(233, 241, 238, 0.85);
   cursor: pointer;
 }
 
 .privacyCaption {
   margin: 0;
-  font-size: 0.75rem;
+  font-size: var(--fs-xs);
   color: rgba(233, 241, 238, 0.4);
 }

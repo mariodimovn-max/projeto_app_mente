@@ -17,7 +17,7 @@
 }
 
 .eyebrow {
-  font: 400 0.6875rem var(--font-mono);
+  font: 400 var(--fs-xs) var(--font-mono);
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: rgba(168, 224, 217, 0.55);
