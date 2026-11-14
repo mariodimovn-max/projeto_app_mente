@@ -220,8 +220,11 @@ web3 = 30
 # secret = ""
 
 [auth.email]
-# Allow/disallow new user signups via email to your project.
-enable_signup = false
+# ATENÇÃO: apesar do comentário padrão da CLI ("Allow/disallow new user signups via email"), este
+# campo liga/desliga o PROVEDOR de e-mail inteiro no projeto hospedado (external_email_enabled).
+# Com `false`, login por senha, recuperação e convites falham com `email_provider_disabled`
+# (aconteceu em 2026-11-13). O beta fechado é garantido por `[auth] enable_signup = false` acima.
+enable_signup = true
 # If enabled, a user will be required to confirm any email change on both the old, and new email
 # addresses. If disabled, only the new email is required to confirm.
 double_confirm_changes = true
