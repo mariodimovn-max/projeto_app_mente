@@ -218,6 +218,7 @@ FR5: Epic 3 — Síntese de insights ao final de sessão
 FR6: Epic 4 — Resumos periódicos sob demanda
 FR7: Epic 4 — Indicadores básicos de evolução
 FR8: Epic 5 — Segurança de dados e conformidade LGPD
+NFR5 (Android) + requisito adicional "PWA instalável": Epic 6 — App instalável no Android
 
 ## Epic List
 
@@ -248,6 +249,15 @@ progresso (dias consecutivos, temas, tendência emocional), sem gamification.
 Usuário pode exportar seus próprios dados, entender exatamente como são protegidos, e deletar sua
 conta com destruição permanente garantida.
 **FRs covered:** FR8 + deleção de conta (parte do FR1)
+
+### Epic 6: App Instalável no Android (PWA)
+Usuário com Android consegue instalar o Diário na tela inicial e usá-lo como um app — tela cheia,
+ícone próprio, layout que respeita teclado, barra de gestos e rotação — sem loja e sem app nativo
+separado. Adicionado via correct-course de 2026-11-13 (`sprint-change-proposal-2026-11-13.md`): o
+requisito "PWA instalável" existia na arquitetura e nos Additional Requirements, mas nenhuma
+história o cobria.
+**FRs covered:** nenhum FR novo — fecha NFR5 (Android ≥10, portrait/landscape) e o requisito
+adicional de PWA; reforça NFR6 (fonte mínima 14px).
 
 ## Epic 1: Acesso Seguro ao Diário
 
@@ -762,3 +772,110 @@ So that eu confie no app antes de compartilhar algo íntimo.
 que descreve com precisão o modelo real de criptografia (em repouso + trânsito, não E2EE literal)
 **And** telas de exclusão (sessão ou conta) usam copy clara ("Excluir esta sessão e suas
 transcrições para sempre")
+
+## Epic 6: App Instalável no Android (PWA)
+
+Usuário com Android consegue instalar o Diário na tela inicial e usá-lo como um app, sem loja e sem
+app nativo separado. Empacotamento para a Play Store (TWA) fica como evolução pós-MVP (ADR 0007).
+
+### Story 6.1: Tornar o App Instalável no Android
+
+As a usuário beta com um celular Android,
+I want instalar o Diário na tela inicial e abri-lo como um app,
+So that eu chegue ao meu espaço de reflexão com um toque, sem barra de navegador.
+
+**Acceptance Criteria:**
+
+**Given** o app servido em HTTPS e acessado pelo Chrome em Android ≥ 10
+**When** o usuário abre o menu do navegador
+**Then** a opção de instalar o app está disponível (critérios de instalabilidade do Chrome
+atendidos, verificados no painel "Application > Manifest" do DevTools sem erros)
+**And** ao abrir pelo ícone da tela inicial, o app abre em modo `standalone` (sem barra de URL),
+com a barra de status na cor de fundo do app (`--color-bg`)
+
+**Given** o manifest do app
+**When** ele é servido pela convenção do Next (`app/manifest.ts`)
+**Then** declara `name`, `short_name`, `description`, `lang: "pt-BR"`, `start_url: "/"`,
+`scope: "/"`, `display: "standalone"`, `background_color` e `theme_color` alinhados aos tokens da
+paleta Aura
+**And** não trava orientação (portrait e landscape continuam suportados — NFR5)
+
+**Given** que ainda não existe arte final de ícone
+**When** os ícones são gerados
+**Then** existe um ícone provisório derivado da paleta Aura (fundo `--color-bg`, marca em
+`--color-accent-1`) nos tamanhos 192×192 e 512×512, incluindo uma variante `maskable` com a marca
+dentro da área segura, além de favicon e `apple-touch-icon` coerentes
+**And** a origem do ícone fica concentrada num único ponto do código, para que trocar pela arte
+final não exija mexer em manifest, layout e favicon separadamente
+
+**Given** o service worker registrado
+**When** o usuário navega sem conexão
+**Then** vê uma página offline em pt-BR, com o visual do app, que diz com honestidade que as
+conversas precisam de internet (sem prometer funcionamento offline)
+**And** o service worker armazena em cache **apenas** a página offline e os recursos estáticos
+dela (ícones, CSS) — nunca páginas autenticadas, respostas de `/api/chat`, Server Actions ou
+chamadas ao Supabase (privacidade acima de tudo: em um aparelho compartilhado, nenhum conteúdo
+íntimo pode ficar legível fora da sessão)
+
+**Given** um novo deploy do app
+**When** o usuário abre o app instalado
+**Then** a nova versão do service worker assume sem deixar o usuário preso numa versão antiga
+(caches de versões anteriores são removidos na ativação)
+
+**Given** requisições ao manifest, ao service worker, aos ícones e à página offline
+**When** passam pelo `proxy.ts`
+**Then** o `matcher` as exclui, sem disparar `supabase.auth.getUser()`
+
+**Given** um usuário já logado no Chrome do celular
+**When** abre o app instalado
+**Then** continua logado (mesma sessão por cookies), e os links de e-mail de convite e de
+redefinição de senha continuam funcionando via `/auth/callback` (ADR 0006)
+
+**Given** a entrega da história
+**When** os testes rodam
+**Then** há testes Vitest para os campos do manifest, para a exclusão de rotas no `matcher` do
+proxy e para o componente de registro do service worker (incluindo navegador sem suporte)
+**And** o teste manual registra a instalação num Android real e a página offline em modo avião
+
+### Story 6.2: Polimento da Experiência no Celular e Convite de Instalação
+
+As a usuário que usa o Diário no celular,
+I want que as telas se ajustem ao teclado, à barra de gestos e à rotação, e saber que posso
+instalar o app,
+So that a experiência pareça de um app de verdade, sem que o app me pressione.
+
+**Acceptance Criteria:**
+
+**Given** o layout raiz
+**When** o app é exibido em um Android com barra de gestos ou recorte de câmera
+**Then** o `viewport` declara `viewport-fit=cover` e o conteúdo e a `PrimaryNav` respeitam as
+áreas seguras (`env(safe-area-inset-*)`), sem nada escondido sob barras do sistema
+
+**Given** as telas de autenticação e a Home
+**When** o teclado virtual abre (ex.: digitando senha, ou mensagem no chat)
+**Then** o campo em foco e o botão de ação continuam visíveis (`100vh` substituído por `100dvh` em
+`auth/page.module.css` e `page.module.css`)
+
+**Given** qualquer tela do app
+**When** se audita o tamanho de fonte
+**Then** nenhum texto fica abaixo de 14px (NFR6), incluindo o selo de profundidade do chat
+(`.mobileDepthBadge`, hoje 11px)
+
+**Given** um celular de 4,5" a 6,7" em paisagem
+**When** o usuário usa chat, Home, Histórico, Insights e Configurações
+**Then** todas as telas permanecem utilizáveis, sem conteúdo cortado e sem scroll horizontal, e o
+composer do chat continua acessível com o teclado aberto
+
+**Given** o navegador oferece instalação (`beforeinstallprompt`) e o app ainda não está instalado
+**When** o usuário abre Configurações
+**Then** vê um item discreto "Instalar o Diário na tela inicial", com uma linha de explicação
+**And** ao tocar, o prompt nativo de instalação do Android é aberto
+**And** se o app já roda instalado (`display-mode: standalone`) ou o navegador não suporta o
+evento, o item não aparece
+**And** não há banner, pop-up, lembrete ou convite de instalação em nenhuma outra tela
+
+**Given** a entrega da história
+**When** os testes rodam
+**Then** há testes Vitest para o item de instalação (visível/oculto conforme suporte e estado
+instalado) e para os ajustes testáveis de layout
+**And** o teste manual percorre as telas principais em portrait e landscape num Android real

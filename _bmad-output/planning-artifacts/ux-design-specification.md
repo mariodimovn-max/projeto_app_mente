@@ -267,6 +267,19 @@ Não é chat superficial. Não é questionário. É exploração estruturada mas
 - Secundário: Desktop/tablet para consultar histórico ou revisitar insights — ambos
 - Uso particular: Escritório de casa após trabalho — pode ser áudio ou texto conforme preferência
 
+### Instalação e Uso Offline (PWA)
+
+> Adicionado via correct-course de 2026-11-13 (Epic 6).
+
+- **Instalação:** o app é um PWA instalável no Android (sem loja no MVP). O convite para instalar
+  vive **apenas** em Configurações, como item discreto exibido só quando o navegador permite a
+  instalação e o app ainda não está instalado — sem banners, pop-ups ou lembretes. Coerente com o
+  princípio de não pressionar o usuário.
+- **Ícone:** provisório, derivado da paleta Aura (fundo noturno, marca em teal). Arte final pendente.
+- **Sem conexão:** página offline honesta ("suas conversas precisam de internet"), no visual do app.
+  Nenhum conteúdo de conversa é guardado no aparelho para uso offline.
+- **Layout:** respeita áreas seguras (barra de gestos/recorte), teclado virtual (`dvh`) e paisagem.
+
 ### Effortless Interactions
 
 **#1: Começar uma Conversa**

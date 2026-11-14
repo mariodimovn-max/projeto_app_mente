@@ -12,6 +12,7 @@
 | [0004](0004-audit-log-sem-fk.md) | `audit_log.user_id` sem FK — sobrevive à exclusão da conta | Trilha de auditoria, exclusão de conta |
 | [0005](0005-resumo-deterministico-sem-ia.md) | Resumos periódicos calculados deterministicamente, sem nova chamada à IA | Resumos semanal/mensal, qualquer feature futura de agregação de insights |
 | [0006](0006-fluxo-implicito-templates-email-free-tier.md) | Links de e-mail usam template padrão do Supabase e caem em `/auth/callback` (free tier não permite editar templates) | Convite, recuperação de senha, config de Auth no Supabase |
+| [0007](0007-pwa-instalavel-twa-como-evolucao.md) | Android via PWA instalável (SW sem cache de dados); TWA como evolução; Capacitor/React Native descartados | Manifest, service worker, ícones, convite de instalação, qualquer proposta de app nativo/loja |
 
 ## Convenção
 
