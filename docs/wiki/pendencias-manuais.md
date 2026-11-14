@@ -80,6 +80,25 @@ separados** — raiz e `apps/web` são `package.json`/lockfile independentes, n�
 instalado nem medição atual; ligar o gate às cegas poderia travar todo PR. Antes de ligar esse gate,
 alguém precisa instalar o pacote de cobertura e medir a baseline real primeiro.
 
+## Recuperação de senha (login do Mario bloqueado, 2026-11-13)
+
+Na verificação da Story 6.2, o login local deu "senha errada", e "Esqueci a senha" não enviou o
+e-mail. O app escondia o erro real; isso foi corrigido em 2026-11-13 (ver
+[auth.md](auth.md#gotchas-conhecidos)). Para destravar:
+
+1. Subir o app na **porta 3000** (`npm run dev --prefix apps/web` ou build + start). É a única porta
+   aceita nos redirects do Supabase.
+2. Em `/auth/esqueci-senha`, pedir o link de novo.
+3. Se aparecer "Não conseguimos enviar o e-mail de redefinição agora…", o terminal do servidor mostra
+   `[requestPasswordReset] … { status, code }`. Códigos esperados:
+   - `email_address_not_authorized`: o e-mail da conta não é membro da organização no Supabase, e o
+     provedor de e-mail padrão só envia para membros. Ou adicione o endereço como membro da
+     organização, ou configure SMTP próprio (ADR 0006).
+   - `over_email_send_rate_limit` / 429: o limite de 2 e-mails/hora foi atingido. Espere 1 hora.
+4. Alternativa sem e-mail: no painel do Supabase, em **Authentication → Users**, localizar o usuário e
+   usar **Send password recovery** (sujeito às mesmas regras do provedor de e-mail). Ou, com a
+   `SUPABASE_SERVICE_ROLE_KEY` configurada, definir uma senha nova via admin API.
+
 ## Testar o PWA num Android real
 
 Pendente desde as Stories 6.1 e 6.2 (2026-11-13). Tudo que dava para verificar no Chrome do
