@@ -42,6 +42,18 @@ a {
   text-decoration: none;
 }
 
+/* Story 6.2 (ADR 0008): controles de formulário não herdam a fonte da página — sem isto o
+   navegador aplica 13,33px e a fonte do sistema a todo <button>/<input> cuja classe não define
+   fonte (achado na verificação manual; o guarda de CSS não enxerga esse caso, pois não há literal).
+   Classes de componente que definem `font` continuam prevalecendo por especificidade. */
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: var(--fs-sm);
+}
+
 .container {
   max-width: var(--content-max-width);
   margin: 0 auto;
