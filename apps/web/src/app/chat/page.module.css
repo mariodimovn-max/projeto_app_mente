@@ -1,7 +1,7 @@
 .main {
   display: flex;
   flex: 1;
-  min-height: 100dvh;
+  min-height: var(--app-height);
   background: radial-gradient(130% 55% at 50% 8%, #123138 0%, #0b171b 40%, #080f12 100%);
 }
 

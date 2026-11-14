@@ -65,4 +65,9 @@
      do indicador de início em iOS — sem isso, em iPhones a barra fica mais alta
      que o espaço reservado e cobre o fim do conteúdo (ex.: o composer do chat). */
   --nav-height: calc(76px + env(safe-area-inset-bottom));
+
+  /* Altura útil da tela (Story 6.2). Com viewport-fit=cover o body ganha padding-top de
+     safe-area-inset-top; telas de altura cheia usam este valor em vez de 100dvh puro para que
+     a soma não passe da tela e gere uma rolagem fantasma. Onde o inset é 0, equivale a 100dvh. */
+  --app-height: calc(100dvh - env(safe-area-inset-top));
 }

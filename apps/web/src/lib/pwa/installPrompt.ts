@@ -75,6 +75,10 @@ export async function promptInstall(): Promise<void> {
   try {
     await event.prompt();
     await event.userChoice;
+  } catch (error: unknown) {
+    // Ex.: prompt() fora de um gesto do usuário. Não há o que o usuário possa fazer além de usar o
+    // menu do navegador; o item some (o evento é descartado abaixo) e o erro vai só para o console.
+    console.error("Falha ao abrir o prompt de instalação", error);
   } finally {
     deferredPrompt = null;
     promptInFlight = false;

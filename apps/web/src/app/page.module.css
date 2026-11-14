@@ -45,7 +45,7 @@
   gap: var(--space);
   text-align: center;
   width: 100%;
-  min-height: 100dvh;
+  min-height: var(--app-height);
   padding: var(--space-lg) var(--space);
   background: radial-gradient(120% 80% at 50% 18%, var(--color-surface-alt) 0%, #0c1c22 42%, var(--color-bg) 100%);
 }

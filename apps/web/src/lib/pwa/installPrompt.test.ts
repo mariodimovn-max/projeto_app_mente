@@ -127,6 +127,23 @@ describe("installPrompt", () => {
     expect(getInstallPromptState()).toBe("unavailable");
   });
 
+  it("se o prompt nativo falhar, não lança: registra no console e descarta o evento", async () => {
+    startInstallPromptCapture();
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    const event = Object.assign(new Event("beforeinstallprompt", { cancelable: true }), {
+      prompt: vi.fn().mockRejectedValue(new DOMException("sem gesto", "NotAllowedError")),
+      userChoice: new Promise(() => {}),
+      platforms: ["web"],
+    });
+    window.dispatchEvent(event);
+
+    await expect(promptInstall()).resolves.toBeUndefined();
+
+    expect(consoleError).toHaveBeenCalled();
+    expect(getInstallPromptState()).toBe("unavailable");
+    consoleError.mockRestore();
+  });
+
   it("promptInstall sem evento guardado não faz nada nem lança", async () => {
     startInstallPromptCapture();
     await expect(promptInstall()).resolves.toBeUndefined();
