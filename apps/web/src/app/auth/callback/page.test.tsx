@@ -2,9 +2,10 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { replaceMock, setSessionMock } = vi.hoisted(() => ({
+const { replaceMock, setSessionMock, exchangeCodeForSessionMock } = vi.hoisted(() => ({
   replaceMock: vi.fn(),
   setSessionMock: vi.fn(),
+  exchangeCodeForSessionMock: vi.fn(),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -12,7 +13,9 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@/lib/supabase/client", () => ({
-  createClient: () => ({ auth: { setSession: setSessionMock } }),
+  createClient: () => ({
+    auth: { setSession: setSessionMock, exchangeCodeForSession: exchangeCodeForSessionMock },
+  }),
 }));
 
 import AuthCallbackPage from "./page";
@@ -25,6 +28,7 @@ describe("AuthCallbackPage", () => {
   beforeEach(() => {
     replaceMock.mockReset();
     setSessionMock.mockReset();
+    exchangeCodeForSessionMock.mockReset();
     setUrl("/auth/callback");
   });
 
@@ -83,5 +87,31 @@ describe("AuthCallbackPage", () => {
     render(<AuthCallbackPage />);
 
     await waitFor(() => expect(replaceMock).toHaveBeenCalledWith("/auth?erro=convite-invalido"));
+  });
+
+  it("recuperação PKCE: troca o code pela sessão e segue para redefinir senha", async () => {
+    setUrl("/auth/callback?next=/auth/redefinir-senha&code=abc-123");
+    exchangeCodeForSessionMock.mockResolvedValue({
+      data: { session: { user: { id: "u1" } } },
+      error: null,
+    });
+
+    render(<AuthCallbackPage />);
+
+    await waitFor(() => expect(replaceMock).toHaveBeenCalledWith("/auth/redefinir-senha"));
+    expect(exchangeCodeForSessionMock).toHaveBeenCalledWith("abc-123");
+    expect(setSessionMock).not.toHaveBeenCalled();
+  });
+
+  it("recuperação PKCE: code rejeitado (ex.: aberto em outro navegador) vai para o erro de link", async () => {
+    setUrl("/auth/callback?next=/auth/redefinir-senha&code=abc-123");
+    exchangeCodeForSessionMock.mockResolvedValue({
+      data: { session: null },
+      error: { message: "code verifier not found" },
+    });
+
+    render(<AuthCallbackPage />);
+
+    await waitFor(() => expect(replaceMock).toHaveBeenCalledWith("/auth?erro=link-invalido"));
   });
 });

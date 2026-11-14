@@ -17,12 +17,12 @@ export default function AuthCallbackPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const { next, errorRedirect, tokens } = resolveCallback(
+    const { next, errorRedirect, tokens, code } = resolveCallback(
       window.location.search,
       window.location.hash
     );
 
-    if (!tokens) {
+    if (!tokens && !code) {
       router.replace(errorRedirect);
       return;
     }
@@ -32,10 +32,17 @@ export default function AuthCallbackPage() {
     async function establishSession() {
       let hasSession = false;
       try {
-        // setSession() valida os tokens e grava a sessão nos cookies (storage do @supabase/ssr),
-        // de onde as páginas seguintes a leem no servidor. Não dá para contar com a detecção
-        // automática do fragmento: o client está em modo PKCE e descarta fragmentos implícitos.
-        const { data } = await createClient().auth.setSession(tokens);
+        const supabase = createClient();
+        // Fluxo implícito: setSession() valida os tokens e grava a sessão nos cookies (storage
+        // do @supabase/ssr), de onde as páginas seguintes a leem no servidor. Não dá para contar
+        // com a detecção automática do fragmento: o client está em modo PKCE e descarta
+        // fragmentos implícitos.
+        // Fluxo PKCE (recuperação de senha): troca o `code` pela sessão usando o code_verifier
+        // que ficou em cookie quando o pedido foi feito — por isso o link precisa ser aberto no
+        // mesmo navegador em que "Esqueci a senha" foi usado.
+        const { data } = tokens
+          ? await supabase.auth.setSession(tokens)
+          : await supabase.auth.exchangeCodeForSession(code!);
         hasSession = Boolean(data.session);
       } catch {
         hasSession = false;
