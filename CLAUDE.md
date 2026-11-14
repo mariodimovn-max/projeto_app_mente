@@ -119,7 +119,7 @@ Aplicativo de diário digital que funciona como **espelho reflexivo** — não t
 | Crash rate | ≤ 0.1% |
 | Cobertura de testes | ≥ 80% |
 | Acessibilidade | WCAG 2.1 AA |
-| Fonte mínima | 14px |
+| Fonte mínima | 14px (conteúdo/interação); 12px só via `--fs-xs` para rótulos decorativos — ver ADR 0008 |
 | Dark mode | Obrigatório |
 
 ---
@@ -147,7 +147,7 @@ Aplicativo de diário digital que funciona como **espelho reflexivo** — não t
 - [x] Ajuste de UI fora do sprint de épicos (layout de duas colunas da Home + saudação gerada por IA) — ver [docs/wiki/ui-e-navegacao.md](docs/wiki/ui-e-navegacao.md)
 - [x] Correct-course pré-beta (ver `_bmad-output/planning-artifacts/sprint-change-proposal-2026-08-23.md`) — bugs de chat corrigidos em [docs/wiki/conversa-e-memoria.md](docs/wiki/conversa-e-memoria.md); CI, `.env.example`, gate de cobertura e runbooks de deploy/convite em [docs/wiki/pendencias-manuais.md](docs/wiki/pendencias-manuais.md)
 - [x] Reativação do Supabase (nov/2026) — projeto `diario-bem-estar-prod` linkado via CLI, migrations aplicadas com `db push`, config de Auth em `supabase/config.toml`; links de e-mail passam por `/auth/callback` (ver [docs/adr/0006](docs/adr/0006-fluxo-implicito-templates-email-free-tier.md) e [docs/wiki/pendencias-manuais.md](docs/wiki/pendencias-manuais.md))
-- [ ] Epic 6 — App Instalável no Android (PWA) — Story 6.1 (instalável) concluída, ver [docs/wiki/ui-e-navegacao.md](docs/wiki/ui-e-navegacao.md); Story 6.2 (polimento mobile + convite de instalação) pendente; ver `_bmad-output/planning-artifacts/sprint-change-proposal-2026-11-13.md` e [docs/adr/0007](docs/adr/0007-pwa-instalavel-twa-como-evolucao.md)
+- [x] Epic 6 — App Instalável no Android (PWA) — Stories 6.1 (instalável) e 6.2 (polimento mobile, tipografia híbrida e convite de instalação) concluídas, ver [docs/wiki/ui-e-navegacao.md](docs/wiki/ui-e-navegacao.md); teste num Android real pendente em [docs/wiki/pendencias-manuais.md](docs/wiki/pendencias-manuais.md); ver `_bmad-output/planning-artifacts/sprint-change-proposal-2026-11-13.md` e [docs/adr/0007](docs/adr/0007-pwa-instalavel-twa-como-evolucao.md)
 
 > O estado consolidado por tópico (o que foi construído, decisões, gotchas, pendências) vive em `docs/wiki/` — comece por [docs/wiki/index.md](docs/wiki/index.md). Decisões pontuais/cross-cutting vivem em `docs/adr/` — comece por [docs/adr/index.md](docs/adr/index.md). Detalhes linha a linha de cada história (arquivos alterados, achados de code review) ficam no histórico do git.
 

@@ -1,12 +1,12 @@
 ---
 titulo: Navegação Principal, Layout da Home e PWA (Android)
 epico: "4, ajuste fora do sprint, 6"
-status: "em andamento"
+status: completo
 ultima_atualizacao: 2026-11-13
 depende_de: [auth]
-relacionado: [insights-e-resumos, conversa-e-memoria, pendencias-manuais]
-decisoes: [0007-pwa-instalavel-twa-como-evolucao]
-tags: [nav, home, layout, design-system, saudacao-ia, pwa, android, service-worker]
+relacionado: [insights-e-resumos, conversa-e-memoria, pendencias-manuais, lgpd-e-privacidade]
+decisoes: [0007-pwa-instalavel-twa-como-evolucao, 0008-fonte-minima-hibrida-nfr6]
+tags: [nav, home, layout, design-system, saudacao-ia, pwa, android, service-worker, safe-area, tipografia]
 ---
 
 # Navegação Principal, Layout da Home e PWA (Android)
@@ -31,8 +31,17 @@ tags: [nav, home, layout, design-system, saudacao-ia, pwa, android, service-work
   - `themeColor` `#080f12` no `viewport`;
   - service worker mínimo que mostra `offline.html` quando uma navegação falha por falta de rede.
 
-  O Chrome reporta o app como instalável, sem erros. A Story 6.2 (polimento mobile + convite de
-  instalação em Configurações) ainda está pendente.
+  O Chrome reporta o app como instalável, sem erros.
+- **Story 6.2 — Polimento mobile e convite de instalação:**
+  - **Áreas seguras:** `viewport-fit=cover`. O `body` tem padding de topo e laterais, a `PrimaryNav`
+    trata as laterais e os overlays tratam os quatro lados.
+  - **Altura:** as telas de altura cheia usam `--app-height` (`100dvh` menos o inset do topo).
+  - **Caixas de diálogo:** rolam por dentro em telas baixas.
+  - **Tipografia híbrida (ADR 0008):** 14px para conteúdo e interação, 12px só via `--fs-xs` para
+    rótulos decorativos e metadados. Há um guarda automatizado e um reset de fonte em controles de
+    formulário.
+  - **Convite de instalação:** item discreto "Instalar o Diário na tela inicial" em Configurações,
+    só visível quando o Chrome oferece a instalação.
 
 ## Onde está no código
 
@@ -48,6 +57,13 @@ tags: [nav, home, layout, design-system, saudacao-ia, pwa, android, service-work
   - `apps/web/src/components/pwa/ServiceWorkerRegistrar.tsx`: renderizado no `layout.tsx`.
   - `apps/web/public/sw.js` e `apps/web/public/offline.html`.
   - Headers do `/sw.js` em `apps/web/next.config.ts`; exclusões no matcher de `apps/web/src/proxy.ts`.
+- Mobile e instalação (Story 6.2):
+  - `apps/web/src/lib/pwa/installPrompt.ts`: guarda o `beforeinstallprompt`.
+  - `apps/web/src/components/settings/InstallAppItem.tsx`.
+  - `apps/web/src/types/before-install-prompt.d.ts`.
+  - Tokens `--fs-xs` e `--app-height` em `apps/web/src/styles/variables.css`.
+  - Áreas seguras e reset de controles de formulário em `apps/web/src/app/globals.css`.
+  - Guarda de tipografia em `apps/web/src/lib/a11y/typography.test.ts`.
 
 ## Decisões e padrões
 
@@ -74,6 +90,27 @@ tags: [nav, home, layout, design-system, saudacao-ia, pwa, android, service-work
   rota do Next: os assets do Next têm hash de build e não estariam disponíveis offline.
 - **PWA — SW só registra em produção** (`next build && next start`); em dev ele atrapalharia o HMR.
 
+- **Convite de instalação — só em Configurações, sem pressão.**
+  - O `beforeinstallprompt` dispara uma vez, no carregamento da primeira página. Por isso a captura
+    começa no layout raiz (`ServiceWorkerRegistrar` chama `startInstallPromptCapture()`, em
+    qualquer ambiente) e o evento fica guardado em `lib/pwa/installPrompt.ts`.
+  - `preventDefault()` suprime o mini-infobar do Chrome.
+  - Cada evento serve para um único `prompt()` e é descartado depois da escolha.
+  - O item some quando o app já roda instalado (`display-mode: standalone`) ou acabou de ser
+    instalado.
+  - Nada é persistido: sem `localStorage` de "já recusou".
+- **Tipografia (ADR 0008):** nenhum CSS declara fonte literal abaixo de 14px. Texto menor só via
+  `var(--fs-xs)`, e apenas para rótulos decorativos e metadados. O `typography.test.ts` falha se isso
+  for violado.
+- **Áreas seguras:**
+  - **Inset inferior:** fica só na `PrimaryNav`, via `--nav-height`. Somar no `body` contaria duas vezes.
+  - **Inset do topo:** fica no `body`, e por isso telas de altura cheia usam `--app-height`, não
+    `100dvh` puro. Sem isso, aparelhos com recorte no topo ganham uma rolagem fantasma.
+  - **Elementos fixos (nav, overlays):** não herdam o padding do `body` e tratam os insets por
+    conta própria.
+- **Sem `interactiveWidget` no viewport:** o padrão do Chrome Android deixa a nav fixa atrás do
+  teclado em vez de empurrá-la para cima.
+
 ## Gotchas conhecidos
 
 - Sair de `/chat` pela nav e voltar dependia de retomar a sessão em andamento — sem isso,
@@ -86,14 +123,20 @@ tags: [nav, home, layout, design-system, saudacao-ia, pwa, android, service-work
 - **PWA — matcher do proxy:** excluir um path também pula as Server Actions dele. Só arquivos do PWA
   sem Server Action estão excluídos; o teste em `proxy.test.ts` (`unstable_doesMiddlewareMatch`)
   garante que as rotas do app continuam passando.
+- **`<button>`/`<input>` não herdam fonte por padrão.** O navegador aplica 13,33px e a fonte do
+  sistema. O reset em `globals.css` corrige isso; o guarda de CSS não pega esse caso, porque não há
+  literal no CSS.
+- **Emular áreas seguras na verificação:** `Emulation.setSafeAreaInsetsOverride` (DevTools Protocol)
+  funciona no Chrome atual e foi usado na Story 6.2.
 
 ## Pendências
 
 Ver [pendencias-manuais.md](pendencias-manuais.md) — migration de `user_patterns_daily_greeting`
 precisa ser aplicada manualmente no Supabase; teste manual em navegador pendente do usuário.
 
-- **Story 6.1 — teste num Android real** (instalar, abrir em tela cheia, sessão preservada, modo
-  avião): passo a passo em [pendencias-manuais.md](pendencias-manuais.md#testar-o-pwa-num-android-real).
-- **Story 6.2** (backlog): `viewport-fit=cover` + safe areas, `100vh` → `100dvh` em `auth/` e na Home,
-  fonte de 11px do `.mobileDepthBadge`, paisagem, item "Instalar" em Configurações.
+- **Stories 6.1 e 6.2 — teste num Android real.** Itens: instalar, tela cheia, sessão preservada,
+  modo avião, item "Instalar" em Configurações, teclado e paisagem nas **telas com login**
+  (dashboard, chat, histórico, insights, configurações e diálogos). Essas telas não puderam ser
+  auditadas por emulação porque o login falhou no teste local. Passo a passo em
+  [pendencias-manuais.md](pendencias-manuais.md#testar-o-pwa-num-android-real).
 - Arte final do ícone (hoje provisória): trocar só `src/lib/pwa/appIcon.tsx`.

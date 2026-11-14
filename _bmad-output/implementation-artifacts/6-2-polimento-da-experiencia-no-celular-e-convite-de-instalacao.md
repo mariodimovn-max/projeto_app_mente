@@ -1,6 +1,6 @@
 # Story 6.2: Polimento da Experiência no Celular e Convite de Instalação
 
-Status: ready-for-dev
+Status: done
 
 <!-- Origem: correct-course de 2026-11-13 — _bmad-output/planning-artifacts/sprint-change-proposal-2026-11-13.md -->
 
@@ -54,31 +54,31 @@ so that a experiência pareça de um app de verdade, sem que o app me pressione.
 
 ## Tasks / Subtasks
 
-- [ ] **Task 1 — Viewport e áreas seguras (AC: 1)**
-  - [ ] 1.1 Em `src/app/layout.tsx`, acrescentar `viewportFit: "cover"` ao `viewport` existente (já
+- [x] **Task 1 — Viewport e áreas seguras (AC: 1)**
+  - [x] 1.1 Em `src/app/layout.tsx`, acrescentar `viewportFit: "cover"` ao `viewport` existente (já
         tem `themeColor` e `colorScheme` da 6.1). **Não** definir `interactiveWidget`: o padrão do
         Chrome Android (`resizes-visual`) mantém a `PrimaryNav` fixa atrás do teclado em vez de
         empurrá-la para cima, comendo a área útil.
-  - [ ] 1.2 `src/app/globals.css`: no `body`, adicionar `padding-top: env(safe-area-inset-top)`,
+  - [x] 1.2 `src/app/globals.css`: no `body`, adicionar `padding-top: env(safe-area-inset-top)`,
         `padding-left: env(safe-area-inset-left)` e `padding-right: env(safe-area-inset-right)`.
         **Não** adicione `padding-bottom`: o inset inferior já é tratado pela `PrimaryNav` (o
         `--nav-height` inclui `safe-area-inset-bottom`). Nas telas **sem** nav (auth, privacidade,
         diálogos), confira no screenshot se o último elemento não fica sob a barra de gestos e, se
         ficar, some o inset no padding inferior **daquela tela**.
-  - [ ] 1.3 `src/components/nav/PrimaryNav.module.css`: o `.nav` é `position: fixed` e não herda o
+  - [x] 1.3 `src/components/nav/PrimaryNav.module.css`: o `.nav` é `position: fixed` e não herda o
         padding do body. Usar `padding-left/right: max(var(--space), env(safe-area-inset-left/right))`.
-  - [ ] 1.4 Overlays fixos (`.overlay` em `src/app/LogoutButton.module.css` e
+  - [x] 1.4 Overlays fixos (`.overlay` em `src/app/LogoutButton.module.css` e
         `src/components/settings/DeleteAccountButton.module.css`): `padding` com
         `max(var(--space), env(safe-area-inset-*))` nos quatro lados.
-- [ ] **Task 2 — Altura com teclado (AC: 2)**
-  - [ ] 2.1 `100vh` → `100dvh` em `app/auth/page.module.css` (`.main`) e `app/page.module.css`
+- [x] **Task 2 — Altura com teclado (AC: 2)**
+  - [x] 2.1 `100vh` → `100dvh` em `app/auth/page.module.css` (`.main`) e `app/page.module.css`
         (`.hero`). São as **duas únicas** ocorrências restantes (auditado em 2026-11-13).
-- [ ] **Task 3 — Tipografia híbrida (AC: 3)**
-  - [ ] 3.1 `src/styles/variables.css`: adicionar `--fs-xs: 0.75rem; /* 12px — SÓ rótulos
+- [x] **Task 3 — Tipografia híbrida (AC: 3)**
+  - [x] 3.1 `src/styles/variables.css`: adicionar `--fs-xs: 0.75rem; /* 12px — SÓ rótulos
         decorativos mono em caixa alta e metadados (horários, contadores); ver ADR 0008 */`.
         **Replicar** em `_bmad-output/planning-artifacts/design-system/variables.css` (o comentário do
         topo de `variables.css` exige isso).
-  - [ ] 3.2 Percorrer **todas** as ocorrências abaixo de 14px (lista completa em Dev Notes →
+  - [x] 3.2 Percorrer **todas** as ocorrências abaixo de 14px (lista completa em Dev Notes →
         "Auditoria de fontes") e classificar cada uma:
         - **decorativo/meta** (tem `text-transform: uppercase` + `letter-spacing` e é rótulo, ou é
           horário, contador ou data curta) → `var(--fs-xs)`;
@@ -87,29 +87,29 @@ so that a experiência pareça de um app de verdade, sem que o app me pressione.
 
         Ao usar o shorthand `font:`, manter peso e família, por exemplo
         `font: 400 0.6875rem var(--font-mono)` vira `font: 400 var(--fs-xs) var(--font-mono)`.
-  - [ ] 3.3 Casos especiais:
+  - [x] 3.3 Casos especiais:
         - `app/page.module.css:84` usa `clamp(0.6875rem, 0.2vw + 0.6rem, 0.8125rem)`; substituir pelo
           token adequado e remover o `clamp`;
         - `SynthesisReactionDock.module.css:59` tem 0.5625rem (9px). Verificar o que é: se for o rótulo
           de um emoji, vira `--fs-xs`; se for texto lido, `--fs-sm`;
         - `PersonalMilestones.module.css:80` e `SummaryCard.module.css:174` usam `font-size: 0.75rem`
           sem shorthand: classificar igual.
-  - [ ] 3.4 Depois da troca, **checar visualmente** cada componente afetado (Task 6). Os textos maiores
+  - [x] 3.4 Depois da troca, **checar visualmente** cada componente afetado (Task 6). Os textos maiores
         podem quebrar linha em chips, botões compactos e na `PrimaryNav`. Ajustar `gap`, `padding`,
         `white-space` ou `min-width` onde preciso, sem voltar a reduzir a fonte. Se o `.item` da nav
         crescer, revisar os `76px` de `--nav-height`.
-  - [ ] 3.5 Criar `src/lib/a11y/typography.test.ts`, um guarda no mesmo espírito do `contrast.test.ts`:
+  - [x] 3.5 Criar `src/lib/a11y/typography.test.ts`, um guarda no mesmo espírito do `contrast.test.ts`:
         - ler todos os `src/**/*.css`;
         - extrair valores de `font-size:` e do tamanho dentro de `font:` (shorthand), sempre que
           forem `rem`, `em` ou `px` literais (inclusive dentro de `clamp()`/`calc()`);
         - falhar se algum for < 0.875rem (14px), listando arquivo:linha no erro;
         - `var(--fs-*)` passa (os tokens já são testados no `contrast.test.ts`);
         - **adicionar** a esse arquivo um teste de que `--fs-xs` vale 12px.
-- [ ] **Task 4 — Paisagem e diálogos (AC: 4)**
-  - [ ] 4.1 `.dialog` em `LogoutButton.module.css` e `DeleteAccountButton.module.css`:
+- [x] **Task 4 — Paisagem e diálogos (AC: 4)**
+  - [x] 4.1 `.dialog` em `LogoutButton.module.css` e `DeleteAccountButton.module.css`:
         `max-height: calc(100dvh - 2 * var(--space))` + `overflow-y: auto`. O diálogo de excluir conta
         tem campo de confirmação e botões no fim, que precisam ser alcançáveis em 360px de altura.
-  - [ ] 4.2 Auditar cada tela em paisagem por emulação (Task 6.2) e corrigir o que cortar. Pontos de
+  - [x] 4.2 Auditar cada tela em paisagem por emulação (Task 6.2) e corrigir o que cortar. Pontos de
         atenção já conhecidos:
         - a `PrimaryNav` fixa ocupa cerca de 76px de cerca de 360px. Se a auditoria mostrar perda real
           de área útil, um `@media (orientation: landscape) and (max-height: 500px)` pode compactá-la
@@ -118,14 +118,14 @@ so that a experiência pareça de um app de verdade, sem que o app me pressione.
         - os heros de auth e Home (`min-height: 100dvh`, conteúdo centralizado) têm de rolar, e não
           cortar, quando o conteúdo passa de 360px;
         - o chat (`.shell` 100dvh, `.history` com `overflow-y: auto`) com o teclado aberto.
-  - [ ] 4.3 Nenhuma tela pode ter scroll horizontal (`document.documentElement.scrollWidth <=
+  - [x] 4.3 Nenhuma tela pode ter scroll horizontal (`document.documentElement.scrollWidth <=
         innerWidth`) em 640×360 e 915×412.
-- [ ] **Task 5 — Convite de instalação em Configurações (AC: 5)**
-  - [ ] 5.1 `src/types/before-install-prompt.d.ts`: declarar `BeforeInstallPromptEvent`
+- [x] **Task 5 — Convite de instalação em Configurações (AC: 5)**
+  - [x] 5.1 `src/types/before-install-prompt.d.ts`: declarar `BeforeInstallPromptEvent`
         (`prompt(): Promise<void>`, `userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform:
         string }>`) e `WindowEventMap["beforeinstallprompt"]`. O tipo não existe em `lib.dom`.
         Seguir o padrão de `src/types/speech-recognition.d.ts`.
-  - [ ] 5.2 `src/lib/pwa/installPrompt.ts`, armazenamento em nível de módulo (sem dependência nova).
+  - [x] 5.2 `src/lib/pwa/installPrompt.ts`, armazenamento em nível de módulo (sem dependência nova).
         **Por quê:** o evento dispara uma vez, no carregamento da primeira página, e um usuário que
         entra pela Home e navega (client-side) até Configurações perderia o evento se só o componente
         da tela escutasse.
@@ -143,12 +143,12 @@ so that a experiência pareça de um app de verdade, sem que o app me pressione.
           qualquer resultado, porque um `BeforeInstallPromptEvent` só pode ser usado uma vez. Notifica
           os inscritos.
         - Exportar `resetInstallPromptForTests()` (ou equivalente) para isolar os testes.
-  - [ ] 5.3 Chamar `startInstallPromptCapture()` no `useEffect` do `ServiceWorkerRegistrar`
+  - [x] 5.3 Chamar `startInstallPromptCapture()` no `useEffect` do `ServiceWorkerRegistrar`
         **antes** do `return` de "não é produção". A captura do evento não depende do SW e deve
         funcionar também em dev. Renomear o componente é desnecessário; atualizar o comentário do
         topo. Alternativa aceitável: um componente irmão `InstallPromptCapture` no layout. Escolha um
         e justifique no Dev Agent Record.
-  - [ ] 5.4 `src/components/settings/InstallAppItem.tsx` (`"use client"`):
+  - [x] 5.4 `src/components/settings/InstallAppItem.tsx` (`"use client"`):
         - `useSyncExternalStore(subscribeInstallPrompt, getInstallPromptState, () => "unavailable")`;
           o snapshot de servidor `"unavailable"` evita hydration mismatch;
         - renderiza **somente** em `"available"`;
@@ -161,11 +161,11 @@ so that a experiência pareça de um app de verdade, sem que o app me pressione.
           - botão "Instalar".
 
           Enquanto o prompt está aberto, desabilitar o botão.
-  - [ ] 5.5 `src/app/configuracoes/page.tsx`: renderizar `<InstallAppItem />` **depois** do
+  - [x] 5.5 `src/app/configuracoes/page.tsx`: renderizar `<InstallAppItem />` **depois** do
         `<ExportDataButton />` e **antes** do `<DeleteAccountButton />`. A ação destrutiva continua por
         último. Atualizar o comentário do topo ("qualquer preferência futura deve entrar aqui").
-- [ ] **Task 6 — Testes e verificação (AC: 6)**
-  - [ ] 6.1 Testes Vitest:
+- [x] **Task 6 — Testes e verificação (AC: 6)**
+  - [x] 6.1 Testes Vitest:
         - `installPrompt.test.ts`:
           - captura antes de qualquer inscrito;
           - `preventDefault` chamado;
@@ -182,7 +182,7 @@ so that a experiência pareça de um app de verdade, sem que o app me pressione.
           `src/app/layout.tsx`; se o import das fontes `next/font` atrapalhar no Vitest, mova o objeto
           `viewport` para `src/lib/pwa/` e teste lá.
         - Rodar a suíte inteira a partir de `D:\` maiúsculo (gotcha do CLAUDE.md).
-  - [ ] 6.2 Verificação no Chrome real via DevTools Protocol, reaproveitando a abordagem da 6.1
+  - [x] 6.2 Verificação no Chrome real via DevTools Protocol, reaproveitando a abordagem da 6.1
         (`Emulation.setDeviceMetricsOverride` com `mobile: true` e
         `screenOrientation: { type: "landscapePrimary", angle: 90 }`):
         - capturar screenshots de cada tela em 412×915 (portrait) e 915×412 / 640×360 (landscape);
@@ -191,23 +191,23 @@ so that a experiência pareça de um app de verdade, sem que o app me pressione.
         - telas autenticadas precisam de login: **pedir ao Mario uma conta de teste** ou, na falta dela,
           verificar só as públicas (`/`, `/auth`, `/privacidade`, `/offline.html`) e registrar as
           demais como pendência manual.
-  - [ ] 6.3 Convite de instalação em produção (`next build && next start`): o Chrome headless não
+  - [ ] 6.3 **(pendente do Mario — Android real)** Convite de instalação em produção (`next build && next start`): o Chrome headless não
         dispara `beforeinstallprompt` de forma confiável. Verificar pelo teste de unidade e no Android
         real (pendência manual).
-- [ ] **Task 7 — Documentação viva**
-  - [ ] 7.1 **ADR 0008** "NFR6 — fonte mínima: 14px para conteúdo/interação, 12px para rótulos
+- [x] **Task 7 — Documentação viva**
+  - [x] 7.1 **ADR 0008** "NFR6 — fonte mínima: 14px para conteúdo/interação, 12px para rótulos
         decorativos e metadados via `--fs-xs`". Contexto: a Story 1.2 tratou 14–24px como faixa de zoom;
         a auditoria de 2026-11-13 achou cerca de 75 ocorrências entre 9 e 13px; o autor escolheu a
         interpretação híbrida para preservar a identidade Aura. Inclui a regra objetiva de
         classificação e o guarda `typography.test.ts`. Atualizar `docs/adr/index.md`.
-  - [ ] 7.2 `docs/wiki/ui-e-navegacao.md`:
+  - [x] 7.2 `docs/wiki/ui-e-navegacao.md`:
         - convite de instalação (store, supressão do mini-infobar, posição em Configurações);
         - áreas seguras;
         - regra tipográfica;
         - frontmatter (`decisoes` + 0008; status `completo` se o Epic 6 fechar).
-  - [ ] 7.3 `docs/wiki/pendencias-manuais.md`: estender o roteiro do Android real com paisagem e o item
+  - [x] 7.3 `docs/wiki/pendencias-manuais.md`: estender o roteiro do Android real com paisagem e o item
         "Instalar" em Configurações.
-  - [ ] 7.4 `CLAUDE.md`: marcar o Epic 6 como concluído (se for o caso) e, na tabela de NFRs, deixar
+  - [x] 7.4 `CLAUDE.md`: marcar o Epic 6 como concluído (se for o caso) e, na tabela de NFRs, deixar
         "Fonte mínima" apontando para a ADR 0008.
 
 ## Dev Notes
@@ -370,14 +370,77 @@ o `jest-dom` e o `cleanup`. Os nomes dos testes ficam em português. A cobertura
 - [Source: docs/wiki/ui-e-navegacao.md] (PrimaryNav, `--nav-height`, PWA)
 - [Source: apps/web/src/lib/a11y/contrast.test.ts] (padrão de teste que lê tokens de CSS)
 
+## Review Findings
+
+Revisão crítica independente após o commit `d9c50c9`; correções em `a04bec9`. A verificação
+manual gerou mais uma correção, em `f6367c1`.
+
+- [x] [Review][Patch] **(média)** O padding-top de safe area no `body` somado ao
+  `min-height: 100dvh` de 9 telas gerava uma rolagem fantasma em aparelhos com recorte no topo.
+  Corrigido com o token `--app-height` (`100dvh` menos o inset do topo).
+- [x] [Review][Patch] **(média)** Uma rejeição do `prompt()` nativo escapava do clique como
+  promessa sem tratamento. O `promptInstall` agora registra no console e descarta o evento; há teste.
+- [x] [Manual][Patch] **(média)** `<button>`/`<input>` sem fonte na classe renderizavam com 13,33px
+  e a fonte do sistema (o "Entrar" do login). O guarda de CSS não vê esse caso. Corrigido com um reset
+  global em `globals.css`.
+- [x] [Dev][Patch] O guarda `typography.test.ts` pegou o `.icon` do `PrivacySeal` (`0.85em`), que a
+  auditoria em `rem`/`px` não tinha visto. Foi para `--fs-xs`.
+- [x] [Dev][Patch] Na primeira versão, o `promptInstall` descartava o evento antes do prompt, e o item
+  sumia ao toque em vez de ficar desabilitado. Corrigido antes do commit, com teste.
+
 ## Dev Agent Record
 
 ### Agent Model Used
 
+Claude Opus 5.5 (claude-opus-5-5), persona Dev (Amelia), fluxo `/dev-story`
+
 ### Debug Log References
+
+- Decisão de escopo com o autor antes do desenvolvimento: tipografia **híbrida** (ADR 0008). O AC do
+  `epics.md` foi ajustado.
+- A classificação dos tamanhos de fonte seguiu a regra da Task 3.2: 34 viraram `--fs-xs` (incluindo
+  o ícone do `PrivacySeal`) e 37 viraram `--fs-sm`.
+- Caixas de diálogo: usei `max-height: 100%` (relativo ao overlay, que já desconta o espaçamento e
+  os insets) em vez de `calc(100dvh - 2 * var(--space))`, como previa a história.
+- Captura do install prompt: optei por chamá-la no `ServiceWorkerRegistrar` (Task 5.3), já
+  renderizado no layout, em vez de um componente irmão. O comentário do topo foi atualizado.
+- Verificação manual: o Chrome real via DevTools Protocol, com `Emulation.setDeviceMetricsOverride`
+  e `Emulation.setSafeAreaInsetsOverride` (suportado), auditou login, Home pública e privacidade em
+  412×915, 915×412 e 640×360. As **telas com login não foram auditadas**: o login do autor falhou
+  ("senha errada"), e a recuperação de senha não enviou e-mail. Isso levou ao bug do erro engolido em
+  `requestPasswordReset`, tratado em commit separado.
+- O script de auditoria teve dois bugs próprios (detecção prematura de login), corrigidos. Nenhum
+  dado do usuário foi tocado: o script só abre as caixas de diálogo, nunca clica dentro delas.
 
 ### Completion Notes List
 
 - Ultimate context engine analysis completed - comprehensive developer guide created
+- Suíte completa: 82 arquivos e 661 testes passando (25 novos ou alterados); typecheck e lint sem erros
+  (lint validado sem a pasta local `.next.bak-stale-cache`).
+- Verificação manual das telas públicas: sem scroll horizontal; menor texto interativo de 14px; menor
+  texto decorativo de 12px; recorte simulado respeitado.
+- Pendente no Android real: telas com login em portrait e paisagem, caixas de diálogo, teclado no chat
+  e item "Instalar" (o Chrome headless não dispara `beforeinstallprompt`). Roteiro em
+  `docs/wiki/pendencias-manuais.md`.
 
 ### File List
+
+- apps/web/src/app/layout.tsx (viewportFit cover)
+- apps/web/src/app/layout.test.ts (novo)
+- apps/web/src/app/globals.css (safe areas + reset de controles)
+- apps/web/src/styles/variables.css (--fs-xs, --app-height)
+- _bmad-output/planning-artifacts/design-system/variables.css (réplica dos tokens)
+- apps/web/src/components/nav/PrimaryNav.module.css
+- apps/web/src/app/LogoutButton.module.css, apps/web/src/components/settings/DeleteAccountButton.module.css
+- apps/web/src/app/{auth,chat,configuracoes,historico,historico/[sessionId],insights,privacidade}/page.module.css, apps/web/src/app/page.module.css
+- 21 arquivos `*.module.css` de components/ (tokens de fonte)
+- apps/web/src/components/privacy/PrivacySeal.module.css
+- apps/web/src/lib/pwa/installPrompt.ts + .test.ts (novos)
+- apps/web/src/components/settings/InstallAppItem.tsx + .module.css + .test.tsx (novos)
+- apps/web/src/types/before-install-prompt.d.ts (novo)
+- apps/web/src/components/pwa/ServiceWorkerRegistrar.tsx + .test.tsx
+- apps/web/src/app/configuracoes/page.tsx
+- apps/web/src/lib/a11y/typography.test.ts (novo)
+- docs/adr/0008-fonte-minima-hibrida-nfr6.md (novo), docs/adr/index.md
+- docs/wiki/ui-e-navegacao.md, docs/wiki/pendencias-manuais.md, docs/wiki/index.md
+- CLAUDE.md

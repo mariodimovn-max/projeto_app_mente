@@ -13,6 +13,7 @@
 | [0005](0005-resumo-deterministico-sem-ia.md) | Resumos periódicos calculados deterministicamente, sem nova chamada à IA | Resumos semanal/mensal, qualquer feature futura de agregação de insights |
 | [0006](0006-fluxo-implicito-templates-email-free-tier.md) | Links de e-mail usam template padrão do Supabase e caem em `/auth/callback` (free tier não permite editar templates) | Convite, recuperação de senha, config de Auth no Supabase |
 | [0007](0007-pwa-instalavel-twa-como-evolucao.md) | Android via PWA instalável (SW sem cache de dados); TWA como evolução; Capacitor/React Native descartados | Manifest, service worker, ícones, convite de instalação, qualquer proposta de app nativo/loja |
+| [0008](0008-fonte-minima-hibrida-nfr6.md) | Fonte mínima (NFR6) híbrida: 14px para conteúdo/interação, 12px só para rótulos decorativos e metadados via `--fs-xs` (com guarda automatizado) | Qualquer CSS que defina tamanho de fonte; novos componentes |
 
 ## Convenção
 

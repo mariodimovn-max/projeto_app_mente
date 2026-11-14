@@ -82,10 +82,15 @@ alguém precisa instalar o pacote de cobertura e medir a baseline real primeiro.
 
 ## Testar o PWA num Android real
 
-Pendente desde a Story 6.1 (2026-11-13). Tudo que dava para verificar no Chrome do computador
-passou: manifest sem erros, instalável, cache só com `offline.html`, página offline, troca de versão
-do SW. Falta confirmar no aparelho que o app abre em tela cheia e que a sessão se mantém. Não precisa
-de deploy:
+Pendente desde as Stories 6.1 e 6.2 (2026-11-13). Tudo que dava para verificar no Chrome do
+computador passou:
+
+- manifest sem erros e app instalável;
+- cache só com `offline.html`, página offline e troca de versão do SW;
+- login, Home pública e privacidade em portrait e paisagem, com áreas seguras simuladas.
+
+As **telas com login** não foram auditadas: o login falhou no teste local (ver "Recuperação de
+senha" abaixo). Falta confirmar no aparelho, e não precisa de deploy:
 
 1. No computador: `npm run build --prefix apps/web && npm run start --prefix apps/web`. O SW só
    registra em produção, e a porta precisa ser 3000, que é a que o Supabase aceita nos redirects.
@@ -98,7 +103,16 @@ de deploy:
    - menu ⋮ > **Instalar app** (ou "Adicionar à tela inicial");
    - abrir pelo ícone: tela cheia, sem barra de URL, barra de status escura;
    - fazer login, fechar o app e reabrir: continua logado;
-   - modo avião + trocar de tela: aparece "Sem conexão".
+   - modo avião + trocar de tela: aparece "Sem conexão";
+   - **antes** de instalar, abrir Configurações no navegador: deve aparecer o item "Instalar o
+     Diário na tela inicial". O Chrome pode não oferecer a instalação em toda visita; recarregar
+     ajuda. Depois de instalar, o item não aparece mais no app instalado;
+   - girar o celular em todas as telas com login (Home, chat, Histórico, Insights, Configurações):
+     nada cortado nem escondido sob o recorte da câmera ou a barra de gestos, e sem rolagem lateral;
+   - em paisagem, abrir "Sair" (Home) e "Excluir minha conta" (Configurações): os botões da caixa de
+     diálogo precisam ser alcançáveis, rolando dentro dela. **Não confirme a exclusão**;
+   - no chat, abrir o teclado em portrait e em paisagem: o campo e o botão de enviar continuam
+     visíveis.
 
 Quando o app tiver deploy no Vercel, a mesma checagem vale direto pelo domínio HTTPS, sem cabo.
 
