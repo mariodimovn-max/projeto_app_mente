@@ -44,7 +44,15 @@ Isso é coerente com o valor de honestidade (não criar a ilusão de uma capacid
 
 ## Onde isso aparece no código
 
-Implementado pelas Stories 6.1 (instalável) e 6.2 (polimento mobile + convite de instalação). Os
-arquivos esperados são `apps/web/src/app/manifest.ts`, `apps/web/public/sw.js`, os ícones em
-`apps/web/src/app/` e a página `offline`. A wiki `docs/wiki/ui-e-navegacao.md` registra o estado
-final ao concluir cada história.
+Story 6.1 (instalável, concluída em 2026-11-13):
+
+- `apps/web/public/sw.js`: o cache é só `diario-offline-v<n>` com `/offline.html`.
+- `apps/web/public/offline.html`: página estática e autocontida.
+- `apps/web/src/app/manifest.ts`, `icon.tsx` e `apple-icon.tsx`.
+- `apps/web/src/lib/pwa/appIcon.tsx`: arte única do ícone provisório.
+- `apps/web/src/components/pwa/ServiceWorkerRegistrar.tsx`.
+- `apps/web/src/lib/pwa/sw.test.ts`: executa o `sw.js` real e garante que nenhuma resposta de rede
+  vai para o cache.
+
+O convite de instalação em Configurações é da Story 6.2. O estado consolidado fica em
+`docs/wiki/ui-e-navegacao.md`.

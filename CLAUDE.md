@@ -27,11 +27,11 @@ Aplicativo de diário digital que funciona como **espelho reflexivo** — não t
 
 ## Stack (definida — ver `_bmad-output/planning-artifacts/architecture.md`)
 
-- **Frontend/Backend:** Next.js 16 (App Router, runtime Node.js), TypeScript, React 19 — app único em `apps/web`, sem monorepo/mobile separado
+- **Frontend/Backend:** Next.js 16 (App Router, runtime Node.js), TypeScript, React 19 — app único em `apps/web`, sem monorepo/mobile separado; Android via PWA instalável (ADR 0007), sem app nativo
 - **Estilização:** CSS puro (custom properties), sem Tailwind — reaproveita o design system já construído
 - **Backend/BaaS:** Supabase (Postgres + Auth + RLS + Supavisor pooler)
 - **IA/LLM:** Anthropic API (Claude), streaming via Route Handler dedicado (`/api/chat`)
-- **Testes:** Vitest + React Testing Library
+- **Testes:** Vitest + React Testing Library — no Windows, rode a partir de `D:\` com letra **maiúscula** (`cd "D:/projeto_app_mente/apps/web"`); com `d:\` minúsculo o Vitest carrega a si mesmo duas vezes e toda suíte falha com "failed to find the current suite"
 - **Deploy:** Vercel + Supabase Cloud
 - **Transcrição de áudio:** Web Speech API (client-side) no MVP; Whisper API é caminho de evolução
 
@@ -147,7 +147,7 @@ Aplicativo de diário digital que funciona como **espelho reflexivo** — não t
 - [x] Ajuste de UI fora do sprint de épicos (layout de duas colunas da Home + saudação gerada por IA) — ver [docs/wiki/ui-e-navegacao.md](docs/wiki/ui-e-navegacao.md)
 - [x] Correct-course pré-beta (ver `_bmad-output/planning-artifacts/sprint-change-proposal-2026-08-23.md`) — bugs de chat corrigidos em [docs/wiki/conversa-e-memoria.md](docs/wiki/conversa-e-memoria.md); CI, `.env.example`, gate de cobertura e runbooks de deploy/convite em [docs/wiki/pendencias-manuais.md](docs/wiki/pendencias-manuais.md)
 - [x] Reativação do Supabase (nov/2026) — projeto `diario-bem-estar-prod` linkado via CLI, migrations aplicadas com `db push`, config de Auth em `supabase/config.toml`; links de e-mail passam por `/auth/callback` (ver [docs/adr/0006](docs/adr/0006-fluxo-implicito-templates-email-free-tier.md) e [docs/wiki/pendencias-manuais.md](docs/wiki/pendencias-manuais.md))
-- [ ] Epic 6 — App Instalável no Android (PWA) — Stories 6.1 (instalável) e 6.2 (polimento mobile + convite de instalação); ver `_bmad-output/planning-artifacts/sprint-change-proposal-2026-11-13.md` e [docs/adr/0007](docs/adr/0007-pwa-instalavel-twa-como-evolucao.md)
+- [ ] Epic 6 — App Instalável no Android (PWA) — Story 6.1 (instalável) concluída, ver [docs/wiki/ui-e-navegacao.md](docs/wiki/ui-e-navegacao.md); Story 6.2 (polimento mobile + convite de instalação) pendente; ver `_bmad-output/planning-artifacts/sprint-change-proposal-2026-11-13.md` e [docs/adr/0007](docs/adr/0007-pwa-instalavel-twa-como-evolucao.md)
 
 > O estado consolidado por tópico (o que foi construído, decisões, gotchas, pendências) vive em `docs/wiki/` — comece por [docs/wiki/index.md](docs/wiki/index.md). Decisões pontuais/cross-cutting vivem em `docs/adr/` — comece por [docs/adr/index.md](docs/adr/index.md). Detalhes linha a linha de cada história (arquivos alterados, achados de code review) ficam no histórico do git.
 

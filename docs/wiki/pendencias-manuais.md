@@ -2,11 +2,11 @@
 titulo: Pendências Manuais (Migrations, Env Vars, Runbooks)
 epico: "transversal"
 status: "em andamento"
-ultima_atualizacao: 2026-11-10
+ultima_atualizacao: 2026-11-13
 depende_de: []
 relacionado: [auth, conversa-e-memoria, insights-e-resumos, lgpd-e-privacidade, ui-e-navegacao]
-decisoes: [0006-fluxo-implicito-templates-email-free-tier]
-tags: [migrations, env, deploy, ci, supabase-cli, pendencias]
+decisoes: [0006-fluxo-implicito-templates-email-free-tier, 0007-pwa-instalavel-twa-como-evolucao]
+tags: [migrations, env, deploy, ci, supabase-cli, pendencias, pwa, android]
 ---
 
 # Pendências Manuais
@@ -79,6 +79,28 @@ separados** — raiz e `apps/web` são `package.json`/lockfile independentes, n�
 **Gate de cobertura ≥80% (NFR-8) está deliberadamente fora do CI**: não há `@vitest/coverage-v8`
 instalado nem medição atual; ligar o gate às cegas poderia travar todo PR. Antes de ligar esse gate,
 alguém precisa instalar o pacote de cobertura e medir a baseline real primeiro.
+
+## Testar o PWA num Android real
+
+Pendente desde a Story 6.1 (2026-11-13). Tudo que dava para verificar no Chrome do computador
+passou: manifest sem erros, instalável, cache só com `offline.html`, página offline, troca de versão
+do SW. Falta confirmar no aparelho que o app abre em tela cheia e que a sessão se mantém. Não precisa
+de deploy:
+
+1. No computador: `npm run build --prefix apps/web && npm run start --prefix apps/web`. O SW só
+   registra em produção, e a porta precisa ser 3000, que é a que o Supabase aceita nos redirects.
+2. No celular: ativar Opções do desenvolvedor > Depuração USB e conectar o cabo.
+3. No Chrome do computador: abrir `chrome://inspect`, entrar em **Port forwarding** e mapear
+   `3000` → `localhost:3000`, com "Enable port forwarding" marcado.
+4. No Chrome do celular: abrir `http://localhost:3000`. O Chrome trata `localhost` como contexto
+   seguro, então a instalação funciona sem HTTPS.
+5. Verificar:
+   - menu ⋮ > **Instalar app** (ou "Adicionar à tela inicial");
+   - abrir pelo ícone: tela cheia, sem barra de URL, barra de status escura;
+   - fazer login, fechar o app e reabrir: continua logado;
+   - modo avião + trocar de tela: aparece "Sem conexão".
+
+Quando o app tiver deploy no Vercel, a mesma checagem vale direto pelo domínio HTTPS, sem cabo.
 
 ## Runbook de deploy (execução manual, fora do app)
 
