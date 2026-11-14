@@ -858,8 +858,12 @@ So that a experiência pareça de um app de verdade, sem que o app me pressione.
 
 **Given** qualquer tela do app
 **When** se audita o tamanho de fonte
-**Then** nenhum texto fica abaixo de 14px (NFR6), incluindo o selo de profundidade do chat
-(`.mobileDepthBadge`, hoje 11px)
+**Then** todo texto de conteúdo ou interativo (navegação, botões, textos de cards e mensagens,
+erros) tem no mínimo 14px (NFR6), incluindo o selo de profundidade do chat (`.mobileDepthBadge`,
+hoje 11px)
+**And** rótulos decorativos mono em caixa alta e metadados (horários, contadores) têm no mínimo
+12px, via token dedicado — interpretação híbrida do NFR6 decidida com o autor em 2026-11-13
+(ADR 0008), preservando a identidade visual Aura
 
 **Given** um celular de 4,5" a 6,7" em paisagem
 **When** o usuário usa chat, Home, Histórico, Insights e Configurações
