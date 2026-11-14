@@ -37,13 +37,24 @@ export default function AuthCallbackPage() {
         // do @supabase/ssr), de onde as páginas seguintes a leem no servidor. Não dá para contar
         // com a detecção automática do fragmento: o client está em modo PKCE e descarta
         // fragmentos implícitos.
-        // Fluxo PKCE (recuperação de senha): troca o `code` pela sessão usando o code_verifier
-        // que ficou em cookie quando o pedido foi feito — por isso o link precisa ser aberto no
-        // mesmo navegador em que "Esqueci a senha" foi usado.
-        const { data } = tokens
-          ? await supabase.auth.setSession(tokens)
-          : await supabase.auth.exchangeCodeForSession(code!);
-        hasSession = Boolean(data.session);
+        // Fluxo PKCE (recuperação de senha): o próprio client, ao inicializar
+        // (detectSessionInUrl), já troca o `?code=` pela sessão usando o code_verifier que ficou
+        // em cookie quando o pedido foi feito — por isso o link precisa ser aberto no mesmo
+        // navegador em que "Esqueci a senha" foi usado. getSession() espera essa inicialização.
+        // Chamar exchangeCodeForSession de novo falharia (o code é de uso único): só é a
+        // alternativa se a troca automática não tiver acontecido.
+        if (tokens) {
+          const { data } = await supabase.auth.setSession(tokens);
+          hasSession = Boolean(data.session);
+        } else if (code) {
+          const { data } = await supabase.auth.getSession();
+          if (data.session) {
+            hasSession = true;
+          } else {
+            const exchanged = await supabase.auth.exchangeCodeForSession(code);
+            hasSession = Boolean(exchanged.data.session);
+          }
+        }
       } catch {
         hasSession = false;
       }
