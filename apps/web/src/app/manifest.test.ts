@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import manifest, { APP_DESCRIPTION, APP_NAME } from "./manifest";
+import manifest from "./manifest";
 import { PWA_BACKGROUND, PWA_THEME } from "@/lib/pwa/appIcon";
+import { APP_DESCRIPTION, APP_NAME } from "@/lib/pwa/appInfo";
 
 describe("manifest do PWA", () => {
   const result = manifest();

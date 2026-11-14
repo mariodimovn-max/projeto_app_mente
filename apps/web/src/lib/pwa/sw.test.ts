@@ -33,7 +33,23 @@ function loadServiceWorker() {
     clients: { claim: vi.fn().mockResolvedValue(undefined) },
   };
 
-  vm.runInNewContext(SW_SOURCE, { self, caches, fetch: fetchMock, Response, Promise });
+  // No Node, `new Request("/offline.html")` lança (URL relativa); no SW ela resolve contra a
+  // origem. Um Request mínimo basta para inspecionar o que o SW pede ao cache.
+  class FakeRequest {
+    constructor(
+      public url: string,
+      public init: RequestInit = {}
+    ) {}
+  }
+
+  vm.runInNewContext(SW_SOURCE, {
+    self,
+    caches,
+    fetch: fetchMock,
+    Request: FakeRequest,
+    Response,
+    Promise,
+  });
 
   function dispatch(type: string, extra: Record<string, unknown> = {}) {
     let waited: Promise<unknown> | undefined;
@@ -66,7 +82,8 @@ describe("service worker (public/sw.js)", () => {
 
     expect(sw.caches.open).toHaveBeenCalledWith("diario-offline-v1");
     expect(sw.cacheAdd).toHaveBeenCalledTimes(1);
-    expect(sw.cacheAdd).toHaveBeenCalledWith("/offline.html");
+    // Só a página offline, buscada ignorando o cache HTTP (versão nova do SW = offline.html atual).
+    expect(sw.cacheAdd).toHaveBeenCalledWith({ url: "/offline.html", init: { cache: "reload" } });
     expect(sw.self.skipWaiting).toHaveBeenCalled();
   });
 

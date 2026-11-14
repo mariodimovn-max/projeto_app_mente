@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Instrument_Sans, Newsreader, Space_Mono } from "next/font/google";
 import { ServiceWorkerRegistrar } from "@/components/pwa/ServiceWorkerRegistrar";
 import { PWA_THEME } from "@/lib/pwa/appIcon";
-import { APP_DESCRIPTION, APP_NAME } from "./manifest";
+import { APP_DESCRIPTION, APP_NAME } from "@/lib/pwa/appInfo";
 import "./globals.css";
 
 const instrumentSans = Instrument_Sans({

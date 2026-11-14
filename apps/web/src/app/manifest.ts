@@ -5,18 +5,14 @@ import {
   PWA_THEME,
   iconUrl,
 } from "@/lib/pwa/appIcon";
+import { APP_DESCRIPTION, APP_NAME, APP_SHORT_NAME } from "@/lib/pwa/appInfo";
 
 // Story 6.1: manifest do PWA (servido em /manifest.webmanifest pela convenção do Next).
 // Sem `orientation` de propósito — portrait e landscape são suportados (NFR5).
-
-export const APP_NAME = "Diário Digital";
-export const APP_DESCRIPTION =
-  "Espelho reflexivo para autoconhecimento — tecnologia para tocar a alma e despertar a mente.";
-
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: APP_NAME,
-    short_name: "Diário",
+    short_name: APP_SHORT_NAME,
     description: APP_DESCRIPTION,
     lang: "pt-BR",
     start_url: "/",
