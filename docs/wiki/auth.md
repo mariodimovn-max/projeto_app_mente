@@ -54,6 +54,20 @@ convite/criação de conta, login, recuperação de senha, logout.
   jeito que `verifyOtp({ type: "recovery" })`.
 - Convidar pelo botão do dashboard (sem `redirectTo`) manda o link para o Site URL raiz, onde nada
   captura o fragmento — use o script.
+- **Recuperação de senha usa PKCE, não fluxo implícito** (corrigido em 2026-11-13/15, testado de
+  ponta a ponta pelo Mario).
+  - O client `@supabase/ssr` é PKCE por padrão: `resetPasswordForEmail` grava o `code_verifier` em
+    cookie, e o link volta com `?code=...`. Convites via admin API continuam implícitos (`#access_token`).
+  - O `/auth/callback` trata os dois formatos. No PKCE, o `createBrowserClient`
+    (`detectSessionInUrl`) **já troca o code sozinho** ao inicializar. Por isso o callback usa
+    `getSession()` e só chama `exchangeCodeForSession` se a troca automática não aconteceu. Trocar
+    de novo falha, porque o code é de uso único.
+  - O link de recuperação precisa ser aberto **no mesmo navegador** em que "Esqueci a senha" foi usado.
+- **Provedor de e-mail desligado por engano:** `[auth.email] enable_signup` no `supabase/config.toml`
+  liga ou desliga o **provedor de e-mail inteiro**, apesar do comentário padrão da CLI. Com `false`,
+  login, recuperação e convites falham com `email_provider_disabled`, e o login mostrava "senha
+  incorreta". O beta fechado é garantido por `[auth] enable_signup = false`. Corrigido e aplicado com
+  `supabase config push` em 2026-11-13. Atenção: a CLI v2.115 aplica o push **sem pedir confirmação**.
 - **Recuperação de senha — erros não podem ser engolidos** (bug corrigido em 2026-11-13).
   - **Antes:** `requestPasswordReset` só tratava o 429; qualquer outra falha virava "enviamos o
     link", e o usuário ficava esperando um e-mail que nunca saía.
