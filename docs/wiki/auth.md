@@ -2,7 +2,7 @@
 titulo: Autenticação
 epico: 1
 status: completo
-ultima_atualizacao: 2026-11-10
+ultima_atualizacao: 2026-11-13
 depende_de: []
 relacionado: [lgpd-e-privacidade, ui-e-navegacao, pendencias-manuais]
 decisoes: [0006-fluxo-implicito-templates-email-free-tier]
@@ -54,6 +54,40 @@ convite/criação de conta, login, recuperação de senha, logout.
   jeito que `verifyOtp({ type: "recovery" })`.
 - Convidar pelo botão do dashboard (sem `redirectTo`) manda o link para o Site URL raiz, onde nada
   captura o fragmento — use o script.
+- **Recuperação de senha usa PKCE, não fluxo implícito** (corrigido em 2026-11-13/15, testado de
+  ponta a ponta pelo Mario).
+  - O client `@supabase/ssr` é PKCE por padrão: `resetPasswordForEmail` grava o `code_verifier` em
+    cookie, e o link volta com `?code=...`. Convites via admin API continuam implícitos (`#access_token`).
+  - O `/auth/callback` trata os dois formatos. No PKCE, o `createBrowserClient`
+    (`detectSessionInUrl`) **já troca o code sozinho** ao inicializar. Por isso o callback usa
+    `getSession()` e só chama `exchangeCodeForSession` se a troca automática não aconteceu. Trocar
+    de novo falha, porque o code é de uso único.
+  - O link de recuperação precisa ser aberto **no mesmo navegador** em que "Esqueci a senha" foi usado.
+- **Provedor de e-mail desligado por engano:** `[auth.email] enable_signup` no `supabase/config.toml`
+  liga ou desliga o **provedor de e-mail inteiro**, apesar do comentário padrão da CLI. Com `false`,
+  login, recuperação e convites falham com `email_provider_disabled`, e o login mostrava "senha
+  incorreta". O beta fechado é garantido por `[auth] enable_signup = false`. Corrigido e aplicado com
+  `supabase config push` em 2026-11-13. Atenção: a CLI v2.115 aplica o push **sem pedir confirmação**.
+- **Recuperação de senha — erros não podem ser engolidos** (bug corrigido em 2026-11-13).
+  - **Antes:** `requestPasswordReset` só tratava o 429; qualquer outra falha virava "enviamos o
+    link", e o usuário ficava esperando um e-mail que nunca saía.
+  - **Hoje:** conta inexistente (`user_not_found`) mantém o sucesso genérico, como proteção contra
+    descobrir quais e-mails têm conta. Limite de envio mantém "muitas solicitações". Qualquer outra
+    falha mostra "Não conseguimos enviar o e-mail de redefinição agora…".
+  - **Log:** toda falha vai para o log do servidor só com `status` e `code`, nunca o e-mail nem a
+    mensagem do Supabase, que pode conter o endereço.
+  - **Trade-off aceito:** se o Supabase só falhar no envio para contas existentes, a diferença entre
+    "enviado" e "falhou" vira um canal lateral fraco de descoberta de contas. Num beta fechado por
+    convite isso é aceitável diante de mentir ao usuário.
+- **Provedor de e-mail padrão do Supabase (plano gratuito):**
+  - só envia para endereços de **membros da organização** no Supabase (`email_address_not_authorized`);
+  - tem um limite de **2 e-mails/hora** por projeto (`email_sent = 2`).
+
+  Isso afeta convite e recuperação. Antes de convidar alguém de fora da organização, configure SMTP
+  próprio (ADR 0006).
+- **Porta do servidor local:** os links de e-mail só funcionam com o app em `localhost:3000`, a única
+  porta em `additional_redirect_urls`. Em outra porta, o `redirectTo` é ignorado e o link cai na raiz
+  do Site URL, perdendo a sessão de recuperação.
 
 ## Pendências
 

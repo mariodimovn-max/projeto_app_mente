@@ -1,7 +1,7 @@
 .shell {
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
+  min-height: var(--app-height);
   width: 100%;
 }
 
@@ -31,7 +31,7 @@
   display: flex;
   align-items: center;
   gap: 7px;
-  font: 400 0.6875rem var(--font-mono);
+  font: 400 var(--fs-sm) var(--font-mono);
   color: rgba(168, 224, 217, 0.7);
   white-space: nowrap;
 }

@@ -6,7 +6,7 @@
 }
 
 .status {
-  font: 600 0.75rem var(--font-sans);
+  font: 600 var(--fs-sm) var(--font-sans);
   color: var(--color-accent-1);
 }
 
@@ -38,7 +38,7 @@
 }
 
 .hint {
-  font: 400 0.75rem/1.4 var(--font-sans);
+  font: 400 var(--fs-sm)/1.4 var(--font-sans);
   color: var(--color-muted);
 }
 
@@ -51,7 +51,7 @@
   border: 1px solid var(--color-border);
   border-radius: 12px;
   padding: 8px 14px;
-  font: 600 0.75rem var(--font-sans);
+  font: 600 var(--fs-sm) var(--font-sans);
   cursor: pointer;
   background: transparent;
   color: var(--color-text);
@@ -61,7 +61,7 @@
   border: none;
   border-radius: 12px;
   padding: 8px 14px;
-  font: 600 0.75rem var(--font-sans);
+  font: 600 var(--fs-sm) var(--font-sans);
   cursor: pointer;
   background: linear-gradient(180deg, var(--color-accent-1), var(--color-accent-2));
   color: var(--color-voice-icon, #06201e);

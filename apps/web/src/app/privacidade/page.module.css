@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space);
-  min-height: 100dvh;
+  min-height: var(--app-height);
   padding: var(--space-lg) var(--space) calc(var(--space-lg) * 1.5);
   background: radial-gradient(130% 55% at 50% 8%, #123138 0%, #0b171b 40%, #080f12 100%);
 }
@@ -23,7 +23,7 @@
 }
 
 .eyebrow {
-  font: 400 0.6875rem var(--font-mono);
+  font: 400 var(--fs-xs) var(--font-mono);
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: rgba(168, 224, 217, 0.6);
@@ -52,7 +52,7 @@
 }
 
 .sectionTitle {
-  font: 600 0.75rem var(--font-mono);
+  font: 600 var(--fs-xs) var(--font-mono);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #c9f0ea;

@@ -2,11 +2,11 @@
 titulo: Pendências Manuais (Migrations, Env Vars, Runbooks)
 epico: "transversal"
 status: "em andamento"
-ultima_atualizacao: 2026-11-10
+ultima_atualizacao: 2026-11-13
 depende_de: []
 relacionado: [auth, conversa-e-memoria, insights-e-resumos, lgpd-e-privacidade, ui-e-navegacao]
-decisoes: [0006-fluxo-implicito-templates-email-free-tier]
-tags: [migrations, env, deploy, ci, supabase-cli, pendencias]
+decisoes: [0006-fluxo-implicito-templates-email-free-tier, 0007-pwa-instalavel-twa-como-evolucao]
+tags: [migrations, env, deploy, ci, supabase-cli, pendencias, pwa, android]
 ---
 
 # Pendências Manuais
@@ -79,6 +79,61 @@ separados** — raiz e `apps/web` são `package.json`/lockfile independentes, n�
 **Gate de cobertura ≥80% (NFR-8) está deliberadamente fora do CI**: não há `@vitest/coverage-v8`
 instalado nem medição atual; ligar o gate às cegas poderia travar todo PR. Antes de ligar esse gate,
 alguém precisa instalar o pacote de cobertura e medir a baseline real primeiro.
+
+## Recuperação de senha (login do Mario bloqueado, 2026-11-13)
+
+Na verificação da Story 6.2, o login local deu "senha errada", e "Esqueci a senha" não enviou o
+e-mail. O app escondia o erro real; isso foi corrigido em 2026-11-13 (ver
+[auth.md](auth.md#gotchas-conhecidos)). Para destravar:
+
+1. Subir o app na **porta 3000** (`npm run dev --prefix apps/web` ou build + start). É a única porta
+   aceita nos redirects do Supabase.
+2. Em `/auth/esqueci-senha`, pedir o link de novo.
+3. Se aparecer "Não conseguimos enviar o e-mail de redefinição agora…", o terminal do servidor mostra
+   `[requestPasswordReset] … { status, code }`. Códigos esperados:
+   - `email_address_not_authorized`: o e-mail da conta não é membro da organização no Supabase, e o
+     provedor de e-mail padrão só envia para membros. Ou adicione o endereço como membro da
+     organização, ou configure SMTP próprio (ADR 0006).
+   - `over_email_send_rate_limit` / 429: o limite de 2 e-mails/hora foi atingido. Espere 1 hora.
+4. Alternativa sem e-mail: no painel do Supabase, em **Authentication → Users**, localizar o usuário e
+   usar **Send password recovery** (sujeito às mesmas regras do provedor de e-mail). Ou, com a
+   `SUPABASE_SERVICE_ROLE_KEY` configurada, definir uma senha nova via admin API.
+
+## Testar o PWA num Android real
+
+Pendente desde as Stories 6.1 e 6.2 (2026-11-13). Tudo que dava para verificar no Chrome do
+computador passou:
+
+- manifest sem erros e app instalável;
+- cache só com `offline.html`, página offline e troca de versão do SW;
+- login, Home pública e privacidade em portrait e paisagem, com áreas seguras simuladas.
+
+As **telas com login** não foram auditadas: o login falhou no teste local (ver "Recuperação de
+senha" abaixo). Falta confirmar no aparelho, e não precisa de deploy:
+
+1. No computador: `npm run build --prefix apps/web && npm run start --prefix apps/web`. O SW só
+   registra em produção, e a porta precisa ser 3000, que é a que o Supabase aceita nos redirects.
+2. No celular: ativar Opções do desenvolvedor > Depuração USB e conectar o cabo.
+3. No Chrome do computador: abrir `chrome://inspect`, entrar em **Port forwarding** e mapear
+   `3000` → `localhost:3000`, com "Enable port forwarding" marcado.
+4. No Chrome do celular: abrir `http://localhost:3000`. O Chrome trata `localhost` como contexto
+   seguro, então a instalação funciona sem HTTPS.
+5. Verificar:
+   - menu ⋮ > **Instalar app** (ou "Adicionar à tela inicial");
+   - abrir pelo ícone: tela cheia, sem barra de URL, barra de status escura;
+   - fazer login, fechar o app e reabrir: continua logado;
+   - modo avião + trocar de tela: aparece "Sem conexão";
+   - **antes** de instalar, abrir Configurações no navegador: deve aparecer o item "Instalar o
+     Diário na tela inicial". O Chrome pode não oferecer a instalação em toda visita; recarregar
+     ajuda. Depois de instalar, o item não aparece mais no app instalado;
+   - girar o celular em todas as telas com login (Home, chat, Histórico, Insights, Configurações):
+     nada cortado nem escondido sob o recorte da câmera ou a barra de gestos, e sem rolagem lateral;
+   - em paisagem, abrir "Sair" (Home) e "Excluir minha conta" (Configurações): os botões da caixa de
+     diálogo precisam ser alcançáveis, rolando dentro dela. **Não confirme a exclusão**;
+   - no chat, abrir o teclado em portrait e em paisagem: o campo e o botão de enviar continuam
+     visíveis.
+
+Quando o app tiver deploy no Vercel, a mesma checagem vale direto pelo domínio HTTPS, sem cabo.
 
 ## Runbook de deploy (execução manual, fora do app)
 

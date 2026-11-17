@@ -19,7 +19,7 @@
 
 .heading {
   margin: 0;
-  font: 600 0.6875rem var(--font-mono);
+  font: 600 var(--fs-xs) var(--font-mono);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--color-error);
@@ -56,7 +56,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space);
+  /* Story 6.2: overlay fixo respeita barra de gestos e recorte da câmera (viewport-fit=cover). */
+  padding: max(var(--space), env(safe-area-inset-top)) max(var(--space), env(safe-area-inset-right))
+    max(var(--space), env(safe-area-inset-bottom)) max(var(--space), env(safe-area-inset-left));
   background: rgba(0, 0, 0, 0.55);
   z-index: 10;
 }
@@ -67,6 +69,9 @@
   gap: var(--space-x);
   width: 100%;
   max-width: 420px;
+  /* Story 6.2: em paisagem (~360px de altura) o diálogo rola por dentro, com os botões alcançáveis. */
+  max-height: 100%;
+  overflow-y: auto;
   padding: var(--space);
   border: 1px solid var(--color-border);
   border-radius: 20px;

@@ -65,7 +65,7 @@
 
 .privacyCaption {
   margin: var(--space) 0 0;
-  font: 400 0.625rem var(--font-mono);
+  font: 400 var(--fs-xs) var(--font-mono);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: rgba(233, 241, 238, 0.32);
@@ -76,7 +76,7 @@
 }
 
 .eyebrow {
-  font: 400 0.6875rem var(--font-mono);
+  font: 400 var(--fs-xs) var(--font-mono);
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: rgba(168, 224, 217, 0.6);
@@ -103,7 +103,7 @@
   border-radius: 999px;
   background: rgba(127, 208, 200, 0.12);
   border: 1px solid rgba(127, 208, 200, 0.22);
-  font: 500 0.6875rem var(--font-sans);
+  font: 500 var(--fs-sm) var(--font-sans);
   color: #c9f0ea;
 }
 
@@ -112,7 +112,7 @@
 }
 
 .sectionTitle {
-  font: 600 0.75rem var(--font-mono);
+  font: 600 var(--fs-xs) var(--font-mono);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #c9f0ea;
@@ -166,7 +166,7 @@
 
 .openQuestionLabel {
   position: relative;
-  font: 600 0.6875rem var(--font-mono);
+  font: 600 var(--fs-xs) var(--font-mono);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #a8e0d9;

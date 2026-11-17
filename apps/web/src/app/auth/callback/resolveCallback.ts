@@ -1,7 +1,13 @@
 // Interpreta a URL de retorno dos links de e-mail padrão do Supabase ({{ .ConfirmationURL }}).
-// O endpoint /auth/v1/verify do Supabase valida o token e redireciona para cá com a sessão no
-// fragmento (#access_token=...&refresh_token=...&type=invite|recovery) ou, em caso de link
-// expirado/inválido, com #error=...&error_description=.... Ver ADR 0006.
+// O endpoint /auth/v1/verify do Supabase valida o token e redireciona para cá em um de dois
+// formatos, conforme quem disparou o e-mail (ver ADR 0006):
+// - fluxo implícito (convite via admin API, sem PKCE): sessão no fragmento
+//   (#access_token=...&refresh_token=...&type=invite|recovery);
+// - fluxo PKCE (recuperação de senha disparada pelo client @supabase/ssr, que é PKCE por padrão):
+//   `?code=...` na query, a ser trocado pela sessão com exchangeCodeForSession — o code_verifier
+//   ficou num cookie do mesmo navegador quando o pedido foi feito.
+// Em caso de link expirado/inválido, o erro vem no fragmento (implícito) ou na query (PKCE):
+// error=...&error_description=....
 //
 // Função pura (sem window) para ser testável: recebe `search` ("?next=...") e `hash` ("#...").
 
@@ -22,6 +28,8 @@ export interface CallbackResolution {
   // conta própria ("Not a valid PKCE flow url"), então a página extrai os tokens aqui e os entrega
   // via auth.setSession() em vez de depender de detectSessionInUrl.
   tokens: CallbackTokens | null;
+  // Código do fluxo PKCE (`?code=`), ou null. Só é usado quando não há tokens nem erro.
+  code: string | null;
 }
 
 const DEFAULT_NEXT_BY_TYPE: Record<CallbackType, string> = {
@@ -62,16 +70,23 @@ export function resolveCallback(search: string, hash: string): CallbackResolutio
       ? "recovery"
       : "invite";
 
-  const hasError = fragment.has("error") || fragment.has("error_description");
+  const hasError =
+    fragment.has("error") ||
+    fragment.has("error_description") ||
+    query.has("error") ||
+    query.has("error_description");
   const accessToken = fragment.get("access_token");
   const refreshToken = fragment.get("refresh_token");
+  const tokens =
+    !hasError && accessToken && refreshToken
+      ? { access_token: accessToken, refresh_token: refreshToken }
+      : null;
+  const code = !hasError && !tokens ? query.get("code") || null : null;
 
   return {
     next: requestedNext ?? DEFAULT_NEXT_BY_TYPE[type],
     errorRedirect: INVALID_REDIRECT_BY_TYPE[type],
-    tokens:
-      !hasError && accessToken && refreshToken
-        ? { access_token: accessToken, refresh_token: refreshToken }
-        : null,
+    tokens,
+    code,
   };
 }

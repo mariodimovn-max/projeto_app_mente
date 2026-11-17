@@ -34,7 +34,8 @@
   --fs-xl: 1.5rem;    /* 24px */
   --fs-lg: 1.125rem;  /* 18px */
   --fs-md: 1rem;      /* 16px */
-  --fs-sm: 0.875rem;  /* 14px */
+  --fs-sm: 0.875rem;  /* 14px — mínimo para todo texto de conteúdo ou interativo (NFR6) */
+  --fs-xs: 0.75rem;   /* 12px — SÓ rótulos decorativos mono em caixa alta e metadados (horários, contadores); ver ADR 0008 */
   --lh-body: 1.6;
 
   /* Layout */
@@ -44,6 +45,9 @@
   --space: 22px;
   --space-lg: 32px;
   --nav-height: calc(76px + env(safe-area-inset-bottom));
+
+  /* Altura útil da tela (Story 6.2) — ver apps/web/src/styles/variables.css. */
+  --app-height: calc(100dvh - env(safe-area-inset-top));
 }
 
 body { background: var(--color-bg); font-family: var(--font-sans); color: var(--color-text); margin: 0; padding: 36px; }

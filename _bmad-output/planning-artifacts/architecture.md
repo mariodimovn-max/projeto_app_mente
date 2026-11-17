@@ -176,6 +176,10 @@ boa parte da lógica do agente.
   não for suficiente nos testes com beta users
 - Monitoramento externo (Sentry ou similar) — Vercel logs nativos bastam no MVP
 - Testes E2E com Playwright — Vitest + React Testing Library cobre o MVP
+- Publicação na Play Store via TWA (Trusted Web Activity, ex.: Bubblewrap/PWABuilder) reaproveitando
+  o PWA do Epic 6 — só se o beta mostrar necessidade de presença na loja. Capacitor/React Native
+  descartados: o app depende de Server Actions/Route Handlers (não exporta estático) e a Web Speech
+  API não está disponível no WebView do Android. Ver `docs/adr/0007-pwa-instalavel-twa-como-evolucao.md`.
 
 ### Data Architecture
 
@@ -395,12 +399,14 @@ projeto_app_mente/
 ├── apps/
 │   └── web/
 │       ├── public/
-│       │   ├── manifest.json               # PWA — instalável no Android
-│       │   └── icons/
+│       │   ├── sw.js                       # PWA — service worker mínimo (só página offline, sem cache de dados)
+│       │   └── offline.html                # página offline estática, autocontida (CSS/SVG inline) — única coisa em cache
 │       └── src/
-│           ├── middleware.ts                # refresh de sessão Supabase (padrão @supabase/ssr)
+│           ├── proxy.ts                     # refresh de sessão Supabase (padrão @supabase/ssr; `middleware.ts` renomeado no Next 16)
 │           ├── app/
-│           │   ├── layout.tsx
+│           │   ├── layout.tsx               # viewport/themeColor + registro do service worker
+│           │   ├── manifest.ts              # PWA — instalável no Android (convenção do Next)
+│           │   ├── icon.tsx / apple-icon.tsx # ícones gerados (placeholder Aura — trocar pela arte final)
 │           │   ├── globals.css
 │           │   ├── page.tsx                 # Dashboard/home — FR-7
 │           │   ├── login/page.tsx           # FR-1

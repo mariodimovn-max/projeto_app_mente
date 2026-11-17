@@ -45,6 +45,13 @@ export async function proxy(request: NextRequest) {
   return response;
 }
 
+// Story 6.1: além de assets estáticos, ficam de fora os arquivos do PWA (manifest, service
+// worker, página offline e ícones gerados em /icon/<id> e /apple-icon) — não precisam de sessão
+// e não devem custar uma ida ao Supabase Auth. Excluir um path aqui também pula Server Actions
+// nele: nenhuma das rotas abaixo tem, e nada além delas deve ser acrescentado sem esse cuidado.
+// O valor precisa ser literal (o Next analisa o matcher estaticamente no build).
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|sw.js|offline.html|icon(?:/|$)|apple-icon(?:/|$)|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+  ],
 };

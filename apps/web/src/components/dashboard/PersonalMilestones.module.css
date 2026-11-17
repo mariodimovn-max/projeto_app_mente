@@ -16,7 +16,7 @@
 
 .heading {
   margin: 0;
-  font: 600 0.6875rem var(--font-mono);
+  font: 600 var(--fs-xs) var(--font-mono);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #c9f0ea;
@@ -27,7 +27,7 @@
   border-radius: 10px;
   background: transparent;
   color: var(--color-muted);
-  font: 500 0.75rem var(--font-sans);
+  font: 500 var(--fs-sm) var(--font-sans);
   padding: 6px 12px;
   cursor: pointer;
 }
@@ -77,7 +77,7 @@
 
 .hint {
   margin: 0;
-  font-size: 0.75rem;
+  font-size: var(--fs-sm);
   color: rgba(233, 241, 238, 0.4);
 }
 
@@ -92,7 +92,7 @@
   border-radius: 10px;
   background: transparent;
   color: var(--color-muted);
-  font: 500 0.75rem var(--font-sans);
+  font: 500 var(--fs-sm) var(--font-sans);
   padding: 8px 16px;
   cursor: pointer;
 }

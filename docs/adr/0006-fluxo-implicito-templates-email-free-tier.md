@@ -3,6 +3,12 @@
 **Status:** aceita
 **Contexto original:** Reativação do projeto Supabase e preparação para teste em localhost (2026-11-10)
 
+> **Atualização 2026-11-15:** na prática, a **recuperação de senha** volta pelo fluxo **PKCE**
+> (`?code=` na query), não pelo fragmento implícito descrito abaixo, porque é disparada pelo client
+> `@supabase/ssr`, que é PKCE por padrão. O `/auth/callback` trata os dois formatos. O convite via
+> admin API continua implícito. Detalhes em `docs/wiki/auth.md` (Gotchas). A decisão de usar os
+> templates padrão e o `/auth/callback` continua valendo.
+
 ## Decisão
 
 Convite e recuperação de senha usam os **templates de e-mail padrão do Supabase**

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { unstable_doesMiddlewareMatch } from "next/experimental/testing/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 type CreateServerClientOptions = { cookies: { setAll: (cookies: unknown[]) => void } };
@@ -110,5 +111,42 @@ describe("proxy", () => {
 
     expect(response.cookies.get("sb-access-token")?.value).toBe("novo-token");
     expect(response.headers.get("x-middleware-request-x-app-session-user")).toBe("0");
+  });
+});
+
+// Story 6.1: arquivos do PWA não passam pelo proxy (sem ida ao Supabase Auth), e as rotas do
+// app continuam passando. `unstable_doesMiddlewareMatch` é o helper do Next para testar o matcher.
+describe("proxy — matcher", () => {
+  it.each([
+    "/manifest.webmanifest",
+    "/sw.js",
+    "/offline.html",
+    "/icon/32",
+    "/icon/192",
+    "/icon/512",
+    "/icon/512-maskable",
+    "/apple-icon",
+    "/favicon.ico",
+    "/_next/static/chunks/app.js",
+  ])("não executa o proxy para %s", async (url) => {
+    const { config } = await import("./proxy");
+    expect(unstable_doesMiddlewareMatch({ config, url })).toBe(false);
+  });
+
+  it.each([
+    "/",
+    "/chat",
+    "/historico",
+    "/historico/abc-123",
+    "/insights",
+    "/configuracoes",
+    "/privacidade",
+    "/auth",
+    "/auth/callback",
+    "/api/chat",
+    "/icones-futuros",
+  ])("continua executando o proxy para %s", async (url) => {
+    const { config } = await import("./proxy");
+    expect(unstable_doesMiddlewareMatch({ config, url })).toBe(true);
   });
 });
