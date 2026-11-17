@@ -135,11 +135,24 @@ senha" abaixo). Falta confirmar no aparelho, e não precisa de deploy:
 
 Quando o app tiver deploy no Vercel, a mesma checagem vale direto pelo domínio HTTPS, sem cabo.
 
-## Runbook de deploy (execução manual, fora do app)
+## Produção (Vercel) — no ar desde 2026-11-17
 
-Base em `_bmad-output/planning-artifacts/sprint-change-proposal-2026-08-23.md`, atualizado:
+- **URL:** https://projeto-app-mente.vercel.app (plano Hobby, conta do Mario via GitHub).
+- **Origem:** branch `main`, Root Directory `apps/web`. Cada push/merge na `main` publica sozinho; PRs
+  ganham deploy de preview.
+- **Variáveis:** as do `.env.local`, coladas no painel da Vercel (Settings → Environment Variables).
+  Mudou uma chave? Atualize lá e faça **Redeploy**.
+- **Supabase:** `site_url` = URL de produção e `additional_redirect_urls` com produção + localhost,
+  aplicados com `supabase config push` em 2026-11-17. A CLI v2.115 aplica **sem pedir confirmação**:
+  revise o diff do `config.toml` antes de rodar.
+- **Celular:** abrir a URL no Chrome do Android → ⋮ → **Instalar app**, ou usar o item "Instalar o
+  Diário na tela inicial" em Configurações. Não precisa de cabo nem do computador ligado.
+- **Links de e-mail de preview:** URLs de preview da Vercel (`*-git-*.vercel.app`) não estão em
+  `additional_redirect_urls`. Links de recuperação pedidos num preview caem no Site URL de produção.
 
-1. Vercel: importar o repositório com **Root Directory `apps/web`** e as 4 variáveis acima.
+### Runbook (referência, já executado)
+
+1. Vercel: importar o repositório com **Root Directory `apps/web`** e as variáveis acima.
 2. Com o domínio de produção em mãos, em `supabase/config.toml` trocar `site_url` e acrescentar
    `https://<dominio>/**` em `additional_redirect_urls`; `supabase config push`.
 3. Convidar beta testers com `--redirect-to=https://<dominio>`.
