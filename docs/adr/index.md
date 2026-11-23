@@ -14,6 +14,7 @@
 | [0006](0006-fluxo-implicito-templates-email-free-tier.md) | Links de e-mail usam template padrão do Supabase e caem em `/auth/callback` (free tier não permite editar templates) | Convite, recuperação de senha, config de Auth no Supabase |
 | [0007](0007-pwa-instalavel-twa-como-evolucao.md) | Android via PWA instalável (SW sem cache de dados); TWA como evolução; Capacitor/React Native descartados | Manifest, service worker, ícones, convite de instalação, qualquer proposta de app nativo/loja |
 | [0008](0008-fonte-minima-hibrida-nfr6.md) | Fonte mínima (NFR6) híbrida: 14px para conteúdo/interação, 12px só para rótulos decorativos e metadados via `--fs-xs` (com guarda automatizado) | Qualquer CSS que defina tamanho de fonte; novos componentes |
+| [0009](0009-link-de-uso-unico-exige-clique.md) | `/auth/confirm` só consome o token de uso único num POST (botão), nunca ao abrir o link — prévias do WhatsApp e filtros de e-mail gastavam o convite | Convite, recuperação de senha, qualquer link de uso único |
 
 ## Convenção
 

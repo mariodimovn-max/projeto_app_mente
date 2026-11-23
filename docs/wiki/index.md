@@ -11,7 +11,7 @@
 | [insights-e-resumos.md](insights-e-resumos.md) | 4 | completo | Dashboard de indicadores, marcos pessoais, resumos semanal/mensal, PDF |
 | [lgpd-e-privacidade.md](lgpd-e-privacidade.md) | 5 | completo | Exportação de dados, exclusão de conta, auditoria, política de privacidade |
 | [ui-e-navegacao.md](ui-e-navegacao.md) | 4 + ajuste fora do sprint + 6 | completo | Navegação principal, layout da Home, saudação gerada por IA, PWA/instalação no Android (manifest, ícone, service worker, página offline, convite de instalação), áreas seguras, tipografia mínima |
-| [pendencias-manuais.md](pendencias-manuais.md) | transversal | em andamento | Estado do projeto Supabase (CLI linkado, `db push`, `config push`), env vars, convites, CI, runbook de deploy, teste do PWA num Android real |
+| [pendencias-manuais.md](pendencias-manuais.md) | transversal | em andamento | Produção na Vercel (URL, variáveis, redirects), estado do projeto Supabase (CLI linkado, `db push`, `config push`), env vars, convites, CI, runbook de deploy, teste do PWA num Android real |
 
 ## Como isso se relaciona com o resto da documentação
 

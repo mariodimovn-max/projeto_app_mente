@@ -2,7 +2,7 @@
 titulo: Pendências Manuais (Migrations, Env Vars, Runbooks)
 epico: "transversal"
 status: "em andamento"
-ultima_atualizacao: 2026-11-13
+ultima_atualizacao: 2026-11-23
 depende_de: []
 relacionado: [auth, conversa-e-memoria, insights-e-resumos, lgpd-e-privacidade, ui-e-navegacao]
 decisoes: [0006-fluxo-implicito-templates-email-free-tier, 0007-pwa-instalavel-twa-como-evolucao]
@@ -60,6 +60,22 @@ Escolha original de Mario: convite manual. Hoje há duas formas equivalentes (am
 
 Limite do e-mail padrão do Supabase no plano gratuito: poucos envios por hora. Convide aos poucos.
 
+**Na prática, use `--link` (desde 2026-11-23):** o provedor de e-mail padrão só envia para membros
+da organização no Supabase, então convites por e-mail para testadores externos falham. O caminho
+usado nos primeiros convites foi gerar o link e enviá-lo do e-mail pessoal do Mario:
+
+```
+node --env-file=.env.local scripts/invite-beta.ts --link --redirect-to=https://projeto-app-mente.vercel.app email@exemplo.com
+```
+
+- O link expira em 1 hora (`otp_expiry = 3600`): gere-o só na hora de enviar.
+- É de uso único, mas só é gasto quando a pessoa toca em "Ativar meu convite" na página — prévias
+  do WhatsApp e filtros de e-mail não o queimam mais (ADR 0009). Pode mandar por WhatsApp. Se a
+  pessoa disser que deu "convite inválido", gere outro.
+- Gerar um link novo invalida o anterior do mesmo e-mail. Se a conta já foi ativada sem senha, o
+  script gera um link de definição de senha (recovery).
+- Sem `--redirect-to`, o link aponta para `localhost`.
+
 ## Variáveis de ambiente
 
 `apps/web/.env.example` documenta as 4 necessárias (valores em Project Settings → API do projeto
@@ -101,6 +117,10 @@ e-mail. O app escondia o erro real; isso foi corrigido em 2026-11-13 (ver
 
 ## Testar o PWA num Android real
 
+**Atualização 2026-11-23:** Mario instalou e usou o app num Android real, pelo domínio de produção,
+e funcionou. Os itens detalhados do checklist abaixo (modo avião, paisagem, teclado no chat, caixas
+de diálogo) não foram confirmados um a um — seguem como verificação desejável.
+
 Pendente desde as Stories 6.1 e 6.2 (2026-11-13). Tudo que dava para verificar no Chrome do
 computador passou:
 
@@ -135,11 +155,24 @@ senha" abaixo). Falta confirmar no aparelho, e não precisa de deploy:
 
 Quando o app tiver deploy no Vercel, a mesma checagem vale direto pelo domínio HTTPS, sem cabo.
 
-## Runbook de deploy (execução manual, fora do app)
+## Produção (Vercel) — no ar desde 2026-11-17
 
-Base em `_bmad-output/planning-artifacts/sprint-change-proposal-2026-08-23.md`, atualizado:
+- **URL:** https://projeto-app-mente.vercel.app (plano Hobby, conta do Mario via GitHub).
+- **Origem:** branch `main`, Root Directory `apps/web`. Cada push/merge na `main` publica sozinho; PRs
+  ganham deploy de preview.
+- **Variáveis:** as do `.env.local`, coladas no painel da Vercel (Settings → Environment Variables).
+  Mudou uma chave? Atualize lá e faça **Redeploy**.
+- **Supabase:** `site_url` = URL de produção e `additional_redirect_urls` com produção + localhost,
+  aplicados com `supabase config push` em 2026-11-17. A CLI v2.115 aplica **sem pedir confirmação**:
+  revise o diff do `config.toml` antes de rodar.
+- **Celular:** abrir a URL no Chrome do Android → ⋮ → **Instalar app**, ou usar o item "Instalar o
+  Diário na tela inicial" em Configurações. Não precisa de cabo nem do computador ligado.
+- **Links de e-mail de preview:** URLs de preview da Vercel (`*-git-*.vercel.app`) não estão em
+  `additional_redirect_urls`. Links de recuperação pedidos num preview caem no Site URL de produção.
 
-1. Vercel: importar o repositório com **Root Directory `apps/web`** e as 4 variáveis acima.
+### Runbook (referência, já executado)
+
+1. Vercel: importar o repositório com **Root Directory `apps/web`** e as variáveis acima.
 2. Com o domínio de produção em mãos, em `supabase/config.toml` trocar `site_url` e acrescentar
    `https://<dominio>/**` em `additional_redirect_urls`; `supabase config push`.
 3. Convidar beta testers com `--redirect-to=https://<dominio>`.

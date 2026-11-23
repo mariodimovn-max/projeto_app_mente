@@ -2,10 +2,10 @@
 titulo: Autenticação
 epico: 1
 status: completo
-ultima_atualizacao: 2026-11-13
+ultima_atualizacao: 2026-11-23
 depende_de: []
 relacionado: [lgpd-e-privacidade, ui-e-navegacao, pendencias-manuais]
-decisoes: [0006-fluxo-implicito-templates-email-free-tier]
+decisoes: [0006-fluxo-implicito-templates-email-free-tier, 0009-link-de-uso-unico-exige-clique]
 tags: [auth, supabase, rls, convite, login]
 ---
 
@@ -24,8 +24,10 @@ convite/criação de conta, login, recuperação de senha, logout.
 
 - `apps/web/src/lib/actions/login.ts`, `logout.ts`, `requestPasswordReset.ts`, `setPassword.ts`
 - `apps/web/src/app/auth/` — telas de login/onboarding/convite
-- `apps/web/src/app/auth/confirm/route.ts` — link com `token_hash` (`verifyOtp`); só funciona com
-  templates de e-mail customizados
+- `apps/web/src/app/auth/confirm/page.tsx` + `lib/actions/confirmOtpLink.ts` — link com
+  `token_hash`. Abrir o link só mostra o botão "Ativar meu convite"; o `verifyOtp` roda no clique
+  (Server Action). Usado por `invite-beta.ts --link` e pelos templates customizados — ver
+  [ADR 0009](../adr/0009-link-de-uso-unico-exige-clique.md)
 - `apps/web/src/app/auth/callback/` — link padrão do Supabase (sessão no fragmento da URL); é o
   caminho **em uso hoje** — ver [ADR 0006](../adr/0006-fluxo-implicito-templates-email-free-tier.md)
 - `apps/web/scripts/invite-beta.ts` — envia convites com o `redirectTo` certo
@@ -45,6 +47,11 @@ convite/criação de conta, login, recuperação de senha, logout.
   templates customizados (quando houver SMTP) apontam para `/auth/confirm?token_hash=...`.
 
 ## Gotchas conhecidos
+
+- **Nunca consumir token de uso único num GET** (2026-11-23). Prévias de link do WhatsApp e
+  filtros de e-mail corporativo abrem a URL antes da pessoa e queimavam o convite. Ver
+  [ADR 0009](../adr/0009-link-de-uso-unico-exige-clique.md). O link padrão do Supabase
+  (`/auth/v1/verify` → `/auth/callback`) segue vulnerável; para convites, prefira `--link`.
 
 - `login.ts` também grava em `audit_log` (best-effort) desde a Story 5.3 — ver
   [lgpd-e-privacidade.md](lgpd-e-privacidade.md).

@@ -156,13 +156,18 @@ max_indexes = 5
 enabled = true
 # The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
 # in emails.
-# Localhost para o beta em desenvolvimento. Ao fazer deploy (Vercel), trocar pelo domínio de
-# produção e rodar `supabase config push` de novo — ver docs/wiki/pendencias-manuais.md.
-site_url = "http://localhost:3000"
+# Produção na Vercel desde 2026-11-17. O Site URL é o destino padrão dos links de e-mail quando
+# não há redirectTo (ex.: convite pelo painel). Localhost continua permitido abaixo para
+# desenvolvimento — ver docs/wiki/pendencias-manuais.md.
+site_url = "https://projeto-app-mente.vercel.app"
 # The public URL that Auth serves on. Defaults to the API external URL with `/auth/v1` appended.
 # external_url = ""
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-additional_redirect_urls = ["http://localhost:3000/**", "http://127.0.0.1:3000/**"]
+additional_redirect_urls = [
+  "https://projeto-app-mente.vercel.app/**",
+  "http://localhost:3000/**",
+  "http://127.0.0.1:3000/**",
+]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
 # JWT issuer URL. If not set, defaults to auth.external_url.
@@ -250,7 +255,7 @@ otp_expiry = 3600
 # sender_name = "Admin"
 
 # Templates de e-mail do app (supabase/templates/*.html), com links para /auth/confirm usando
-# token_hash + type (o que apps/web/src/app/auth/confirm/route.ts espera).
+# token_hash + type (o que apps/web/src/app/auth/confirm/page.tsx espera; o token só é consumido no clique, ADR 0009).
 #
 # DESLIGADOS: o plano gratuito com o provedor de e-mail padrão do Supabase rejeita qualquer
 # alteração de template ("Email template modification is not available for free tier projects
